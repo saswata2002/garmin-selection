@@ -3177,19 +3177,26 @@ const Haptics = (() => {
   }
 
   // the cards: the Compare buttons (TV results only), kept in step with what's picked as the grid swaps
+  /* a picked card's button is the pill the sheet folds into: "Compare 2", dark; tapping it opens the sheet.
+     Text is written only when it differs — this runs on the grid's own mutations, so an unconditional write
+     would re-trigger it forever. */
   const syncCards = () => grid.querySelectorAll('.pcard').forEach((c) => {
-    const on = picked.some((x) => x.img === c.dataset.img), b = c.querySelector('.pcard__cmp');
-    if (b) { b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', on ? 'Remove from compare' : 'Add to compare'); }
+    const on = picked.some((x) => x.img === c.dataset.img), b = c.querySelector('.pcard__cmp'); if (!b) return;
+    if (b.getAttribute('aria-pressed') !== String(on)) b.setAttribute('aria-pressed', String(on));
+    const lab = on ? `Compare ${picked.length}` : 'Compare', l = b.querySelector('.pcard__cmpl');
+    if (l && l.textContent !== lab) l.textContent = lab;
+    const al = on ? `Compare ${picked.length} TVs` : 'Add to compare';
+    if (b.getAttribute('aria-label') !== al) b.setAttribute('aria-label', al);
   });
   new MutationObserver(syncCards).observe(grid, { childList: true, subtree: true });
   grid.addEventListener('click', (e) => {
     const b = e.target.closest('.pcard__cmp'); if (!b) return;
     e.preventDefault(); e.stopPropagation();
     const c = b.closest('.pcard'), i = picked.findIndex((x) => x.img === c.dataset.img);
-    if (i >= 0) picked.splice(i, 1);
+    if (i >= 0) { tap(); openFrom(b); return; }   // a picked card's pill: grow the sheet out of it
     else if (picked.length >= MAX) { tap('edge'); bubble.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 300 }); hint(`Compare up to ${MAX} at a time`); return; }
     else picked.push({ img: c.dataset.img, title: c.dataset.title, price: c.dataset.price, rating: c.dataset.rating });
-    tap(); syncCards(); renderBubble(i < 0);   // only an add raises the sheet
+    lastBtn = b; tap(); syncCards(); renderBubble(true);
   }, true);
 
   /* iteration 14 — the dock: ONE Liquid Glass element that is either a bottom sheet or a pill, morphing
@@ -3213,21 +3220,74 @@ const Haptics = (() => {
   const slots = bubble.querySelector('.cdk__slots'), go = bubble.querySelector('.cdk__go'), pillBtn = bubble.querySelector('.cdk__pill');
   const toast = document.createElement('p'); toast.className = 'cmpt'; toast.setAttribute('role', 'status'); plp.appendChild(toast);
   let toastT = 0, settleT = 0, state = 'none';
+  /* iteration 13's tray, kept: under the search field whenever there are picks and the sheet isn't up — each
+     pick's photo (tap to drop it), how many, Compare — so the picks stay in view however far you scroll */
+  const tray = document.createElement('div');
+  tray.className = 'cmpb'; tray.hidden = true; tray.setAttribute('role', 'region'); tray.setAttribute('aria-label', 'Compare tray');
+  plp.appendChild(tray);
+  function renderTray() {
+    const n = picked.length, on = n > 0 && plp.classList.contains('is-tv') && state !== 'sheet';
+    if (!on) { tray.classList.remove('is-on'); setTimeout(() => { if (!tray.classList.contains('is-on')) tray.hidden = true; }, 340); return; }
+    tray.hidden = false;
+    tray.innerHTML = `<div class="cmpb__ph">${picked.map((p) => `<button class="cmpb__it" type="button" data-rm="${p.img}" aria-label="Remove from compare" style="background-image:url(${CDN}${p.img}.jpg?width=120)"><i aria-hidden="true"></i></button>`).join('')}
+        ${n < MAX ? '<span class="cmpb__slot" aria-hidden="true"></span>' : ''}</div>
+      ${n <= 2 ? `<span class="cmpb__t">${n === 1 ? 'Pick one more' : `${n} selected`}${n === 1 ? '<small>to compare</small>' : ''}</span>` : '<span class="cmpb__t"></span>'}
+      <button class="cmpb__go" type="button"${n < 2 ? ' aria-disabled="true"' : ''}>Compare${n > 1 ? ` ${n}` : ''}</button>`;
+    tray.querySelectorAll('.cmpb__it').forEach((b) => b.addEventListener('click', () => {
+      const i = picked.findIndex((x) => x.img === b.dataset.rm); if (i >= 0) picked.splice(i, 1);
+      tap(); syncCards(); renderBubble(false);
+    }));
+    tray.querySelector('.cmpb__go').addEventListener('click', () => { if (picked.length < 2) { tap('edge'); hint('Pick one more TV to compare'); return; } tap(); openSheet('tvs'); });
+    requestAnimationFrame(() => tray.classList.add('is-on'));
+  }
   function hint(text) { toast.textContent = text; toast.classList.add('is-on'); clearTimeout(toastT); toastT = setTimeout(() => toast.classList.remove('is-on'), 1600); }
   const shortName = (p) => { const x = specOf(p); return `${x.brand} ${x.rows.Size}`; };
+  /* 'sheet' is the bottom sheet; 'pill' means folded into a picked card's Compare pill: the dock's box is set
+     onto that button's box (the CSS transition carries it there), the sheet face fades, and the dock goes,
+     leaving the card's own pill — "Compare 2". If no picked card is in view, the sheet just slides away. */
+  let lastBtn = null;
+  const boxOf = (el) => { const r = el.getBoundingClientRect(), pr = plp.getBoundingClientRect(), k = pr.width / 375;
+    return { l: (r.left - pr.left) / k, t: (r.top - pr.top) / k, w: r.width / k, h: r.height / k }; };
+  const inView = (el) => { const sc = document.getElementById('plpScroll'); if (!el || !el.isConnected || !sc) return false;
+    const r = el.getBoundingClientRect(), v = sc.getBoundingClientRect(); return r.bottom > v.top + 8 && r.top < v.bottom - 70; };
+  function targetBtn() {
+    if (inView(lastBtn) && lastBtn.getAttribute('aria-pressed') === 'true') return lastBtn;
+    return [...grid.querySelectorAll('.pcard__cmp[aria-pressed="true"]')].find(inView) || null;
+  }
   function setState(st) {
     if (st === state) return;
-    state = st;
-    plp.classList.toggle('has-dock', st !== 'none'); plp.classList.toggle('dock-sheet', st === 'sheet');
-    bubble.classList.toggle('is-sheet', st === 'sheet'); bubble.classList.toggle('is-pill', st === 'pill');
-    pillBtn.tabIndex = st === 'pill' ? 0 : -1;
-    if (st === 'none') { setTimeout(() => { if (state === 'none') bubble.hidden = true; }, 420); return; }
-    bubble.hidden = false;
+    const was = state; state = st;
+    setTimeout(renderTray, st === 'sheet' ? 0 : 380);   // steps away for the sheet; comes back as it folds
+    plp.classList.toggle('has-dock', st === 'sheet'); plp.classList.toggle('dock-sheet', st === 'sheet');
+    if (st === 'sheet') { bubble.hidden = false; bubble.classList.remove('is-tocard', 'is-away'); void bubble.offsetWidth; bubble.classList.add('is-sheet'); return; }
+    bubble.classList.remove('is-sheet');
+    if (was !== 'sheet') { bubble.hidden = true; return; }
+    const t = st === 'pill' && targetBtn();
+    if (t && !reduce.matches) {
+      const b = boxOf(t);
+      Object.assign(bubble.style, { left: `${b.l}px`, right: `${375 - b.l - b.w}px`, bottom: `${812 - b.t - b.h}px`, height: `${b.h}px`, borderRadius: `${b.h / 2}px` });
+      bubble.classList.add('is-tocard');
+      setTimeout(() => { if (state !== 'sheet') { t.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.18)' }, { transform: 'scale(1)' }], { duration: 360, easing: 'cubic-bezier(.34,1.56,.64,1)' }); } }, 430);
+    } else bubble.classList.add('is-away');
+    setTimeout(() => { if (state !== 'sheet') { bubble.hidden = true; bubble.removeAttribute('style'); bubble.classList.remove('is-tocard', 'is-away'); } }, 560);
+  }
+  // grow the sheet back out of a card's pill: start the dock on that button's box, then let it spring to the sheet
+  function openFrom(btn) {
+    clearTimeout(settleT); lastBtn = btn;
+    if (state === 'sheet') return;
+    if (!reduce.matches) {
+      const b = boxOf(btn);
+      bubble.hidden = false; bubble.classList.add('is-notrans', 'is-tocard');
+      Object.assign(bubble.style, { left: `${b.l}px`, right: `${375 - b.l - b.w}px`, bottom: `${812 - b.t - b.h}px`, height: `${b.h}px`, borderRadius: `${b.h / 2}px` });
+      void bubble.offsetWidth; bubble.classList.remove('is-notrans');
+      requestAnimationFrame(() => { bubble.removeAttribute('style'); });
+    }
+    setState('sheet'); settleSoon(4000);
   }
   const settleSoon = (ms = 3000) => { clearTimeout(settleT); settleT = setTimeout(() => { if (state === 'sheet') setState('pill'); }, ms); };
   function renderBubble(pop) {
     const n = picked.length, on = n > 0 && plp.classList.contains('is-tv');
-    if (!on) { clearTimeout(settleT); setState('none'); return; }
+    if (!on) { clearTimeout(settleT); setState('none'); renderTray(); return; }
     bubble.querySelector('.cdk__n').textContent = `${n} of ${MAX}`;
     slots.innerHTML = [...Array(MAX)].map((_, i) => { const p = picked[i];
       return p ? `<div class="cdk__slot is-full"><button class="cdk__ph1" type="button" data-rm="${p.img}" aria-label="Remove from compare" style="background-image:url(${CDN}${p.img}.jpg?width=160)"><i aria-hidden="true"></i></button><span>${shortName(p)}</span></div>`
@@ -3245,6 +3305,7 @@ const Haptics = (() => {
       const last = slots.querySelectorAll('.cdk__slot.is-full')[n - 1];
       if (last && !reduce.matches) last.animate([{ transform: 'scale(.6)', opacity: 0 }, { transform: 'scale(1.06)', opacity: 1, offset: 0.7 }, { transform: 'scale(1)' }], { duration: 420, delay: 120, easing: 'cubic-bezier(.34,1.56,.64,1)', fill: 'backwards' }); }
     else if (state === 'none') setState('pill');
+    renderTray();
   }
   go.addEventListener('click', () => { if (picked.length < 2) { tap('edge'); return; } tap(); clearTimeout(settleT); setState('pill'); openSheet('tvs'); });
   pillBtn.addEventListener('click', () => { tap(); setState('sheet'); settleSoon(4000); });
