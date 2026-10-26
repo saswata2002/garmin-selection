@@ -1495,3 +1495,19 @@ td.is-best .gx__dots i.on { background: var(--ink); }
 .gx__tbl--cmp td.is-num { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
 .gx__tbl--cmp tr.is-on .gx__meter i { animation: gxMeter .6s cubic-bezier(.32,.72,0,1) both; }
 @keyframes gxMeter { from { transform: scaleX(0); } }
+/* the Guide's first open: a skeleton in the page's own shape, shimmering, then the content rises in (app.js arriveFlow) */
+.gx__sk { display: none; padding: 18px 0 0; }
+.gx.is-skel .gx__sk { display: block; }
+.gx.is-skel .gx__answer { display: none; }
+.gx__sk b, .gx__sk i { display: block; background: linear-gradient(110deg, #ededf0 30%, #f6f6f8 50%, #ededf0 70%) 0 0 / 300% 100%; animation: gxShimmer 1.3s linear infinite; }
+.gx__sk-tiles { display: flex; gap: 10px; padding: 0 20px; overflow: hidden; }
+.gx__sk-tiles b { flex: 0 0 128px; height: 172px; border-radius: 20px; }
+.gx__sk-t { width: 70%; height: 26px; margin: 24px 20px 0; border-radius: 8px; }
+.gx__sk-l { width: 86%; height: 12px; margin: 12px 20px 0; border-radius: 6px; }
+.gx__sk-l--short { width: 52%; margin-top: 8px; }
+.gx__sk-head { display: grid; grid-template-columns: 86px repeat(4, 1fr); gap: 4px; margin: 26px 20px 10px; }
+.gx__sk-head i { grid-column: span 1; width: 40px; height: 40px; margin: 0 auto; border-radius: 12px; }
+.gx__sk-head i:first-child { grid-column: 2; }
+.gx__sk-row { display: grid; grid-template-columns: 86px repeat(4, 1fr); align-items: center; gap: 4px; margin: 0 20px; height: 44px; border-bottom: 1px solid #f3f3f5; }
+.gx__sk-row b { width: 60px; height: 10px; border-radius: 5px; }
+.gx__sk-row i { width: 46px; height: 6px; margin: 0 auto; border-radius: 3px; }

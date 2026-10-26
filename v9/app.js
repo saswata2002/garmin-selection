@@ -2705,7 +2705,7 @@ const Haptics = (() => {
    the same iteration (a clean reload back to Home). */
 (() => {
   const nav = document.getElementById('vswitch'); if (!nav) return;
-  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/' };
+  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/', 11: '/v11/' };
   const here = document.documentElement.dataset.variant || '1';
   const want = new URLSearchParams(location.search).get('v');
   if (want && PATHS[want] && want !== here) { location.replace(PATHS[want]); return; }
@@ -2727,9 +2727,7 @@ const Haptics = (() => {
    toggle floats at the bottom of the TV results (only while the TV picker is on the page). Guide lays a
    learning page over the results, under the search field, in the language of an AI overview — no cards,
    no boxes: text, tables and one small control on a neutral page.
-     arrival (first open)  a blue → pink glow rises from the bottom and washes away while the query sits
-                           top-left in the accent and "Reading 48 TV listings" lists its sources, line by
-                           line; then shimmering skeleton tiles and lines stand in for the answer
+     opening               straight onto the page (no arrival beat) — the page fades up, already complete
      the answer            a row of image tiles (the four screen types), the title streaming in word by
                            word, then three parts in the main app's neutrals, no icons: a table comparing
                            the four types; "How you watch" — Apple "Get to know"-style cards, a scene and a
@@ -2828,15 +2826,15 @@ const Haptics = (() => {
   page.className = 'gx'; page.hidden = true;
   page.setAttribute('role', 'region'); page.setAttribute('aria-label', 'TV buying guide');
   page.innerHTML = `
-    <i class="gx__wash" aria-hidden="true"><b></b><b></b></i>
-    <div class="gx__arrive" aria-hidden="true">
-      <p class="gx__q"></p>
-      <div class="gx__reading"><p>Reading 48 TV listings</p>${SOURCES.map((x) => `<span>${x}</span>`).join('')}<span>… and more</span></div>
+    <div class="gx__sk" aria-hidden="true">
+      <div class="gx__sk-tiles"><b></b><b></b><b></b></div>
+      <b class="gx__sk-t"></b><b class="gx__sk-l"></b><b class="gx__sk-l gx__sk-l--short"></b>
+      <div class="gx__sk-head"><i></i><i></i><i></i><i></i></div>
+      ${[0, 1, 2, 3, 4].map(() => '<div class="gx__sk-row"><b></b><i></i><i></i><i></i><i></i></div>').join('')}
     </div>
     <div class="gx__answer">
       <section class="gx__part" data-part="types">
         <div class="gx__tiles gx__tiles--img" aria-hidden="true">${TILES.map(([img, l]) => `<span class="gx__tile" style="--img:url(${A}${img}.webp)"><em>${l}</em></span>`).join('')}</div>
-        <i class="gx__skel" aria-hidden="true"><b></b><b></b><b></b></i>
         <h2 class="gx__t">${words('How to choose the right TV')}</h2>
         <p class="gx__lead">${words('Four kinds of screen, compared on what you’ll notice most.')}</p>
         <div class="gx__tblwrap">${typeTable()}</div>
@@ -2864,8 +2862,7 @@ const Haptics = (() => {
     else { c.classList.add('is-open'); c.querySelector('.gu__plus').setAttribute('aria-expanded', 'true'); c.querySelector('.gu__more').setAttribute('aria-hidden', 'false'); }
     if (typeof Haptics !== 'undefined') Haptics.snap();
   }));
-  const wash = page.querySelector('.gx__wash'), arrive = page.querySelector('.gx__arrive'), q = page.querySelector('.gx__q');
-  const parts = [...page.querySelectorAll('.gx__part')], skel = page.querySelector('.gx__skel');
+  const parts = [...page.querySelectorAll('.gx__part')];
 
   /* streaming: every word fades and un-blurs in order, ~22ms apart (bold leads a touch slower); each bullet's
      emoji pops in as its line starts. A part streams once; later visits show it whole. */
@@ -2894,14 +2891,23 @@ const Haptics = (() => {
 
   /* arrival — the first open of each results page: glow → "Reading" → skeletons → the answer */
   let arrived = false;
+  /* opening the Guide. The first time on these results, a skeleton of the page itself (tiles, title, lines,
+     the table's rows) shimmers for a beat, then gives way to the content, its sections rising in one after
+     another; later opens go straight to the page. No "reading" copy, no glow. */
+  const SKEL_MS = 900;
   function arriveFlow() {
     timers.forEach(clearTimeout); timers = [];
-    q.textContent = query();
-    page.classList.remove('is-answer', 'is-skel'); page.classList.add('is-arriving');
-    if (reduce.matches) { page.classList.remove('is-arriving'); page.classList.add('is-answer'); stream(parts[0]); return; }
-    later(1900, () => { page.classList.add('is-skel'); });
-    later(2700, () => { page.classList.remove('is-arriving', 'is-skel'); page.classList.add('is-answer'); stream(parts[0], 120);
-      requestAnimationFrame(() => parts.slice(1).forEach((p) => { const r = p.getBoundingClientRect(), b = page.getBoundingClientRect(); if (r.top < b.bottom - 40) stream(p, 600); })); });
+    parts.forEach((part) => { streamed.add(part); part.classList.add('is-in');
+      part.querySelectorAll('.w, .gx__fade, .gx__tile, tbody tr').forEach((el) => el.classList.add('is-on')); });
+    if (reduce.matches) { page.classList.add('is-answer'); return; }
+    page.classList.remove('is-answer'); page.classList.add('is-skel');
+    later(SKEL_MS, () => {
+      page.classList.remove('is-skel'); page.classList.add('is-answer');
+      parts.forEach((part, j) => part.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }],
+        { duration: 520, delay: j * 110, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'backwards' }));
+      page.querySelectorAll('.gx__tiles--img .gx__tile').forEach((t, j) => t.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }],
+        { duration: 480, delay: j * 60, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'backwards' }));
+    });
   }
 
   // the toggle: two segments on a dark glass pill, a white thumb gliding between them
@@ -2964,8 +2970,8 @@ const Haptics = (() => {
   /* ── Ask by voice (iteration 9) ──────────────────────────────────────────────────────────────────
      A mic floating above the toggle while the Guide is open. Tapping it lays a listening view over
      the guide in the reference video's language: the blue → pink glow rises and breathes at the bottom,
-     what you say appears live in the accent, large, top-left. When you stop (or tap the mic again) it reads
-     — "Reading 48 TV listings", sources line by line — then answers: your words on top, the few things it
+     what you say appears live in the accent, large, top-left. When you stop (or tap the mic again) it answers
+     straight away: your words on top, the few things it
      understood as neutral tags, one sentence on why, and the four best matches as image tiles with the
      name, price and the reasons they fit, ranked by the PLP (plp:choose). The browser's speech recognition
      does the listening (Chrome / Safari); without it, or with the mic blocked, the same view takes typing,
@@ -2983,7 +2989,6 @@ const Haptics = (() => {
       <form class="vq__type" hidden><input class="vq__in" type="text" placeholder="Ask about TVs" enterkeyhint="go" autocomplete="off" aria-label="Ask about TVs" />
         <div class="vq__ex">${EXAMPLES.map((e) => `<button type="button">${e}</button>`).join('')}</div></form>
     </div>
-    <div class="vq__read" aria-hidden="true"><p>Reading 48 TV listings</p>${SOURCES.slice(0, 4).map((x) => `<span>${x}</span>`).join('')}<span>… and more</span></div>
     <div class="vq__ans"></div>
     <button class="vq__mic" type="button" aria-label="Tap to talk"><i class="vq__ring" aria-hidden="true"></i>${''}<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></button>`;
   plp.appendChild(vq);
@@ -3071,9 +3076,9 @@ const Haptics = (() => {
   // reading, then the answer
   function answer(text) {
     vtimers.forEach(clearTimeout); vtimers = [];
-    said.textContent = text; form.hidden = true; vstate('reading');
+    said.textContent = text; form.hidden = true;
     const u = understand(text);
-    vlater(reduce.matches ? 0 : 1500, () => {
+    vlater(0, () => {
       vstate('answer');
       if (!u.uses.length && !u.room && !u.inch && !u.tech && !u.budget) {
         ans.innerHTML = `<p class="vq__q">“${text}”</p><h2 class="vq__h">Tell me a little more</h2><p class="vq__p">What will you watch, or where will it go? For example:</p>
