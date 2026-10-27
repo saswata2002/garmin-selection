@@ -11,7 +11,7 @@
     ['Garmin', 'garmin', [[11, 'Garmin vertical'], [19, 'Garmin layers']]],
     ['Compare', 'tv', [[13, 'Compare'], [14, 'Compare dock'], [15, 'Compare mode'], [21, 'Parallel Filters + Compare']]],
     // a row can carry its own search when the card's rows differ
-    ['Compare upsell', '', [[23, 'Previously bought → compare', 'sony xm5 · garmin 965'], [24, 'Tell us your current model', 'headphones · garmin']]],
+    ['Compare upsell', '', [[23, 'Previously bought → compare', 'headphones · garmin'], [24, 'Tell us your current model', 'headphones · garmin']]],
   ];
   // v20–v22 are Ayush's v11–v13 (aykapoor-hub/Brand-Widget-PLP v6-find-your-tv)
   const OTHER = { 1: 'Brand widget', 2: 'Brand cards', 3: 'TV brands', 4: 'TV ask-first', 5: 'TV pills', 6: 'TV storyboard',
