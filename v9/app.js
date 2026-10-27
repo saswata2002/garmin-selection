@@ -1,4 +1,4 @@
-/* Brand Widget PLP — iteration 9 (/v9/) — iteration 8 exactly (Browse), plus a Browse / Guide toggle at the bottom of the TV results; Guide is a separate page of three swipeable folds (TV types, how you watch, size for your room) — see the Guide block at the end. From iteration 8: iteration 7 with no bottom nav on the results and a third filter on the face: a "Select model year" row under the sizes (shown once the shopper touches type or size), in four switchable UIs — pills, stepper, slider, toggle. From iteration 7: iteration 6 with one constant "Select your TV" header: the size row starts as a single "Select your TV size" pill (Figma XzSbnjrYFbhNg6Rc5lKmGJ 432:76848) that expands into the size pills on its own 1.2s later (or when tapped); any type (No preference too) can take a size; asset paths point to ../assets/ */
+/* Brand Widget PLP — iteration 9 (/v9/) — iteration 8 exactly (Browse), plus a Browse / Guide toggle at the bottom of the TV results; Guide is the calmer three-step page (how you watch · pick a screen on the TV-type slider · choose a size) — see the Guide block at the end. From iteration 8: iteration 7 with no bottom nav on the results and a third filter on the face: a "Select model year" row under the sizes (shown once the shopper touches type or size), in four switchable UIs — pills, stepper, slider, toggle. From iteration 7: iteration 6 with one constant "Select your TV" header: the size row starts as a single "Select your TV size" pill (Figma XzSbnjrYFbhNg6Rc5lKmGJ 432:76848) that expands into the size pills on its own 1.2s later (or when tapped); any type (No preference too) can take a size; asset paths point to ../assets/ */
 /* Android: phone GPUs pay heavily for animated blur filters and backdrop blurs, so on Android the
    motion keeps its timing and curves but drops the blur (transform + opacity only); html.is-android
    switches the CSS backdrop blurs off. Nothing changes on iPhone or desktop. */
@@ -1659,6 +1659,7 @@ const PP = (() => {
      42% as they leave it (continuous with position) and peek in from the panel edges. One readout
      under the slot names the answer and rolls over (out up, in from below) when it changes. */
   const RS = { PITCH: 136, TICK: 8, IND: 171, SHRINK: 0.3, FADE: 0.58, RUBBER: 150, W: 11, Z: 0.96 };
+  window.__roster = { make: (pg, Q, k0) => makeRoster(pg, Q, k0), RS, TV_W, TV_SCR, SCREEN, tvImg };   // iteration 9: the Guide's "Pick a screen" uses this slider too
   const WAVE = { A: 0.43, SIGMA: 17.5, ATTACK: 0.02, HOLD: 50, DECAY: 100, V_MIN: 20 };
   const TINT = { MAX: 0.92, SIGMA: 12, TRAIL: 14, LEAD: 3, V_FULL: 900 };
   function springFn(w, z, x0, v0) {
@@ -1904,7 +1905,7 @@ const PP = (() => {
       e.preventDefault(); goToX(-clampK(sel + (e.key === 'ArrowRight' ? 1 : -1)) * PITCH, 0);
     });
     render(false);
-    return { get k() { return sel; }, stop() { anim = null; cancelAnimationFrame(raf); cancelAnimationFrame(waveRaf); clearTimeout(dotT); } };
+    return { get k() { return sel; }, go(i) { goToX(-clampK(i) * PITCH, 0); }, stop() { anim = null; cancelAnimationFrame(raf); cancelAnimationFrame(waveRaf); clearTimeout(dotT); } };
   }
 
   // one question on the stage; dir 1 = from the right, −1 = from the left, 0 = the first one rising in
@@ -2104,7 +2105,7 @@ const PP = (() => {
   const YEAR_STEPS = [['Any year', null], ...YEAR_PICKS];
   const YEAR_FLOOR = [['Any', null, 'Any year'], ['2024+', [2024, 2026], '2024 or newer'], ['2025+', [2025, 2026], '2025 or newer'], ['2026', [2026, 2026], '2026']];
   const YEAR_UIS = ['pills', 'stepper', 'slider', 'toggle'];
-  const yearUi = () => { let v = new URLSearchParams(location.search).get('yui'); try { v = v || localStorage.getItem('bw-v9-year-ui'); } catch (_) {} return YEAR_UIS.includes(v) ? v : 'pills'; };
+  const yearUi = () => { let v = new URLSearchParams(location.search).get('yui'); try { v = v || localStorage.getItem('bw-v12-year-ui'); } catch (_) {} return YEAR_UIS.includes(v) ? v : 'pills'; };
   const ST = { H0: 384, H1: 438, LAND_MS: 420, PREVIEW_MS: 1700, PITCH: 176, AUTO_OPEN_MS: 1200, BUDGET_AFTER_MS: 450 };   // box height before / after the year row joins; it opens 450ms after it appears   // box height without / with the size pills; sets 176 apart (22 ticks), ~25px clear of each other
   const story = document.createElement('div');
   story.className = 'st';
@@ -2390,7 +2391,7 @@ const PP = (() => {
     mark(yearUi());
     ychooser.addEventListener('click', (e) => {
       const b = e.target.closest('[data-yui]'); if (!b) return;
-      try { localStorage.setItem('bw-v9-year-ui', b.dataset.yui); } catch (_) {}
+      try { localStorage.setItem('bw-v12-year-ui', b.dataset.yui); } catch (_) {}
       mark(b.dataset.yui);
       if (st) buildYear(b.dataset.yui, true);
     });
@@ -2742,16 +2743,9 @@ const Haptics = (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const query = () => { const f = document.querySelector('input[type=search]'); return (f && f.value.trim()) || 'tv'; };
 
-  const TILES = [['screen-oled', 'OLED'], ['screen-mini', 'Mini LED'], ['screen-qled', 'QLED'], ['screen-any', 'LED']];
-  /* the screen types, side by side: [row label, kind, OLED, Mini LED, QLED, LED]. Ratings are 1–5, relative,
-     for comparing; the "From" row asks the PLP for the cheapest listed TV of each type (plp:price). */
-  const TYPES = ['OLED', 'Mini LED', 'QLED', 'LED'];
-  const ROWS = [
-    ['Contrast', 'rate', 5, 4, 3, 2], ['Brightness', 'rate', 3, 5, 4, 3], ['Viewing angle', 'rate', 5, 3, 3, 2], ['Value', 'rate', 2, 3, 4, 5],
-    ['Best for', 'text', 'Dark rooms', 'Bright rooms', 'All-round', 'Small rooms'], ['From', 'price'],
-  ];
   /* how you watch: one chip per use case; the panel under them shows the types that fit, the size range on a
      scale, three must-haves and one short tip */
+  const TYPES = ['OLED', 'Mini LED', 'QLED', 'LED'];
   /* how you watch — Apple "Get to know" style cards: [eyebrow, headline, TV cut-out, dark|light, glow, types that
      fit, [smallest, largest] size, must-haves, tip]. The front is the scene; "+" turns it to the details. */
   const USES = [
@@ -2776,17 +2770,7 @@ const Haptics = (() => {
   const SOURCES = ['noon.com TV listings', 'Screen-type specifications', 'Viewing-distance guides', 'Customer reviews', 'HDR and gaming standards'];
 
   const words = (t) => t.split(/(\s+)/).map((w) => (/^\s+$/.test(w) ? w : `<span class="w">${w}</span>`)).join('');
-  // a rating as a slim capsule meter, filled to n of 5 (the row's best in full ink, with a tiny "Best")
-  const meter = (n, best) => `<span class="gx__meter${best ? ' is-best' : ''}" role="img" aria-label="${n} out of 5"><i style="--n:${n}"></i></span>${best ? '<b class="gx__best">Best</b>' : ''}`;
   const priceOf = (tech) => { const d = { tech }; plp.dispatchEvent(new CustomEvent('plp:price', { detail: d })); return d.from ? `${d.from.toLocaleString('en-US')}` : '—'; };
-  const THUMB = { OLED: 'screen-oled', 'Mini LED': 'screen-mini', QLED: 'screen-qled', LED: 'screen-any' };
-  const typeTable = () => `<table class="gx__tbl gx__tbl--cmp gx__fade"><thead><tr><th></th>${TYPES.map((t) => `<th><span class="gx__th"><i style="background-image:url(${A}${THUMB[t]}.webp)"></i>${t}</span></th>`).join('')}</tr></thead><tbody>
-      ${ROWS.map(([label, kind, ...v]) => {
-        const best = kind === 'rate' ? Math.max(...v) : null;
-        const cells = kind === 'price' ? TYPES.map((t) => `<td class="is-num">${priceOf(t)}</td>`)
-          : v.map((x) => (kind === 'rate' ? `<td class="is-rate">${meter(x, x === best)}</td>` : `<td class="is-txt"><span>${x}</span></td>`));
-        return `<tr><th scope="row">${label}</th>${cells.join('')}</tr>`;
-      }).join('')}</tbody></table>`;
   const PLUS = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
   const sizeLabel = ([lo, hi]) => (lo === hi ? `${lo}"` : `${lo}–${hi}"`);
   const sizeShort = ([lo, hi]) => (hi >= 100 ? `${lo}"+` : lo === hi ? `${lo}"` : `${lo}–${hi}"`);   // the front's stat: "65"+", "55–65"
@@ -2825,32 +2809,98 @@ const Haptics = (() => {
   const page = document.createElement('div');
   page.className = 'gx'; page.hidden = true;
   page.setAttribute('role', 'region'); page.setAttribute('aria-label', 'TV buying guide');
+  /* iteration 12 — a calmer Guide: three numbered steps, one job each, read top to bottom
+       1  How you watch — the Apple-style cards, first: the most natural way in
+       2  Pick a screen — one type at a time behind a four-way switch (its picture, one line, three strengths,
+          what it starts at) instead of a table of ratings
+       3  Choose a size — the room cards, the TV drawn to scale
+     No tile row above, more air between steps; the first open shows a skeleton in this shape. */
+  const SCREENS = {
+    OLED: ['screen-oled', 'Every pixel lights itself, so black is truly black.', ['Perfect blacks', 'Wide viewing angles', 'Fast motion'], 'dark rooms'],
+    'Mini LED': ['screen-mini', 'Thousands of tiny LEDs for the brightest picture.', ['Brightest HDR', 'Deep blacks', 'Big sizes for less'], 'bright rooms'],
+    QLED: ['screen-qled', 'Quantum dots for bright, vivid colour.', ['Vivid colour', 'Great value', 'No burn-in'], 'everyday viewing'],
+    LED: ['screen-any', 'The simplest 4K picture, at the lowest price.', ['Lowest price', 'Light and slim', 'Fine for daytime TV'], 'small rooms'],
+  };
+  const step = (n, title, sub) => `<header class="gs"><span class="gs__n">${n}</span><div><h3 class="gs__t">${words(title)}</h3><p class="gs__s">${words(sub)}</p></div></header>`;
+  /* iteration 9: "Pick a screen" is the slider from the TV picker — one TV whose picture wipes from one screen
+     type to the next as you swipe, a coloured glow behind it, the name and what it's best for under it, the
+     tick ruler; the panel under it follows the type you land on. [type, screen picture, glow, signature pulse] */
+  const PICTURE = [['OLED', 'oled', 'rgba(255,90,140,.5)', 'contrast(1.18) saturate(1.06)'], ['Mini LED', 'mini', 'rgba(40,200,205,.55)', 'brightness(1.14)'],
+    ['QLED', 'qled', 'rgba(118,88,255,.55)', 'saturate(1.28)'], ['LED', 'any', 'rgba(242,176,64,.58)', '']];
+  const R = window.__roster;
+  const GQ = R && { key: 'guide', single: 'qled65', screen: true, opts: PICTURE.map(([t, scr, glow, fx]) => [t, t, `Best for ${SCREENS[t][3]}`, [scr, glow, fx]]) };
+  const slider = R ? `<div class="rs gp__rs" role="slider" tabindex="0" aria-label="Pick a screen" aria-description="Swipe through the screen types">
+        <i class="rs__amb" aria-hidden="true">${GQ.opts.map((o) => `<i style="--c:${o[3][1]}"></i>`).join('')}</i>
+        <div class="rsi rsi--single rsi--screen" style="left:${R.RS.IND - R.TV_SCR / 2}px;width:${R.TV_SCR}px"><span class="scr">${R.tvImg([GQ.single, R.TV_SCR / R.TV_W])}
+          <span class="scr__screen" style="left:${R.SCREEN.l}%;top:${R.SCREEN.t}%;width:${R.SCREEN.w}%;height:${R.SCREEN.h}%">${GQ.opts.map((o) => `<i class="scr__l"><b style="background-image:url(../assets/tv/screen-${o[3][0]}.webp)"></b></i>`).join('')}<i class="scr__seam"></i><i class="scr__glare"></i></span></span></div>
+        <div class="rs__read" aria-hidden="true"></div>
+        <div class="rs__ruler"><div class="rs__ticks">${Array.from({ length: (GQ.opts.length - 1) * (R.RS.PITCH / R.RS.TICK) + 1 }, (_, j) =>
+          `<i class="rs__tick${j % (R.RS.PITCH / R.RS.TICK) ? '' : ' rs__tick--mark'}" style="left:${R.RS.IND - 1 + j * R.RS.TICK}px"></i>`).join('')}</div></div>
+        <i class="rs__ind" aria-hidden="true"></i><img class="rs__dot" src="../assets/2a34b.svg" width="4" height="4" alt="" />
+      </div>` : '';
+  /* what's either side: a soft round chevron in each gutter beside the TV (tap to step there), and under the ruler the four sit in a row — the one you're on dark, the rest a tap away */
+  const chev = (d) => `<svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><path d="${d ? 'M4.5 2.5 8 6l-3.5 3.5' : 'M7.5 2.5 4 6l3.5 3.5'}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const nav = R ? `<button class="gp__peek gp__peek--prev" type="button" aria-label="Previous screen type">${chev(0)}</button>
+      <button class="gp__peek gp__peek--next" type="button" aria-label="Next screen type">${chev(1)}</button>` : '';
+  const idx = R ? `<div class="gp__idx" role="group" aria-label="Screen types">${PICTURE.map(([t], i) => `<button class="gp__ix${i ? '' : ' is-on'}" type="button" data-i="${i}">${t}</button>`).join('')}</div>` : '';
+  const screenPick = `<div class="gp gp--slide gx__fade">
+      <div class="gp__stage">${slider}${nav}</div>${idx}
+      <div class="gp__panel" aria-live="polite"></div></div>`;
   page.innerHTML = `
     <div class="gx__sk" aria-hidden="true">
-      <div class="gx__sk-tiles"><b></b><b></b><b></b></div>
-      <b class="gx__sk-t"></b><b class="gx__sk-l"></b><b class="gx__sk-l gx__sk-l--short"></b>
-      <div class="gx__sk-head"><i></i><i></i><i></i><i></i></div>
-      ${[0, 1, 2, 3, 4].map(() => '<div class="gx__sk-row"><b></b><i></i><i></i><i></i><i></i></div>').join('')}
+      <b class="gx__sk-t"></b><b class="gx__sk-l gx__sk-l--short"></b>
+      <div class="gx__sk-step"><i></i><b></b></div>
+      <div class="gx__sk-tiles gx__sk-tiles--tall"><b></b><b></b></div>
+      <div class="gx__sk-step"><i></i><b></b></div>
+      <b class="gx__sk-seg"></b><b class="gx__sk-hero"></b>
     </div>
-    <div class="gx__answer">
-      <section class="gx__part" data-part="types">
-        <div class="gx__tiles gx__tiles--img" aria-hidden="true">${TILES.map(([img, l]) => `<span class="gx__tile" style="--img:url(${A}${img}.webp)"><em>${l}</em></span>`).join('')}</div>
-        <h2 class="gx__t">${words('How to choose the right TV')}</h2>
-        <p class="gx__lead">${words('Four kinds of screen, compared on what you’ll notice most.')}</p>
-        <div class="gx__tblwrap">${typeTable()}</div>
-      </section>
+    <div class="gx__answer gx__answer--steps">
+      <header class="gx__intro2"><h2 class="gx__t">${words('Find the right TV')}</h2><p class="gx__lead">${words('Three quick steps. Start with how you watch.')}</p></header>
       <section class="gx__part" data-part="uses">
-        <h3 class="gx__h">${words('How you watch')}</h3>
+        ${step(1, 'How you watch', 'Tap + on a card for what to look for.')}
         ${usePanel}
       </section>
+      <section class="gx__part" data-part="types">
+        ${step(2, 'Pick a screen', 'Swipe, or tap a name, to see each one.')}
+        ${screenPick}
+      </section>
       <section class="gx__part" data-part="room">
-        <h3 class="gx__h">${words('Size for your room')}</h3>
-        <p class="gx__lead">${words('For 4K, sit about 1.2–1.5 times the screen size away.')}</p>
+        ${step(3, 'Choose a size', 'Sit about 1.2–1.5 × the screen size away.')}
         ${sizeTable}
-        <p class="gx__note">${words('General guidance to compare by — your room and budget decide the rest.')}</p>
+        <p class="gx__note">${words('General guidance — your room and budget decide the rest.')}</p>
       </section>
     </div>`;
   plp.appendChild(page);
+  /* the panel under the slider: one line, three strengths, what the type starts at — swapped (a short crossfade)
+     each time the slider lands on another type */
+  const gpPanel = page.querySelector('.gp__panel');
+  function renderScreen(t, anim) {
+    const [, lead, good] = SCREENS[t];
+    gpPanel.innerHTML = `<p class="gp__lead">${lead}</p>
+      <ul class="gp__good">${good.map((g) => `<li>${g}</li>`).join('')}</ul>
+      <p class="gp__from"><span>From</span>${priceOf(t)}</p>`;
+    if (anim && !reduce.matches) gpPanel.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.32,.72,0,1)' });
+  }
+  let gpAt = 0;
+  if (R) {
+    const gp = page.querySelector('.gp'), prev = gp.querySelector('.gp__peek--prev'), next = gp.querySelector('.gp__peek--next'), ixs = [...gp.querySelectorAll('.gp__ix')];
+    const paintNav = (k) => {
+      [[prev, k - 1], [next, k + 1]].forEach(([b, j]) => {
+        const has = j >= 0 && j < PICTURE.length;
+        b.classList.toggle('is-off', !has); b.tabIndex = has ? 0 : -1;
+        if (has) b.setAttribute('aria-label', `See ${PICTURE[j][0]}`);
+      });
+      ixs.forEach((b, i) => { b.classList.toggle('is-on', i === k); b.setAttribute('aria-pressed', i === k); });
+    };
+    GQ.onLand = (k) => { paintNav(k); if (k === gpAt) return; gpAt = k; renderScreen(PICTURE[k][0], true); };
+    const ro = R.make(gp, GQ, 0);
+    prev.addEventListener('click', () => ro.go(ro.k - 1));
+    next.addEventListener('click', () => ro.go(ro.k + 1));
+    ixs.forEach((b) => b.addEventListener('click', () => ro.go(+b.dataset.i)));
+    paintNav(0);
+  }
+  renderScreen(PICTURE[0][0], false);
+
   /* the use-case cards: "+" turns a card to its details — the scene dims and slides down, the details rise in
      over it, the "+" turns into an "×"; one card open at a time */
   const useCards = [...page.querySelectorAll('.gu:not(.gu--room)')];
@@ -2897,13 +2947,13 @@ const Haptics = (() => {
   const SKEL_MS = 900;
   function arriveFlow() {
     timers.forEach(clearTimeout); timers = [];
-    parts.forEach((part) => { streamed.add(part); part.classList.add('is-in');
-      part.querySelectorAll('.w, .gx__fade, .gx__tile, tbody tr').forEach((el) => el.classList.add('is-on')); });
+    parts.forEach((part) => { streamed.add(part); part.classList.add('is-in'); });
+    page.querySelectorAll('.w, .gx__fade, .gx__tile, tbody tr').forEach((el) => el.classList.add('is-on'));   // the intro too
     if (reduce.matches) { page.classList.add('is-answer'); return; }
     page.classList.remove('is-answer'); page.classList.add('is-skel');
     later(SKEL_MS, () => {
       page.classList.remove('is-skel'); page.classList.add('is-answer');
-      parts.forEach((part, j) => part.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }],
+      [page.querySelector('.gx__intro2'), ...parts].filter(Boolean).forEach((part, j) => part.animate([{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }],
         { duration: 520, delay: j * 110, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'backwards' }));
       page.querySelectorAll('.gx__tiles--img .gx__tile').forEach((t, j) => t.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }],
         { duration: 480, delay: j * 60, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'backwards' }));

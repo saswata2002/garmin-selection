@@ -5,10 +5,11 @@
    where you are. The rail grows to the left, away from the phone. */
 (() => {
   const GROUPS = [
-    ['3 tier', [[8, '3 tier filter'], [18, 'Progressive filters']]],
-    ['Guide', [[9, '3 tier to guide']]],
-    ['Garmin', [[11, 'Garmin vertical'], [19, 'Garmin layers']]],
-    ['Compare', [[13, 'Compare'], [14, 'Compare dock'], [15, 'Compare mode']]],
+    // [card, search to type in the prototype to reach it, rows]
+    ['3 tier', 'tv', [[8, '3 tier filter'], [18, 'Progressive filters']]],
+    ['Guide', 'tv', [[9, '3 tier to guide']]],
+    ['Garmin', 'garmin', [[11, 'Garmin vertical'], [19, 'Garmin layers']]],
+    ['Compare', 'tv', [[13, 'Compare'], [14, 'Compare dock'], [15, 'Compare mode']]],
   ];
   const OTHER = { 1: 'Brand widget', 2: 'Brand cards', 3: 'TV brands', 4: 'TV ask-first', 5: 'TV pills', 6: 'TV storyboard',
     7: 'Size pill', 10: 'Help me choose', 12: 'Calm Guide', 16: 'Personalise', 17: 'Progressive 3 tier' };
@@ -18,7 +19,9 @@
     .vswitch { gap: 10px; padding: 0; background: none; box-shadow: none; border-radius: 0; align-items: stretch; overflow: visible; max-height: none; }
     .vswitch__g { display: flex; flex-direction: column; gap: 4px; padding: 8px 6px 6px; background: #fff; border-radius: 20px;
       box-shadow: 0 4px 18px rgba(20, 24, 40, .08), 0 1px 3px rgba(20, 24, 40, .06); }
-    .vswitch__h { padding: 0 8px 2px; font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #8a91a8; }
+    .vswitch__q { display: block; margin-top: 3px; font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; color: #8a91a8; }
+    .vswitch__q b { font-weight: 700; color: #1d2539; }
+    .vswitch__h { padding: 0 8px 4px; font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: #8a91a8; }
     .vswitch__b[data-v] { width: auto; min-width: 34px; height: 32px; display: flex; align-items: center; justify-content: flex-start; gap: 6px; padding: 0 12px 0 0; border-radius: 16px; }
     .vswitch__num { flex: none; width: 32px; text-align: center; font-size: 14px; }
     .vswitch__name { font-size: 12.5px; font-weight: 600; letter-spacing: -0.1px; white-space: nowrap; opacity: .72; }
@@ -35,16 +38,16 @@
     b.title = `/v${v}/`;
     return b;
   };
-  const card = (title, rows) => {
+  const card = (title, rows, q) => {
     const g = document.createElement('div'); g.className = 'vswitch__g'; g.setAttribute('role', 'group'); g.setAttribute('aria-label', title);
-    g.innerHTML = `<span class="vswitch__h">${title}</span>`;
+    g.innerHTML = `<span class="vswitch__h">${title}${q ? `<span class="vswitch__q">Search query = <b>${q}</b></span>` : ''}</span>`;
     rows.forEach((b) => b && g.appendChild(b));
     return g;
   };
   let n = 0;
-  const cards = GROUPS.map(([title, items]) => card(title, items.map(([v, name]) => row(v, name, ++n))));
+  const cards = GROUPS.map(([title, q, items]) => card(title, items.map(([v, name]) => row(v, name, ++n)), q));
   const here = [...btns.values()].find((b) => b.getAttribute('aria-pressed') === 'true');
-  const shown = new Set(GROUPS.flatMap(([, items]) => items.map(([v]) => v)));
+  const shown = new Set(GROUPS.flatMap(([, , items]) => items.map(([v]) => v)));
   if (here && !shown.has(+here.dataset.v)) { const v = +here.dataset.v; cards.push(card('Other', [row(v, OTHER[v] || `Iteration ${v}`, v)])); }
   nav.replaceChildren(...cards);
   if (reset) { const t = document.createElement('div'); t.className = 'vswitch__g vswitch__g--tools'; t.appendChild(reset); nav.appendChild(t); }
