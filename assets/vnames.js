@@ -10,6 +10,8 @@
     ['Guide', 'tv', [[9, '3 tier to guide']]],
     ['Garmin', 'garmin', [[11, 'Garmin vertical'], [19, 'Garmin layers']]],
     ['Compare', 'tv', [[13, 'Compare'], [14, 'Compare dock'], [15, 'Compare mode']]],
+    // Ayush's own branch (aykapoor-hub/Brand-Widget-PLP v6-find-your-tv): his v11, v12, v13 → our v20, v21, v22
+    ['Ayush', 'samsung tv', [[20, 'Find your TV'], [21, 'Picker + compare'], [22, 'Answers fold to pills']]],
   ];
   const OTHER = { 1: 'Brand widget', 2: 'Brand cards', 3: 'TV brands', 4: 'TV ask-first', 5: 'TV pills', 6: 'TV storyboard',
     7: 'Size pill', 10: 'Help me choose', 12: 'Calm Guide', 16: 'Personalise', 17: 'Progressive 3 tier' };
