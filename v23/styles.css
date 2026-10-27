@@ -1347,3 +1347,26 @@ img.contain { object-fit: contain; }
   font-size: 13px; font-weight: 500; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .3s cubic-bezier(.32,.72,0,1); }
 .cmpt.is-on { opacity: 1; transform: translate(-50%, 0); }
 /* the sheet */
+
+/* "Yours" carries the whole column: a dark band across the top of its photo, the photo outlined in ink, and a
+   soft tint running down the column behind every row, so it stays obvious however far down the specs you are */
+.cms--vs .cms__grid { isolation: isolate; }
+.cms--vs .cms__col:first-child::before, .cms--vs .cms__vals > span:first-child::before { content: ''; position: absolute; z-index: -1; left: -6px; right: -6px; background: #f1f2f7; }
+.cms--vs .cms__col:first-child::before { top: -6px; bottom: -12px; border-radius: 18px 18px 0 0; }
+.cms--vs .cms__vals > span:first-child { position: relative; }
+.cms--vs .cms__vals > span:first-child::before { top: -38px; bottom: -12px; }
+.cms--vs .cms__row:last-child .cms__vals > span:first-child::before { border-radius: 0 0 18px 18px; bottom: -14px; }
+.cms--vs .cms__col:first-child .cms__img { box-shadow: 0 0 0 2px #262a33; background-color: #fff; overflow: hidden; }
+.cms--vs .cms__you { left: 0; right: 0; top: 0; height: 24px; padding: 0; border-radius: 0; background: #262a33; color: #fff; box-shadow: none;
+  font-size: 11px; line-height: 24px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; text-align: center; }
+.cms--vs .cms__col:first-child { isolation: isolate; }   /* its tint sits above the sticky header's white */
+.cms--vs .cms__cols { z-index: 3; }   /* the sticky header stays above the rows (their names and the column tint) as they scroll under it */
+
+/* taller product tiles, the whole product in view (contained, not cropped), on the soft grey card iOS uses for
+   product shots; "Yours" keeps its ink ring and band, slimmer and inside the tile's own corners */
+.cms__img { height: 148px; margin-bottom: 8px; border-radius: 18px; background-color: #f5f5f7; background-size: contain; background-origin: content-box; padding: 6px; box-sizing: border-box; }
+.cms__add > span { height: 148px; border-radius: 18px; }
+.cms--vs .cms__col:first-child .cms__img { background-color: #f5f5f7; padding-top: 24px; box-shadow: 0 0 0 1.5px #262a33; }
+.cms--vs .cms__you { height: 22px; line-height: 22px; font-size: 10.5px; letter-spacing: .8px; border-radius: 17px 17px 0 0; }
+.cms__img { padding: 0; background-origin: padding-box; background-size: contain; background-position: 50% 50%; }   /* the full photo, as wide as the tile */
+.cms--vs .cms__col:first-child .cms__img { padding-top: 0; background-position: 50% 62%; }
