@@ -10,6 +10,8 @@
     ['Guide', 'tv', [[9, '3 tier to guide']]],
     ['Garmin', 'garmin', [[11, 'Garmin vertical'], [19, 'Garmin layers']]],
     ['Compare', 'tv', [[13, 'Compare'], [14, 'Compare dock'], [15, 'Compare mode'], [21, 'Parallel Filters + Compare']]],
+    // a row can carry its own search when the card's rows differ
+    ['Compare upsell', '', [[23, 'Previously bought → compare', 'sony xm5 · garmin 965'], [24, 'Tell us your current model', 'headphones · garmin']]],
   ];
   // v20–v22 are Ayush's v11–v13 (aykapoor-hub/Brand-Widget-PLP v6-find-your-tv)
   const OTHER = { 1: 'Brand widget', 2: 'Brand cards', 3: 'TV brands', 4: 'TV ask-first', 5: 'TV pills', 6: 'TV storyboard',
@@ -28,13 +30,18 @@
     .vswitch__name { font-size: 12.5px; font-weight: 600; letter-spacing: -0.1px; white-space: nowrap; opacity: .72; }
     .vswitch__b[aria-pressed="true"] .vswitch__name { opacity: 1; }
     .vswitch__g--tools { flex-direction: row; justify-content: center; padding: 6px; }
-    .vswitch__sep { display: none; }`;
+    .vswitch__sep { display: none; }
+    .vswitch__b--q[data-v] { height: auto; min-height: 44px; padding-top: 5px; padding-bottom: 5px; }
+    .vswitch__rq { display: block; margin-top: 1px; font-size: 10.5px; font-weight: 500; color: #8a91a8; }
+    .vswitch__b[aria-pressed="true"] .vswitch__rq, .vswitch__b[aria-pressed="true"] .vswitch__rq b { color: inherit; opacity: .8; }
+    .vswitch__rq b { font-weight: 700; color: #1d2539; }`;
   document.head.appendChild(css);
   const btns = new Map([...nav.querySelectorAll('.vswitch__b[data-v]')].map((b) => [+b.dataset.v, b]));
   const reset = nav.querySelector('.vswitch__reset');
-  const row = (v, name, n) => {
+  const row = (v, name, n, q) => {
     const b = btns.get(v); if (!b) return null;
-    b.innerHTML = `<span class="vswitch__num">${n}</span><span class="vswitch__name">${name}</span>`;
+    b.innerHTML = `<span class="vswitch__num">${n}</span><span class="vswitch__name">${name}${q ? `<small class="vswitch__rq">Search = <b>${q}</b></small>` : ''}</span>`;
+    if (q) b.classList.add('vswitch__b--q');
     b.setAttribute('aria-label', `${name} (iteration ${v})`);
     b.title = `/v${v}/`;
     return b;
@@ -46,7 +53,7 @@
     return g;
   };
   let n = 0;
-  const cards = GROUPS.map(([title, q, items]) => card(title, items.map(([v, name]) => row(v, name, ++n)), q));
+  const cards = GROUPS.map(([title, q, items]) => card(title, items.map(([v, name, rq]) => row(v, name, ++n, rq)), q));
   const here = [...btns.values()].find((b) => b.getAttribute('aria-pressed') === 'true');
   const shown = new Set(GROUPS.flatMap(([, , items]) => items.map(([v]) => v)));
   if (here && !shown.has(+here.dataset.v)) { const v = +here.dataset.v; cards.push(card('Other', [row(v, OTHER[v] || `Iteration ${v}`, v)])); }
