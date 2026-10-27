@@ -1579,3 +1579,6 @@ td.is-best .gx__dots i.on { background: var(--ink); }
   transition: background .25s ease, color .25s ease, box-shadow .25s ease; }
 .gp__ix.is-on { background: #fff; color: #1d2539; font-weight: 600; box-shadow: 0 1px 3px rgba(29,37,57,.08); }
 .gp--slide .gp__panel { margin-top: 14px; }
+
+/* the Year UI chooser beside the phone is retired — the year row is always the stepper */
+.yswitch { display: none !important; }

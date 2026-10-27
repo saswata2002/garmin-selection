@@ -1234,3 +1234,6 @@ img.contain { object-fit: contain; }
   transition: transform .18s cubic-bezier(.32,.72,0,1); }
 .gl__go:active { transform: translateX(-50%) scale(.96); }
 .gl__go--up { padding: 0 16px 0 12px; border-color: #ececf0; color: #5b6175; }
+
+/* the Year UI chooser beside the phone is retired — the year row is always the stepper */
+.yswitch { display: none !important; }

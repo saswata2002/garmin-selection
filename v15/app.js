@@ -2106,7 +2106,7 @@ const PP = (() => {
   const YEAR_STEPS = [['Any year', null], ...YEAR_PICKS];
   const YEAR_FLOOR = [['Any', null, 'Any year'], ['2024+', [2024, 2026], '2024 or newer'], ['2025+', [2025, 2026], '2025 or newer'], ['2026', [2026, 2026], '2026']];
   const YEAR_UIS = ['pills', 'stepper', 'slider', 'toggle'];
-  const yearUi = () => { let v = new URLSearchParams(location.search).get('yui'); try { v = v || localStorage.getItem('bw-v15-year-ui'); } catch (_) {} return YEAR_UIS.includes(v) ? v : 'pills'; };
+  const yearUi = () => 'stepper';   // the Year UI chooser is retired: every year row is the stepper
   const ST = { H0: 384, H1: 438, LAND_MS: 420, PREVIEW_MS: 1700, PITCH: 176, AUTO_OPEN_MS: 1200, BUDGET_AFTER_MS: 450 };   // box height before / after the year row joins; it opens 450ms after it appears   // box height without / with the size pills; sets 176 apart (22 ticks), ~25px clear of each other
   const story = document.createElement('div');
   story.className = 'st';

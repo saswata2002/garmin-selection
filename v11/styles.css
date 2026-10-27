@@ -1229,3 +1229,6 @@ img.contain { object-fit: contain; }
   transition: opacity .25s ease, transform .4s cubic-bezier(.32,.72,0,1); pointer-events: none; }
 .gm__res b { font-weight: 700; color: #1d2539; }
 .gm__res.is-on { opacity: 1; transform: none; }
+
+/* the Year UI chooser beside the phone is retired — the year row is always the stepper */
+.yswitch { display: none !important; }
