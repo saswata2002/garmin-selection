@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-variant="17">
+<head>
+<!-- Iteration 17: Saswata's iteration 9 (github.com/saswata2002/Brand-Widget-PLP @ a304453), copied as is — only the switcher numbering changed. -->
+<!-- Iteration 4: its own copy of iteration 01 (the root /). Edit this folder freely — /assets and /fonts are shared. -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#dcf0ff" />
+<title>noon — Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet" />
+<!-- the "noon App GitFlow" Home (gf/, built from gf-build/) -->
+<link rel="stylesheet" crossorigin href="/gf/assets/index-CGSK5aXw.css" />
+<link rel="stylesheet" href="styles.css?v=9c" />
+</head>
+<body>
+
+<!-- Figma multi-shadow stacks, composited in PARALLEL (a CSS filter chain
+     would shadow each shadow). stdDeviation = CSS blur / 2. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="shA" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="2.21" result="b1"/><feOffset in="b1" dx="-2.21" dy="11.05" result="o1"/><feFlood flood-color="#000" flood-opacity="0.02"/><feComposite in2="o1" operator="in" result="s1"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="2.21" result="b2"/><feOffset in="b2" dx="-1.105" dy="6.63" result="o2"/><feFlood flood-color="#000" flood-opacity="0.06"/><feComposite in2="o2" operator="in" result="s2"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="1.6575" result="b3"/><feOffset in="b3" dx="0" dy="3.315" result="o3"/><feFlood flood-color="#000" flood-opacity="0.1"/><feComposite in2="o3" operator="in" result="s3"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="0.5525" result="b4"/><feOffset in="b4" dx="0" dy="1.105" result="o4"/><feFlood flood-color="#000" flood-opacity="0.12"/><feComposite in2="o4" operator="in" result="s4"/>
+    <feMerge><feMergeNode in="s1"/><feMergeNode in="s2"/><feMergeNode in="s3"/><feMergeNode in="s4"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+  <filter id="shB" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="4.42" result="b1"/><feOffset in="b1" dx="-22.101" dy="0" result="o1"/><feFlood flood-color="#000" flood-opacity="0.03"/><feComposite in2="o1" operator="in" result="s1"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="3.8675" result="b2"/><feOffset in="b2" dx="-12.155" dy="0" result="o2"/><feFlood flood-color="#000" flood-opacity="0.1"/><feComposite in2="o2" operator="in" result="s2"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="2.7625" result="b3"/><feOffset in="b3" dx="-5.525" dy="0" result="o3"/><feFlood flood-color="#000" flood-opacity="0.16"/><feComposite in2="o3" operator="in" result="s3"/>
+    <feGaussianBlur in="SourceAlpha" stdDeviation="1.6575" result="b4"/><feOffset in="b4" dx="-1.105" dy="0" result="o4"/><feFlood flood-color="#000" flood-opacity="0.19"/><feComposite in2="o4" operator="in" result="s4"/>
+    <feMerge><feMergeNode in="s1"/><feMergeNode in="s2"/><feMergeNode in="s3"/><feMergeNode in="s4"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</svg>
+
+<!-- ══ 912:10736 — Home Page (375 × 812) ══════════════════════════════════ -->
+<div class="screen" id="screen">
+<!-- Home view: scroll body + bottom nav travel together on push -->
+<div class="view view--home" id="home" data-node-id="912:10736">
+<!-- the "noon App GitFlow" Home (React, mounted by gf/): its search bar opens this page's Search (app.js) -->
+<div class="nk-home" id="nkHome"></div>
+<span class="nk-entry" id="searchEntry" role="button" tabindex="-1" aria-hidden="true"></span>
+<!-- iOS-style dimming of the page underneath a push -->
+<div class="view__dim" id="homeDim" aria-hidden="true"></div>
+</div>
+
+<!-- ══ 912:14383 — Search Page (375 × 812), pushed from the right ═════════ -->
+<section class="view view--search" id="search" data-node-id="912:14383" aria-label="Search" inert>
+  <div class="srch__edge" id="searchEdge" aria-hidden="true"></div>
+  <!-- 912:14607 — trending searches + promo banners (one raster in the design) -->
+  <div class="srch__art" data-node-id="912:14608">
+    <img src="../assets/83d40.jpg" alt="Trending searches: iphone 18 pro max, owala, xiaomi 18 pro, laptop, shoes for men, watch. Banners: noon One card, Bodywise, Eucerin" />
+  </div>
+  <!-- ══ 920:18788 — PLP, loaded in place under the search bar (loading timed from ref_02.mp4) ═══ -->
+  <section class="plp" id="plp" data-node-id="920:18788" aria-label="Results" aria-hidden="true" inert>
+    <!-- ══ Legacy→new PLP (XzSbnjrYFbhNg6Rc5lKmGJ 82:16426) — marketplace tabs 82:17411 ══ -->
+    <!-- ══ the "noon App GitFlow" PLP header: marketplace tabs + chips (its ListingScreen), under the shared search bar ══ -->
+    <nav class="plp__mps gfmp" aria-label="Marketplaces">
+      <div class="mps__row hscroll">
+        <button class="mp is-on" aria-current="true"><span class="mp__logo"><img src="../assets/gf/mp-noon.png" width="105" height="24" alt="noon" /></span><span class="mp__name">Wide assortment</span></button>
+        <button class="mp"><span class="mp__logo"><span class="gfmp__pill gfmp__pill--sm"><img src="../assets/gf/mp-sm-mall.svg" width="32" height="10" alt="" /><img src="../assets/gf/mp-sm-super.svg" width="22" height="9" alt="supermall" /></span></span><span class="mp__name">Direct from brands</span></button>
+        <button class="mp"><span class="mp__logo"><img src="../assets/gf/mp-express.svg" width="67" height="20" alt="express" /></span><span class="mp__name">Get Everything</span></button>
+        <button class="mp"><span class="mp__logo"><span class="gfmp__pill gfmp__pill--global"><img src="../assets/gf/mp-global.svg" width="50" height="14" alt="Global" /></span></span><span class="mp__name">Sourced Globally</span></button>
+        <button class="mp"><span class="mp__logo"><span class="gfmp__pill gfmp__pill--min"><img src="../assets/gf/mp-minutes.svg" width="51" height="7" alt="15 minutes" /></span></span><span class="mp__name">Groceries &amp; more</span></button>
+        <i class="mps__tab" aria-hidden="true"></i>
+      </div>
+    </nav>
+    <div class="plp__tags">
+      <div class="tags__row hscroll" id="plpTags">
+        <button class="chip"><img class="chip__ico" src="../assets/c55e8.svg" width="16" height="16" alt="" /><span class="chip__t">Filter</span></button>
+        <button class="chip"><i class="chip__mask" style="-webkit-mask-image:url(../assets/gf/chip-sort.webp);mask-image:url(../assets/gf/chip-sort.webp)"></i><span class="chip__t">Sort</span></button>
+        <i class="chip__div" aria-hidden="true"></i>
+        <button class="chip"><img class="chip__ico" src="../assets/gf/chip-deals.png" width="16" height="16" alt="" /><span class="chip__t">Deals</span><img class="chip__chev" src="../assets/gf/chip-chev.webp" width="10" height="10" alt="" /></button>
+        <button class="chip"><img class="chip__ico" src="../assets/gf/chip-brand.png" width="16" height="16" alt="" /><span class="chip__t">Brand</span><img class="chip__chev" src="../assets/gf/chip-chev.webp" width="10" height="10" alt="" /></button>
+        <button class="chip"><img class="chip__ico" src="../assets/gf/chip-price.png" width="16" height="16" alt="" /><span class="chip__t">Price</span><img class="chip__chev" src="../assets/gf/chip-chev.webp" width="10" height="10" alt="" /></button>
+        <button class="chip chip--plain"><span class="chip__t">Apple</span></button><button class="chip chip--plain"><span class="chip__t">Samsung</span></button><button class="chip chip--plain"><span class="chip__t">HUAWEI</span></button><button class="chip chip--plain"><span class="chip__t">Smartphones</span></button><button class="chip chip--plain"><span class="chip__t">Google</span></button><button class="chip chip--plain"><span class="chip__t">Xiaomi</span></button>
+      </div>
+    </div>
+    <div class="plp__scroll" id="plpScroll">
+      <!-- ══ 1214:145919 "Shop phones by brand" panel (State 12 1214:145190): revealed from behind the grid once the on-screen cards land ═══ -->
+      <section class="brw" id="brandWidget" aria-label="Shop phones by brand">
+        <div class="brw__bar" id="bwBar" data-node-id="1214:145919">
+          <div class="brw__head" id="bwHead" data-node-id="1214:145920">
+            <div class="brw__hrow" data-node-id="1214:145921">
+              <p class="brw__htitle" id="bwHTitle" data-node-id="1214:145922">Shop phones by brand</p>
+              <p class="brw__count" id="bwCount" data-node-id="1214:145923">1 of 14</p>
+            </div>
+          </div>
+          <!-- selected state (State 13 1226:146640 → 1226:147369): collapsed 60px bar -->
+          <div class="brw__sel" id="bwSel" aria-hidden="true">
+            <span class="brw__scoin" id="bwSCoin" data-node-id="1226:147370"><img src="../assets/coin-apple.svg" width="12" height="12" alt="" /></span>
+            <span class="brw__stxt" data-node-id="1226:147373">
+              <span class="brw__stitle" id="bwSTitle" data-node-id="1226:147374">Apple selected</span>
+              <span class="brw__ssub" id="bwSSub" data-node-id="1226:147375">Showing all Apple phones</span>
+            </span>
+            <button class="brw__clear" id="bwClear" type="button" data-node-id="1226:147376">Clear</button>
+          </div>
+          <div class="brw__rail" id="bwRail" data-node-id="1214:145925"><div class="brw__track" id="bwTrack"></div></div>
+        </div>
+      </section>
+      <div class="plp__grid" id="plpGrid" data-node-id="920:18790"></div>
+    </div>
+    <!-- PLP bottom nav: the same nav as the Home page (912:12987), per request -->
+    <!-- the "noon App GitFlow" glass tab bar -->
+    <nav class="bnav bnav--plp gftab" id="plpNav" aria-label="Main"><div class="gftab__bar"><i class="gftab__lens" aria-hidden="true"></i><a class="gftab__it is-on" aria-label="Home"><i style="-webkit-mask-image:url(../assets/gf/tab-home.webp);mask-image:url(../assets/gf/tab-home.webp)"></i></a><a class="gftab__it" aria-label="Categories"><i style="-webkit-mask-image:url(../assets/gf/tab-categories.webp);mask-image:url(../assets/gf/tab-categories.webp)"></i></a><a class="gftab__it" aria-label="Deals"><i style="-webkit-mask-image:url(../assets/gf/tab-deals.svg);mask-image:url(../assets/gf/tab-deals.svg)"></i></a><a class="gftab__it" aria-label="Account"><i style="-webkit-mask-image:url(../assets/gf/tab-account.webp);mask-image:url(../assets/gf/tab-account.webp)"></i></a><a class="gftab__it" aria-label="Cart"><i style="-webkit-mask-image:url(../assets/gf/tab-cart.webp);mask-image:url(../assets/gf/tab-cart.webp)"></i><b class="gftab__badge">4</b></a></div></nav>
+  </section>
+  <!-- 920:15423 — Search suggestions (shown for “phone”; staggered in/out, timed from ref.mp4) -->
+  <div class="srch__sug" id="suggest" data-node-id="920:15423" aria-hidden="true">
+    <ul class="sug__list" role="listbox" aria-label="Suggestions" data-node-id="920:15424">
+      <li class="sug" role="option" data-q="phone charging cable" data-node-id="920:15425">
+        <span class="sug__thumb stroke"><span class="sug__img"><img src="../assets/50ccd.png" style="top:-386.23%" alt="" /></span></span>
+        <span class="sug__content"><span class="sug__label"><b>phone</b> charging cable</span><button class="sug__fill" aria-label="Use “phone charging cable”"><img src="../assets/8e263.svg" alt="" /></button></span>
+      </li>
+      <li class="sug" role="option" data-q="phone charger" data-node-id="920:15432">
+        <span class="sug__thumb stroke"><span class="sug__img"><img src="../assets/50ccd.png" style="top:-507.97%" alt="" /></span></span>
+        <span class="sug__content"><span class="sug__label"><b>phone</b> charger</span><button class="sug__fill" aria-label="Use “phone charger”"><img src="../assets/d1590.svg" alt="" /></button></span>
+      </li>
+      <li class="sug" role="option" data-q="phone" data-node-id="920:15439">
+        <span class="sug__thumb stroke"><span class="sug__img"><img src="../assets/50ccd.png" style="top:-629.71%" alt="" /></span></span>
+        <span class="sug__content"><span class="sug__label"><b>phone</b></span><button class="sug__fill" aria-label="Use “phone”"><img src="../assets/65b20.svg" alt="" /></button></span>
+      </li>
+      <li class="sug" role="option" data-q="phone 256gb" data-node-id="920:15446">
+        <span class="sug__thumb stroke"><span class="sug__img"><img src="../assets/50ccd.png" style="top:-751.45%" alt="" /></span></span>
+        <span class="sug__content"><span class="sug__label"><b>phone</b> 256gb</span><button class="sug__fill" aria-label="Use “phone 256gb”"><img src="../assets/5bb91.svg" alt="" /></button></span>
+      </li>
+      <li class="sug" role="option" data-q="phone fast charger" data-node-id="920:15453">
+        <span class="sug__thumb stroke"><span class="sug__img"><img src="../assets/50ccd.png" style="top:-873.19%" alt="" /></span></span>
+        <span class="sug__content"><span class="sug__label"><b>phone</b> fast charger</span><button class="sug__fill" aria-label="Use “phone fast charger”"><img src="../assets/87121.svg" alt="" /></button></span>
+      </li>
+    </ul>
+  </div>
+  <!-- 912:14437 — header, search bar 343×44 at (16, 49) -->
+  <div class="srch__bar stroke" style="--sw:1px;--sc:rgba(64,69,83,.15)" data-node-id="912:14442">
+    <button class="srch__back" id="searchBack" aria-label="Back" data-node-id="912:14443"><img src="../assets/17190.svg" alt="" /></button>
+    <input class="srch__input" id="searchInput" type="search" enterkeyhint="search" autocomplete="off"
+      placeholder="Search for “Maybelline”" aria-label="Search noon" data-node-id="912:14451" />
+    <span class="srch__div" data-node-id="912:14452"><img src="../assets/1f0fc.svg" alt="" /></span>
+    <button class="srch__cam" aria-label="Search by image" data-node-id="912:14453"><img src="../assets/697c5.svg" alt="" /></button>
+  </div>
+</section>
+<!-- ══ 98:27985 Status Bar (Bars / Status Bar / iPhone / Light 98:29750) — fixed over the whole flow ══ -->
+<div class="sbar" id="sbar" data-node-id="98:29750" aria-hidden="true">
+  <span class="sbar__time" data-node-id="I98:29750;0:4469">9:41</span>
+  <img class="sbar__cell" src="../assets/1ef64.svg" alt="" data-node-id="I98:29750;0:4466" />
+  <img class="sbar__wifi" src="../assets/a2b94.svg" alt="" data-node-id="I98:29750;0:4462" />
+  <span class="sbar__batt" data-node-id="I98:29750;0:4456"><i class="sbar__border"></i><img class="sbar__cap" src="../assets/1b174.svg" alt="" /><i class="sbar__fill"></i></span>
+</div>
+</div>
+
+<!-- Iteration switcher (prototype tool, outside the phone): 1 = /, 2 = /v2/, 3 = /v3/, 4 = /v4/, 5 = /v5/, 6 = /v6/, 7 = /v7/, 8 = /v8/, 9 = /v9/, 10 = /v10/, 11 = /v11/, 12 = /v12/, 13 = /v13/, 14 = /v14/, 15 = /v15/, 16 = /v16/, 17 = /v17/, 18 = /v18/, 19 = /v19/ (separate copies); the page carries data-variant="n" -->
+<nav class="vswitch" id="vswitch" aria-label="Prototype tools">
+  <button class="vswitch__b" data-v="1" aria-pressed="false" aria-label="Iteration 1">1</button>
+  <button class="vswitch__b" data-v="2" aria-pressed="false" aria-label="Iteration 2">2</button>
+  <button class="vswitch__b" data-v="3" aria-pressed="false" aria-label="Iteration 3">3</button>
+  <button class="vswitch__b" data-v="4" aria-pressed="false" aria-label="Iteration 4">4</button>
+  <button class="vswitch__b" data-v="5" aria-pressed="false" aria-label="Iteration 5">5</button>
+  <button class="vswitch__b" data-v="6" aria-pressed="false" aria-label="Iteration 6">6</button>
+  <button class="vswitch__b" data-v="7" aria-pressed="false" aria-label="Iteration 7">7</button>
+  <button class="vswitch__b" data-v="8" aria-pressed="false" aria-label="Iteration 8">8</button>
+  <button class="vswitch__b" data-v="9" aria-pressed="false" aria-label="Iteration 9">9</button>
+  <button class="vswitch__b" data-v="10" aria-pressed="false" aria-label="Iteration 10">10</button>
+  <button class="vswitch__b" data-v="11" aria-pressed="false" aria-label="Iteration 11">11</button>
+  <button class="vswitch__b" data-v="12" aria-pressed="false" aria-label="Iteration 12">12</button>
+  <button class="vswitch__b" data-v="13" aria-pressed="false" aria-label="Iteration 13">13</button>
+  <button class="vswitch__b" data-v="14" aria-pressed="false" aria-label="Iteration 14">14</button>
+  <button class="vswitch__b" data-v="15" aria-pressed="false" aria-label="Iteration 15">15</button>
+  <button class="vswitch__b" data-v="16" aria-pressed="false" aria-label="Iteration 16">16</button>
+  <button class="vswitch__b" data-v="17" aria-pressed="true" aria-label="Iteration 17">17</button>
+  <button class="vswitch__b" data-v="18" aria-pressed="false" aria-label="Iteration 18">18</button>
+  <button class="vswitch__b" data-v="19" aria-pressed="false" aria-label="Iteration 19">19</button>
+  <i class="vswitch__sep" aria-hidden="true"></i>
+  <button class="vswitch__b vswitch__reset" id="vreset" title="Reset the flow" aria-label="Reset the flow — start again from Home"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 10a6.5 6.5 0 1 0 1.9-4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3.8 2.8v3.4h3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+</nav>
+<script src="../assets/suggest-data.js"></script>
+<script src="app.js?v=9c"></script>
+<script type="module" crossorigin src="/gf/assets/index-BT3t0MvO.js"></script>
+<script src="../assets/vnames.js"></script>
+</body>
+</html>

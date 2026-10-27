@@ -1189,3 +1189,8 @@ img.contain { object-fit: contain; }
 .yswitch__b:active { transform: scale(.95); }
 .yswitch__b[aria-pressed="true"] { background: #e33c4d; color: #fff; }
 @media (max-width: 760px) { .yswitch { display: none; } }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }

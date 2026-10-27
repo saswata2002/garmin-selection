@@ -1709,3 +1709,8 @@ td.is-best .gx__dots i.on { background: var(--ink); }
 .pcard__cmp[aria-pressed="true"] .pcard__cmpl { max-width: 80px; margin-left: 5px; opacity: 1; }
 .pcard__cmp[aria-pressed="true"] .pcard__cmpk { display: none; }
 .pcard__cmp[aria-pressed="true"] > svg { display: block; }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }

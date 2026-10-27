@@ -1660,6 +1660,7 @@ const PP = (() => {
      42% as they leave it (continuous with position) and peek in from the panel edges. One readout
      under the slot names the answer and rolls over (out up, in from below) when it changes. */
   const RS = { PITCH: 136, TICK: 8, IND: 171, SHRINK: 0.3, FADE: 0.58, RUBBER: 150, W: 11, Z: 0.96 };
+  window.__roster = { make: (pg, Q, k0) => makeRoster(pg, Q, k0), RS, TV_W, TV_SCR, SCREEN, tvImg };   // iteration 15: the Guide's "Pick a screen" uses this slider too
   const WAVE = { A: 0.43, SIGMA: 17.5, ATTACK: 0.02, HOLD: 50, DECAY: 100, V_MIN: 20 };
   const TINT = { MAX: 0.92, SIGMA: 12, TRAIL: 14, LEAD: 3, V_FULL: 900 };
   function springFn(w, z, x0, v0) {
@@ -1905,7 +1906,7 @@ const PP = (() => {
       e.preventDefault(); goToX(-clampK(sel + (e.key === 'ArrowRight' ? 1 : -1)) * PITCH, 0);
     });
     render(false);
-    return { get k() { return sel; }, stop() { anim = null; cancelAnimationFrame(raf); cancelAnimationFrame(waveRaf); clearTimeout(dotT); } };
+    return { get k() { return sel; }, go(i) { goToX(-clampK(i) * PITCH, 0); }, stop() { anim = null; cancelAnimationFrame(raf); cancelAnimationFrame(waveRaf); clearTimeout(dotT); } };
   }
 
   // one question on the stage; dir 1 = from the right, −1 = from the left, 0 = the first one rising in
@@ -2706,7 +2707,7 @@ const Haptics = (() => {
    the same iteration (a clean reload back to Home). */
 (() => {
   const nav = document.getElementById('vswitch'); if (!nav) return;
-  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/', 11: '/v11/', 12: '/v12/', 13: '/v13/', 14: '/v14/', 15: '/v15/' };
+  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/', 11: '/v11/', 12: '/v12/', 13: '/v13/', 14: '/v14/', 15: '/v15/', 16: '/v16/', 17: '/v17/', 18: '/v18/', 19: '/v19/' };
   const here = document.documentElement.dataset.variant || '1';
   const want = new URLSearchParams(location.search).get('v');
   if (want && PATHS[want] && want !== here) { location.replace(PATHS[want]); return; }
@@ -2822,8 +2823,29 @@ const Haptics = (() => {
     LED: ['screen-any', 'The simplest 4K picture, at the lowest price.', ['Lowest price', 'Light and slim', 'Fine for daytime TV'], 'small rooms'],
   };
   const step = (n, title, sub) => `<header class="gs"><span class="gs__n">${n}</span><div><h3 class="gs__t">${words(title)}</h3><p class="gs__s">${words(sub)}</p></div></header>`;
-  const screenPick = `<div class="gp gx__fade">
-      <div class="gp__seg" role="tablist" aria-label="Screen type"><i class="gp__thumb" aria-hidden="true"></i>${TYPES.map((t, i) => `<button class="gp__b${i ? '' : ' is-on'}" type="button" role="tab" aria-selected="${!i}" data-t="${t}">${t}</button>`).join('')}</div>
+  /* iteration 15: "Pick a screen" is the slider from the TV picker — one TV whose picture wipes from one screen
+     type to the next as you swipe, a coloured glow behind it, the name and what it's best for under it, the
+     tick ruler; the panel under it follows the type you land on. [type, screen picture, glow, signature pulse] */
+  const PICTURE = [['OLED', 'oled', 'rgba(255,90,140,.5)', 'contrast(1.18) saturate(1.06)'], ['Mini LED', 'mini', 'rgba(40,200,205,.55)', 'brightness(1.14)'],
+    ['QLED', 'qled', 'rgba(118,88,255,.55)', 'saturate(1.28)'], ['LED', 'any', 'rgba(242,176,64,.58)', '']];
+  const R = window.__roster;
+  const GQ = R && { key: 'guide', single: 'qled65', screen: true, opts: PICTURE.map(([t, scr, glow, fx]) => [t, t, `Best for ${SCREENS[t][3]}`, [scr, glow, fx]]) };
+  const slider = R ? `<div class="rs gp__rs" role="slider" tabindex="0" aria-label="Pick a screen" aria-description="Swipe through the screen types">
+        <i class="rs__amb" aria-hidden="true">${GQ.opts.map((o) => `<i style="--c:${o[3][1]}"></i>`).join('')}</i>
+        <div class="rsi rsi--single rsi--screen" style="left:${R.RS.IND - R.TV_SCR / 2}px;width:${R.TV_SCR}px"><span class="scr">${R.tvImg([GQ.single, R.TV_SCR / R.TV_W])}
+          <span class="scr__screen" style="left:${R.SCREEN.l}%;top:${R.SCREEN.t}%;width:${R.SCREEN.w}%;height:${R.SCREEN.h}%">${GQ.opts.map((o) => `<i class="scr__l"><b style="background-image:url(../assets/tv/screen-${o[3][0]}.webp)"></b></i>`).join('')}<i class="scr__seam"></i><i class="scr__glare"></i></span></span></div>
+        <div class="rs__read" aria-hidden="true"></div>
+        <div class="rs__ruler"><div class="rs__ticks">${Array.from({ length: (GQ.opts.length - 1) * (R.RS.PITCH / R.RS.TICK) + 1 }, (_, j) =>
+          `<i class="rs__tick${j % (R.RS.PITCH / R.RS.TICK) ? '' : ' rs__tick--mark'}" style="left:${R.RS.IND - 1 + j * R.RS.TICK}px"></i>`).join('')}</div></div>
+        <i class="rs__ind" aria-hidden="true"></i><img class="rs__dot" src="../assets/2a34b.svg" width="4" height="4" alt="" />
+      </div>` : '';
+  /* what's either side: a soft round chevron in each gutter beside the TV (tap to step there), and under the ruler the four sit in a row — the one you're on dark, the rest a tap away */
+  const chev = (d) => `<svg width="16" height="16" viewBox="0 0 12 12" aria-hidden="true"><path d="${d ? 'M4.5 2.5 8 6l-3.5 3.5' : 'M7.5 2.5 4 6l3.5 3.5'}" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const nav = R ? `<button class="gp__peek gp__peek--prev" type="button" aria-label="Previous screen type">${chev(0)}</button>
+      <button class="gp__peek gp__peek--next" type="button" aria-label="Next screen type">${chev(1)}</button>` : '';
+  const idx = R ? `<div class="gp__idx" role="group" aria-label="Screen types">${PICTURE.map(([t], i) => `<button class="gp__ix${i ? '' : ' is-on'}" type="button" data-i="${i}">${t}</button>`).join('')}</div>` : '';
+  const screenPick = `<div class="gp gp--slide gx__fade">
+      <div class="gp__stage">${slider}${nav}</div>${idx}
       <div class="gp__panel" aria-live="polite"></div>
       <button class="gp__cmp" type="button"><svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="5.5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="2.5" width="5.5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>Compare all four side by side</button></div>`;
   page.innerHTML = `
@@ -2841,7 +2863,7 @@ const Haptics = (() => {
         ${usePanel}
       </section>
       <section class="gx__part" data-part="types">
-        ${step(2, 'Pick a screen', 'Four kinds, one at a time.')}
+        ${step(2, 'Pick a screen', 'Swipe, or tap a name, to see each one.')}
         ${screenPick}
       </section>
       <section class="gx__part" data-part="room">
@@ -2851,28 +2873,37 @@ const Haptics = (() => {
       </section>
     </div>`;
   plp.appendChild(page);
-  /* the screen picker: a four-way switch (a white thumb gliding over a grey track) over one panel — the type's
-     picture with a glass "Best for …" tag, one line, three strengths, what it starts at; a switch crossfades it */
-  const gpPanel = page.querySelector('.gp__panel'), gpBtns = [...page.querySelectorAll('.gp__b')], gpThumb = page.querySelector('.gp__thumb');
-  const gpPlace = (b) => { gpThumb.style.width = `${b.offsetWidth}px`; gpThumb.style.transform = `translateX(${b.offsetLeft}px)`; };
+  /* the panel under the slider: one line, three strengths, what the type starts at — swapped (a short crossfade)
+     each time the slider lands on another type */
+  const gpPanel = page.querySelector('.gp__panel');
   function renderScreen(t, anim) {
-    const [img, lead, good, best] = SCREENS[t];
-    gpPanel.innerHTML = `<div class="gp__img" style="background-image:url(${A}${img}.webp)"><span class="gp__tag">Best for ${best}</span></div>
-      <p class="gp__lead">${lead}</p>
+    const [, lead, good] = SCREENS[t];
+    gpPanel.innerHTML = `<p class="gp__lead">${lead}</p>
       <ul class="gp__good">${good.map((g) => `<li>${g}</li>`).join('')}</ul>
       <p class="gp__from"><span>From</span>${priceOf(t)}</p>`;
     if (anim && !reduce.matches) gpPanel.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: 'cubic-bezier(.32,.72,0,1)' });
   }
-  gpBtns.forEach((b) => b.addEventListener('click', () => {
-    if (b.classList.contains('is-on')) return;
-    gpBtns.forEach((x) => { const on = x === b; x.classList.toggle('is-on', on); x.setAttribute('aria-selected', String(on)); });
-    gpPlace(b); renderScreen(b.dataset.t, true);
-    if (typeof Haptics !== 'undefined') Haptics.snap();
-  }));
-  renderScreen(TYPES[0], false);
+  let gpAt = 0;
+  if (R) {
+    const gp = page.querySelector('.gp'), prev = gp.querySelector('.gp__peek--prev'), next = gp.querySelector('.gp__peek--next'), ixs = [...gp.querySelectorAll('.gp__ix')];
+    const paintNav = (k) => {
+      [[prev, k - 1], [next, k + 1]].forEach(([b, j]) => {
+        const has = j >= 0 && j < PICTURE.length;
+        b.classList.toggle('is-off', !has); b.tabIndex = has ? 0 : -1;
+        if (has) b.setAttribute('aria-label', `See ${PICTURE[j][0]}`);
+      });
+      ixs.forEach((b, i) => { b.classList.toggle('is-on', i === k); b.setAttribute('aria-pressed', i === k); });
+    };
+    GQ.onLand = (k) => { paintNav(k); if (k === gpAt) return; gpAt = k; renderScreen(PICTURE[k][0], true); };
+    const ro = R.make(gp, GQ, 0);
+    prev.addEventListener('click', () => ro.go(ro.k - 1));
+    next.addEventListener('click', () => ro.go(ro.k + 1));
+    ixs.forEach((b) => b.addEventListener('click', () => ro.go(+b.dataset.i)));
+    paintNav(0);
+  }
+  renderScreen(PICTURE[0][0], false);
   // iteration 13: the four types side by side, in the compare sheet
   page.querySelector('.gp__cmp').addEventListener('click', () => { if (typeof Haptics !== 'undefined') Haptics.snap(); plp.dispatchEvent(new CustomEvent('compare:types')); });
-  new ResizeObserver(() => { const on = gpBtns.find((x) => x.classList.contains('is-on')); if (on && on.offsetWidth) gpPlace(on); }).observe(page.querySelector('.gp__seg'));
 
   /* the use-case cards: "+" turns a card to its details — the scene dims and slides down, the details rise in
      over it, the "+" turns into an "×"; one card open at a time */
@@ -3209,9 +3240,11 @@ const Haptics = (() => {
     if (!on) { bubble.classList.remove('is-on'); setTimeout(() => { if (!bubble.classList.contains('is-on')) bubble.hidden = true; }, 340); return; }
     bubble.hidden = false;
     bubble.innerHTML = `<div class="cmpb__ph">${picked.map((p) => `<button class="cmpb__it" type="button" data-rm="${p.img}" aria-label="Remove from compare" style="background-image:url(${CDN}${p.img}.jpg?width=120)"><i aria-hidden="true"></i></button>`).join('')}
-        ${n < MAX ? '<span class="cmpb__slot" aria-hidden="true"></span>' : ''}</div>
-      ${n === 0 ? `<span class="cmpb__t">Select up to ${MAX} TVs<small>Tap the TVs to compare</small></span>` : n <= 2 ? `<span class="cmpb__t">${n === 1 ? 'Pick one more' : `${n} selected`}${n === 1 ? '<small>to compare</small>' : ''}</span>` : '<span class="cmpb__t"></span>'}
-      <button class="cmpb__go" type="button"${n < 2 ? ' aria-disabled="true"' : ''}>Compare${n > 1 ? ` ${n}` : ''}</button>`;
+        ${n < 2 ? '<span class="cmpb__slot" aria-hidden="true"></span>' : ''}</div>
+      ${n === 0 ? `<span class="cmpb__t">Select up to ${MAX} TVs<small>Tap the TVs to compare</small></span>` : n === 1 ? '<span class="cmpb__t">Pick one more<small>to compare</small></span>' : '<span class="cmpb__t"></span>'}
+      <button class="cmpb__go" type="button"${n < 2 ? ' aria-disabled="true"' : ''}>Compare</button>
+      <button class="cmpb__x" type="button" aria-label="Done comparing"><svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>`;   // the thumbnails already count them; × leaves compare mode (picks are kept)
+    bubble.querySelector('.cmpb__x').addEventListener('click', () => setMode(false));
     bubble.querySelectorAll('.cmpb__it').forEach((b) => b.addEventListener('click', () => {
       const i = picked.findIndex((x) => x.img === b.dataset.rm); if (i >= 0) picked.splice(i, 1);
       tap(); syncCards(); renderBubble(false);

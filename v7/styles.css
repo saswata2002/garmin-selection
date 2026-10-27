@@ -1124,3 +1124,8 @@ img.contain { object-fit: contain; }
   transition: opacity .2s ease, transform .3s cubic-bezier(.32,.72,0,1); }
 .st__cta:active { transform: scale(.97); }
 .st__sizes:not(.is-shut) .st__cta { opacity: 0; transform: scale(.94); pointer-events: none; }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }

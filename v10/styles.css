@@ -1307,3 +1307,8 @@ img.contain { object-fit: contain; }
 /* the rest: two to a row */
 .hr__grid { margin-top: 14px; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; row-gap: 22px; }
 .ht--grid .ht__img { height: 140px; border-radius: 20px; }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }

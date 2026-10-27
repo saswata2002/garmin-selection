@@ -947,3 +947,8 @@ img.contain { object-fit: contain; }
 /* Android: no backdrop blur behind the near-opaque buttons on Home's scrolling rails (re-blurred every
    frame they scroll; at 64 % / 100 % black the blur is invisible anyway) — see IS_ANDROID in app.js */
 .is-android .vid, .is-android .lc__btn { -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }

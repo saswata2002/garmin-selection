@@ -1194,7 +1194,7 @@ img.contain { object-fit: contain; }
    The TV slider with watches on it: noon's listing photos on white, multiplied into the page so they sit on
    it like cut-outs; the models row under the ruler stays away until a series is tapped or swiped to. */
 .rsi--watch { align-items: center; }
-.rsi__img--watch { width: 112px; height: 112px; object-fit: cover; mix-blend-mode: multiply; filter: brightness(1.06) contrast(1.08) !important; border-radius: 12px; }   /* lifts the photos' off-white to white, so nothing boxes the watch *
+.rsi__img--watch { width: 112px; height: 112px; object-fit: cover; mix-blend-mode: multiply; filter: brightness(1.06) contrast(1.08) !important; border-radius: 12px; }   /* lifts the photos' off-white to white, so nothing boxes the watch */
 .st--garmin .st__models { opacity: 0; transform: translateY(-8px); pointer-events: none; visibility: hidden;
   transition: opacity .32s ease .06s, transform .48s cubic-bezier(.32,.72,0,1) .06s; border-color: #f6f3f3; }
 .st--garmin .st__models.is-in { opacity: 1; transform: none; pointer-events: auto; visibility: visible; }
@@ -1202,3 +1202,30 @@ img.contain { object-fit: contain; }
   overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-behavior: smooth; }
 .st--garmin .st__models .st__track::-webkit-scrollbar { display: none; }
 .st--garmin .st__models .st__pill { flex: none; min-width: 54px; padding: 0 14px; }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }
+
+/* iteration 11: the models as a vertical stack — photo, name, case size + rating, price — one row each;
+   the pick gets the white card with the soft pink outline the size pills use */
+.st--garmin .st__models { height: auto; border-radius: 18px; overflow: hidden; transition: opacity .32s ease .06s, transform .48s cubic-bezier(.32,.72,0,1) .06s, height .45s cubic-bezier(.32,.72,0,1); }
+.st--garmin .st__models .st__track { position: relative; left: 0; width: auto; height: 100%; transform: none; display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 6px; overflow: visible; }
+.gm { display: flex; align-items: center; gap: 12px; height: 60px; flex: none; padding: 0 12px 0 6px; border: 1.5px solid transparent; border-radius: 14px; background: transparent;
+  font: inherit; text-align: left; color: #1d2539; cursor: pointer; -webkit-tap-highlight-color: transparent; box-sizing: border-box;
+  transition: background-color .2s ease, border-color .25s ease, box-shadow .25s ease, transform .18s cubic-bezier(.32,.72,0,1); }
+.gm + .gm { box-shadow: 0 -1px 0 #f4f2f2; }
+.gm:active { transform: scale(.985); }
+.gm__img { flex: none; width: 44px; height: 44px; object-fit: cover; mix-blend-mode: multiply; filter: brightness(1.06) contrast(1.08); }
+.gm__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gm__t b { font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: -0.1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm__t small { font-size: 12px; line-height: 15px; color: #8a91a8; }
+.gm__p { flex: none; font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+.gm.is-sel { background: #fff; border-color: #f4d4d4; box-shadow: 0 1px 2px rgba(29,37,57,.05), 0 3px 8px rgba(29,37,57,.06); }
+.gm.is-sel + .gm { box-shadow: none; }
+/* "Showing results for fēnix 9": heads the results, between the list and the grid */
+.gm__res { position: absolute; left: 4px; margin: 0; font-size: 14px; line-height: 20px; color: #8a91a8; white-space: nowrap; opacity: 0; transform: translateY(4px);
+  transition: opacity .25s ease, transform .4s cubic-bezier(.32,.72,0,1); pointer-events: none; }
+.gm__res b { font-weight: 700; color: #1d2539; }
+.gm__res.is-on { opacity: 1; transform: none; }

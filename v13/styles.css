@@ -1640,3 +1640,8 @@ td.is-best .gx__dots i.on { background: var(--ink); }
 .gp__cmp { margin-top: 16px; display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px; border: 0; border-radius: 10px; background: #f4f4f6; color: var(--ink);
   font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .gp__cmp:active { transform: scale(.97); }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }

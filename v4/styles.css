@@ -1072,3 +1072,8 @@ img.contain { object-fit: contain; }
 .pz__bar i { position: absolute; inset: 0; border-radius: inherit; background: #1d2539; transform: scaleX(0); transform-origin: 0 50%; }
 @media (prefers-reduced-motion: reduce) { .pz__scr b, .pz__sweep { animation: none; } }
 
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }

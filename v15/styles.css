@@ -1670,3 +1670,53 @@ td.is-best .gx__dots i.on { background: var(--ink); }
 .plp.cmp-mode .pcard:active { transform: scale(.98); }
 .plp.cmp-mode .pcard:has(.pcard__cmp[aria-pressed="true"]) { box-shadow: 0 0 0 2px #262a33; border-radius: 10px; }
 @keyframes cmpIn { from { transform: scale(.4); opacity: 0; } }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }
+/* iteration 15: the Guide's "Pick a screen" slider — the TV picker's own, sitting in the step */
+.gp--slide .gp__rs { left: -4px; margin-top: 4px; }
+.gp--slide .gp__panel { margin-top: 6px; }
+.gp--slide .gp__lead { margin-top: 0; }
+/* what's next: neighbour names peek beside the TV; the four types sit in a row under the ruler */
+.gp--slide .gp__stage { position: relative; }
+.gp__peek { position: absolute; top: 36px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+  border: 0; border-radius: 50%; background: rgba(244,244,247,.6); -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
+  color: rgba(29,37,57,.45); cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: opacity .25s ease, color .2s ease, transform .25s cubic-bezier(.32,.72,0,1); }
+.gp__peek:hover { color: rgba(29,37,57,.7); }
+.gp__peek--prev { left: 0; }
+.gp__peek--next { right: 0; }
+.gp__peek.is-off { opacity: 0; pointer-events: none; }
+.gp__peek--prev.is-off { transform: translateX(-6px); }
+.gp__peek--next.is-off { transform: translateX(6px); }
+.gp__peek:active { transform: scale(.95); }
+.gp__idx { display: flex; gap: 4px; margin-top: 10px; padding: 3px; border-radius: 12px; background: #f4f4f7; }
+.gp__ix { flex: 1; display: grid; place-items: center; padding: 0; text-align: center; height: 30px; border: 0; border-radius: 9px; background: transparent; font-family: inherit; font-size: 13px; font-weight: 500; line-height: 1; color: #8a91a8; cursor: pointer;
+  transition: background .25s ease, color .25s ease, box-shadow .25s ease; }
+.gp__ix.is-on { background: #fff; color: #1d2539; font-weight: 600; box-shadow: 0 1px 3px rgba(29,37,57,.08); }
+.gp--slide .gp__panel { margin-top: 14px; }
+/* iteration 15: compare mode lives at the bottom — Browse / Guide and the mic step away, and the tray takes
+   their place, in one row beside Done (same 46px glass height); out of compare mode the tray is put away and
+   the Compare button's count says what's picked */
+.mode, .gmic { transition: opacity .25s ease, transform .4s cubic-bezier(.32,.72,0,1); }
+.plp.cmp-mode .mode { opacity: 0; transform: translateY(12px); pointer-events: none; }
+.plp.cmp-mode .gmic { opacity: 0; transform: translateY(12px) scale(.9); pointer-events: none; }
+.cmpb { top: auto; bottom: 28px; left: 16px; right: 101px; height: 46px; padding: 0 5px 0 6px; gap: 8px; border-radius: 23px; transform: translateY(14px) scale(.98); }
+.plp:not(.cmp-mode) .cmpb { opacity: 0; transform: translateY(14px) scale(.98); pointer-events: none; }
+.cmpb__ph { gap: 5px; }
+.cmpb__it, .cmpb__slot { width: 34px; height: 34px; border-radius: 17px; }
+.cmpb__t { font-size: 13px; line-height: 16px; }
+.cmpb__t small { font-size: 11px; line-height: 13px; }
+.cmpb__go { height: 36px; padding: 0 14px; border-radius: 18px; font-size: 13px; }
+.cmpb__go[aria-disabled="true"] { display: none; }
+/* the tray carries its own close: Done steps away in compare mode and the tray runs the full width,
+   Compare then × at the end (both 36px, 6px apart) */
+.cmpm { transition: padding .4s cubic-bezier(.32,.72,0,1), background-color .25s ease, color .25s ease, opacity .2s ease, transform .3s cubic-bezier(.32,.72,0,1); }
+.plp.cmp-mode .cmpm { opacity: 0; transform: scale(.85); pointer-events: none; }
+.cmpb { right: 16px; padding: 0 5px 0 6px; gap: 6px; }
+.cmpb__t { margin-left: 2px; }
+.cmpb__x { flex: none; display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: rgba(29,29,31,.07); color: #1d1d1f; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: background-color .2s ease, transform .18s cubic-bezier(.32,.72,0,1); }
+.cmpb__x:active { transform: scale(.92); background: rgba(29,29,31,.12); }

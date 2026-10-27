@@ -1511,3 +1511,8 @@ td.is-best .gx__dots i.on { background: var(--ink); }
 .gx__sk-row { display: grid; grid-template-columns: 86px repeat(4, 1fr); align-items: center; gap: 4px; margin: 0 20px; height: 44px; border-bottom: 1px solid #f3f3f5; }
 .gx__sk-row b { width: 60px; height: 10px; border-radius: 5px; }
 .gx__sk-row i { width: 46px; height: 6px; margin: 0 auto; border-radius: 3px; }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }

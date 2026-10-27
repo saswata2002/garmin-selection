@@ -2464,24 +2464,33 @@ const PP = (() => {
         <div class="rs__ruler"><div class="rs__ticks">${ticks}</div></div>
         <i class="rs__ind" aria-hidden="true"></i><img class="rs__dot" src="../assets/2a34b.svg" width="4" height="4" alt="" />
       </div></div>
-      <div class="st__sizes st__models is-on" aria-hidden="true"><div class="st__track" role="radiogroup" aria-label="Model"></div></div>`;
+      <div class="st__sizes st__models is-on" aria-hidden="true"><div class="st__track" role="radiogroup" aria-label="Model"></div></div>
+      <p class="gm__res" aria-live="polite"></p>`;
     st = { Q, rs: story.querySelector('.rs'), title: story.querySelector('.st__title'), sizes: story.querySelector('.st__models'), track: story.querySelector('.st__models .st__track'),
-      pills: [], series: null, model: null, open: false, landT: 0, garmin: true };
+      pills: [], series: null, model: null, open: false, landT: 0, garmin: true, res: story.querySelector('.gm__res') };
     st.roster = makeRoster(story, Q, 0);
     PP.commit(story, [story.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 360, delay: 60, easing: EASE_OUT, fill: 'both' })], { opacity: 1, transform: '' });
   }
-  // the models row: in under the ruler the first time (the grid riding down), then rebuilt per series
+  /* the models: a vertical stack under the ruler — one row per model with its noon photo, the name, case size
+     and rating, and the price on the right — in the first time with the grid riding down to make room, then
+     rebuilt per series (the grid follows the list's height) */
+  const G_ROW = 60, G_PAD = 6;
+  const gListH = (n) => n * G_ROW + G_PAD * 2;
   function garminRow(k) {
     const series = G_SERIES[k][0], ms = gModels(series);
-    st.track.innerHTML = `<i class="st__thumb" aria-hidden="true"></i>${ms.map((g, i) => `<button class="st__pill" type="button" role="radio" aria-checked="false" data-i="${i}" aria-label="${series} ${g[1]}">${g[1]}</button>`).join('')}`;
-    st.pills = [...st.track.querySelectorAll('.st__pill')];
+    st.track.innerHTML = ms.map((g, i) => `<button class="gm" type="button" role="radio" aria-checked="false" data-i="${i}" aria-label="${series} ${g[1]}, ${money(g[3])}">
+        <img class="gm__img" src="${gImg(g)}" width="44" height="44" alt="" decoding="async" />
+        <span class="gm__t"><b>${series} ${g[1]}</b><small>${g[2]} mm${g[4] ? ` · ★ ${g[4].toFixed(1)}` : ''}</small></span>
+        <span class="gm__p">${money(g[3])}</span></button>`).join('');
+    if (st.res) st.res.classList.remove('is-on');
+    st.pills = [...st.track.querySelectorAll('.gm')];
     st.pills.forEach((b, i) => b.addEventListener('click', () => garminPick(k, ms[i], i)));
-    st.track.scrollLeft = 0;
-    if (!reduce11()) st.pills.forEach((b, j) => b.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 300, delay: 40 + j * 30, easing: EASE_OUT, fill: 'backwards' }));
-    if (!st.open) {
-      st.open = true; st.sizes.classList.add('is-in'); st.sizes.setAttribute('aria-hidden', 'false');
-      pushGrid(G.H0, G.H1, (el, a, b, fmt) => springAnim(el, a, b, fmt, spr(0.45, 0.92)));
-    }
+    if (!reduce11()) st.pills.forEach((b, j) => b.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 320, delay: 40 + j * 35, easing: EASE_OUT, fill: 'backwards' }));
+    const h = gListH(ms.length), from = st.gh || G.H0, to = G.H0 + h + 20;
+    st.sizes.style.height = h + 'px';
+    if (!st.open) { st.open = true; st.sizes.classList.add('is-in'); st.sizes.setAttribute('aria-hidden', 'false'); }
+    if (to !== from) pushGrid(from, to, (el, a, b, fmt) => springAnim(el, a, b, fmt, spr(0.45, 0.92)));
+    st.gh = to;
   }
   const reduce11 = () => PP.reduce.matches;
   // the readout under the slot: the series and its idea, or the picked model, its price and case size
@@ -2516,16 +2525,28 @@ const PP = (() => {
     Haptics.snap();
     plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: G_SERIES[k][0] } }));
   }
+  /* a pick keeps the list as it is (the row lights up) and the grid under it swaps to that model, with
+     "Showing results for fēnix 9" heading the results — the grid steps down a line to make room for it */
+  const G_RES = 34;
+  function garminRes(k, g) {
+    const el = st.res, h = gListH(gModels(G_SERIES[k][0]).length);
+    el.style.top = (316 + h + 14) + 'px';
+    if (g) el.innerHTML = `Showing results for <b>${G_SERIES[k][0]} ${g[1]}</b>`;
+    const was = el.classList.contains('is-on');
+    el.classList.toggle('is-on', !!g);
+    if (g && was && !reduce11()) el.animate([{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: EASE_OUT });
+    const to = G.H0 + h + 20 + (g ? G_RES : 0);
+    if (to !== st.gh) { pushGrid(st.gh, to, (el2, a, b, fmt) => springAnim(el2, a, b, fmt, spr(0.45, 0.92))); st.gh = to; }
+  }
   function garminPick(k, g, i) {
     if (!st || st.series !== k) return;
     const same = st.model === g[1];
     st.model = same ? null : g[1];
-    selectPill(same ? -1 : i, st.pills);
-    if (!same) { const b = st.pills[i], tr = st.track;   // centre the pick in its row — the row only (scrollIntoView would also scroll the page)
-      tr.scrollTo({ left: Math.max(0, b.offsetLeft - (tr.clientWidth - b.offsetWidth) / 2), behavior: reduce11() ? 'auto' : 'smooth' }); }
+    st.pills.forEach((b, j) => { const on = !same && j === i; b.classList.toggle('is-sel', on); b.setAttribute('aria-checked', String(on)); });
     Haptics.snap();
     garminLabel(k, same ? null : g);
     garminPhoto(k, same ? gImg(gFind(G_SERIES[k][2])) : gImg(g));
+    garminRes(k, same ? null : g);
     plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: G_SERIES[k][0], model: same ? null : g[1] } }));
   }
 
@@ -2816,7 +2837,7 @@ const Haptics = (() => {
    the same iteration (a clean reload back to Home). */
 (() => {
   const nav = document.getElementById('vswitch'); if (!nav) return;
-  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/', 11: '/v11/', 12: '/v12/', 13: '/v13/', 14: '/v14/', 15: '/v15/' };
+  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/', 11: '/v11/', 12: '/v12/', 13: '/v13/', 14: '/v14/', 15: '/v15/', 16: '/v16/', 17: '/v17/', 18: '/v18/', 19: '/v19/' };
   const here = document.documentElement.dataset.variant || '1';
   const want = new URLSearchParams(location.search).get('v');
   if (want && PATHS[want] && want !== here) { location.replace(PATHS[want]); return; }

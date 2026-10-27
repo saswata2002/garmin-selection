@@ -1107,3 +1107,8 @@ img.contain { object-fit: contain; }
 .st .rs__ruler { top: 192px; }
 .st .rs__ind { top: 199px; }
 .st .rs__dot { top: 192px; }
+
+/* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
+.vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
+.vswitch::-webkit-scrollbar { display: none; }
+.vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }
