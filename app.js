@@ -3519,22 +3519,45 @@ const PP = (() => {
     });
     later(560, () => { gBusy = false; });
   }
+  /* the collapsed bar only once the widget has scrolled away (user request): scrolling, the widget simply scrolls
+     up with the page; when its last line has passed under the header, the "Find your Garmin" bar slides in just
+     below the header, and it leaves as soon as the widget comes back into view. It hangs from the chips row, so
+     it rides up and down with the header's own hide-on-scroll; Edit glides the page back to the widget. */
+  const gpeek = node(`<div class="gpeek" aria-hidden="true"><div class="gpeek__bar"></div></div>`);
+  gpeek.firstElementChild.appendChild(gqd.cloneNode(true));
+  plp.querySelector('.plp__tags').appendChild(gpeek);
+  const gpeekSub = gpeek.querySelector('.qd__s');
+  let gPeeked = false;
+  function gPeek(on, instant) {
+    if (gPeeked === on) return;
+    gPeeked = on;
+    gpeek.setAttribute('aria-hidden', String(!on)); gpeek.classList.toggle('is-on', on);
+    if (on && st) { const [n, tag] = G_SERIES[st.at], g = st.pick >= 0 ? gModels(n)[st.pick] : null; gpeekSub.textContent = g ? `${n} ${g[1]} · ${money(g[3])}` : `${n} · ${tag}`; }
+    gpeek.getAnimations().forEach((a) => a.cancel());
+    if (instant || reduce11()) { gpeek.style.opacity = on ? 1 : 0; return; }
+    PP.commit(gpeek, [gpeek.animate(on ? [{ opacity: 0, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'none' }] : [{ opacity: 1 }, { opacity: 0 }],
+      { duration: on ? 260 : 160, easing: on ? 'cubic-bezier(.33,1,.68,1)' : 'cubic-bezier(.65,0,.35,1)', fill: 'both' })], { opacity: on ? 1 : 0, transform: '' });
+  }
   function gFoldReset() {
     gFolded = gBusy = gNavHidden = false; gLastY = 0; gTravel = 0;
     box.classList.remove('is-done');
     gqd.getAnimations().forEach((a) => a.cancel()); gqd.style.opacity = '';
+    gPeek(false, true);
   }
   onTap(gqd, '.qd__edit', () => {
     gUnfold();
     glide(gScrollEl, 0, { axis: 'y', ms: 480 });
   });
+  onTap(gpeek, '.qd__edit', () => glide(gScrollEl, 0, { axis: 'y', ms: 520 }));
   gScrollEl.addEventListener('scroll', () => {
     const y = gScrollEl.scrollTop, d = y - gLastY; gLastY = y;
     if (catKey !== 'garmin' || !plp.classList.contains('is-open') || plp.classList.contains('is-loading')) return;
     gTravel = Math.sign(d) === Math.sign(gTravel) ? gTravel + d : d;
-    if (gTravel > 6 && y > 10) { gSetNav(true); gFold(); }
+    if (gTravel > 6 && y > 10) gSetNav(true);
     else if (gTravel < -6) gSetNav(false);
-    if (y <= 2 && gFolded) gUnfold();
+    // gone = the widget's last line (the box less the gap to the products) is above the header's bottom edge
+    const gone = box.classList.contains('is-story') && box.getBoundingClientRect().bottom - G.GAP2 <= gpeek.getBoundingClientRect().top + 1;
+    gPeek(gone);
   }, { passive: true });
 
   function resetStory() {

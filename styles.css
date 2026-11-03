@@ -1896,3 +1896,11 @@ img.contain { object-fit: contain; }
 /* the picked tile's arch is clipped with clip-path, not overflow + border-radius: WebKit drops a rounded overflow
    clip for children on their own layer (the photo's lift is animated), and the glow then showed as a blurred box */
 .st--garmin .m9__v { clip-path: inset(0 round 9999px 9999px 16px 16px); }
+
+/* the collapsed "Find your Garmin" bar (app.js gpeek): hangs from the chips row (so it rides with the header's
+   hide-on-scroll) on a white band, shown only once the widget has scrolled away */
+.gpeek { position: absolute; left: 0; top: 100%; width: 375px; padding: 1px 12px 8px; box-sizing: border-box; background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,.1); opacity: 0; pointer-events: none; }
+.gpeek.is-on { pointer-events: auto; }
+.gpeek__bar { position: relative; height: 64px; border-radius: 16px; background: #f7f8fa; }
+.gpeek .qd { opacity: 1; pointer-events: auto; }
