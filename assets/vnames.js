@@ -8,8 +8,8 @@
     // [card, search to type in the prototype to reach it, rows]
     ['3 tier', 'tv', [[8, '3 tier filter'], [18, 'Progressive filters'], [20, 'Parallel Filters'], [22, 'Progressive Parallel Filters']]],
     ['Guide', 'tv', [[9, '3 tier to guide']]],
-    ['Garmin', 'garmin', [[11, 'Garmin vertical'], [19, 'Garmin layers']]],
-    ['Compare', 'tv', [[13, 'Compare'], [14, 'Compare dock'], [15, 'Compare mode'], [21, 'Parallel Filters + Compare']]],
+    ['Garmin', 'garmin', [[11, 'Garmin vertical'], [19, 'Garmin layers'], [28, 'Garmin layers, interactive'], [29, 'Garmin bezel dial'], [30, 'Garmin hold & slide'], [26, 'Garmin model chips'], [31, 'Model chips + Guide & Compare'], [32, 'Big model cards + Guide & Compare'], [33, 'Big view (lookbook sheet)'], [34, 'Lookbook on the page'], [35, 'Lookbook, tighter top'], [36, 'Lookbook + series story sheet'], [37, 'Models on request (pills + 2-row)'], [38, 'No default pick (types → pills)'], [39, 'Line-up in place (Figma 625:57651)'], [40, 'Line-up, stays as pills once picked'], [41, 'Line-up via "See all models"'], [42, 'Line-up, cleaner (no line-up link)'], [43, 'Cleaner + what the series is'], [27, 'Garmin series tabs']]],
+    ['Compare', 'tv', [[13, 'Compare'], [14, 'Compare dock'], [15, 'Compare mode'], [25, 'Compare mode + spotlight'], [21, 'Parallel Filters + Compare']]],
     // a row can carry its own search when the card's rows differ
     ['Compare upsell', '', [[23, 'Previously bought → compare', 'headphones · garmin'], [24, 'Tell us your current model', 'headphones · garmin']]],
   ];

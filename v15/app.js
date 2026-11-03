@@ -2707,7 +2707,7 @@ const Haptics = (() => {
    the same iteration (a clean reload back to Home). */
 (() => {
   const nav = document.getElementById('vswitch'); if (!nav) return;
-  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/', 11: '/v11/', 12: '/v12/', 13: '/v13/', 14: '/v14/', 15: '/v15/', 16: '/v16/', 17: '/v17/', 18: '/v18/', 19: '/v19/', 20: '/v20/', 21: '/v21/', 22: '/v22/', 23: '/v23/', 24: '/v24/' };
+  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/', 11: '/v11/', 12: '/v12/', 13: '/v13/', 14: '/v14/', 15: '/v15/', 16: '/v16/', 17: '/v17/', 18: '/v18/', 19: '/v19/', 20: '/v20/', 21: '/v21/', 22: '/v22/', 23: '/v23/', 24: '/v24/', 25: '/v25/', 26: '/v26/', 27: '/v27/', 28: '/v28/', 29: '/v29/', 30: '/v30/', 31: '/v31/', 32: '/v32/', 33: '/v33/', 34: '/v34/', 35: '/v35/', 36: '/v36/', 37: '/v37/', 38: '/v38/', 39: '/v39/', 40: '/v40/', 41: '/v41/', 42: '/v42/', 43: '/v43/' };
   const here = document.documentElement.dataset.variant || '1';
   const want = new URLSearchParams(location.search).get('v');
   if (want && PATHS[want] && want !== here) { location.replace(PATHS[want]); return; }
@@ -3261,7 +3261,7 @@ const Haptics = (() => {
      Browse first. */
   const modeBtn = document.createElement('button');
   modeBtn.className = 'cmpm'; modeBtn.type = 'button'; modeBtn.hidden = true;
-  modeBtn.innerHTML = `<svg class="cmpm__ic" width="20" height="20" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="5.5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2.5" width="5.5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><span class="cmpm__done">Done</span><b class="cmpm__n" aria-hidden="true"></b>`;
+  modeBtn.innerHTML = `<svg class="cmpm__ic" width="20" height="20" viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="2.5" width="5.5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2.5" width="5.5" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><span class="cmpm__lbl">Compare</span><span class="cmpm__done">Done</span><b class="cmpm__n" aria-hidden="true"></b>`;
   plp.appendChild(modeBtn);
   function renderModeBtn() {
     const n = picked.length;
@@ -3280,6 +3280,21 @@ const Haptics = (() => {
     if (on && !picked.length) hint('Tap TVs to add them');
   }
   modeBtn.addEventListener('click', () => setMode(!cmpMode));
+
+  // "new here": a light runs round the Browse / Guide toggle and the Compare button when TV results land,
+  // then settles (styles.css .nf); a tap on either ends it early. Plays again on each new search.
+  [plp.querySelector('.mode'), modeBtn].forEach((el) => {
+    if (el) el.insertAdjacentHTML('beforeend', '<i class="nf" aria-hidden="true"><i class="nf__glow"></i><i class="nf__ring"></i></i>');
+  });
+  let nfPlayed = false, nfT = 0;
+  const nfEnd = () => { clearTimeout(nfT); if (plp.classList.contains('nf-go')) plp.classList.add('nf-done'); };
+  new MutationObserver(() => {
+    const c = plp.classList, ready = c.contains('is-open') && !c.contains('is-loading') && c.contains('is-tv');
+    if (!c.contains('is-open')) { nfPlayed = false; clearTimeout(nfT); if (c.contains('nf-go') || c.contains('nf-done')) c.remove('nf-go', 'nf-done'); return; }
+    if (ready && !nfPlayed) { nfPlayed = true; nfT = setTimeout(() => { c.add('nf-go'); nfT = setTimeout(() => c.add('nf-done'), 2800); }, 900); }
+  }).observe(plp, { attributes: true, attributeFilter: ['class'] });
+  plp.querySelectorAll('.mode__b').forEach((b) => b.addEventListener('click', nfEnd));
+  modeBtn.addEventListener('click', nfEnd);
 
   // the sheet
   const dim = document.createElement('div'); dim.className = 'cms__dim'; dim.hidden = true;

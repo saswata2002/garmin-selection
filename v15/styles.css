@@ -1723,3 +1723,31 @@ td.is-best .gx__dots i.on { background: var(--ink); }
 
 /* the Year UI chooser beside the phone is retired — the year row is always the stepper */
 .yswitch { display: none !important; }
+
+/* "new here": when the TV results first land, a soft graphite light makes two smooth laps round the edge of the
+   Browse / Guide toggle and the Compare button, eases to a stop and fades (~2.8s in all). Tapping either one
+   during it ends it early. It plays again on every new search. */
+@property --nf-a { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+.nf { --nf-ink: 29,29,31; position: absolute; inset: -2px; border-radius: 28px; pointer-events: none; z-index: 3; opacity: 0; }
+.cmpm .nf { border-radius: 25px; }
+.nf__ring, .nf__glow { position: absolute; inset: 0; border-radius: inherit;
+  background: conic-gradient(from var(--nf-a), rgba(var(--nf-ink),0) 0deg, rgba(var(--nf-ink),0) 150deg,
+    rgba(var(--nf-ink),.12) 220deg, rgba(var(--nf-ink),.5) 320deg, rgba(var(--nf-ink),.9) 354deg, rgba(var(--nf-ink),0) 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.nf__ring { padding: 2px; }
+.nf__glow { inset: -4px; padding: 6px; filter: blur(6px); opacity: .35; }
+.plp.nf-go .nf { animation: nf-life 2.8s ease forwards; }
+.plp.nf-go .nf__ring, .plp.nf-go .nf__glow { animation: nf-spin 2.6s cubic-bezier(.37,0,.63,1) forwards; }   /* one lap, sine in-out: even speed, soft start and stop */
+.plp.nf-go .cmpm .nf__ring, .plp.nf-go .cmpm .nf__glow { animation-delay: .15s; }
+.plp.nf-done .nf { animation: none; opacity: 0; transition: opacity .25s ease; }
+@keyframes nf-spin { from { --nf-a: 0deg; } to { --nf-a: 360deg; } }
+@keyframes nf-life { 0% { opacity: 0; } 10% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .plp.nf-go .nf__ring, .plp.nf-go .nf__glow { animation: none; } }
+
+/* Compare introduces itself: while the light runs the button opens into an "icon + Compare" pill, then folds
+   back to the icon as the light fades, so the icon carries the word from then on */
+.cmpm__lbl { max-width: 0; overflow: hidden; opacity: 0; font-size: 15px; font-weight: 600; white-space: nowrap;
+  transition: max-width .55s cubic-bezier(.32,.72,0,1), margin .55s cubic-bezier(.32,.72,0,1), opacity .25s ease; }
+.plp.nf-go:not(.nf-done) .cmpm:not(.is-active) { padding: 0 16px 0 13px; }
+.plp.nf-go:not(.nf-done) .cmpm:not(.is-active) .cmpm__lbl { max-width: 80px; margin-left: 6px; opacity: 1; transition-delay: .05s, .05s, .15s; }
