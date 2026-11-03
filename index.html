@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#dcf0ff" />
 <title>noon — Home</title>
 <link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="switcher.css">
 </head>
 <body>
 
@@ -55,11 +56,12 @@
     <!-- ══ Legacy→new PLP (XzSbnjrYFbhNg6Rc5lKmGJ 82:16426) — marketplace tabs 82:17411 ══ -->
     <nav class="plp__mps gfmp" aria-label="Marketplaces">
       <div class="mps__row hscroll">
-        <button class="mp is-on" aria-current="true"><span class="mp__logo"><img src="assets/gf/mp-noon.png" width="105" height="24" alt="noon" /></span><span class="mp__name">Wide assortment</span></button>
-        <button class="mp"><span class="mp__logo"><span class="gfmp__pill gfmp__pill--sm"><img src="assets/gf/mp-sm-mall.svg" width="32" height="10" alt="" /><img src="assets/gf/mp-sm-super.svg" width="22" height="9" alt="supermall" /></span></span><span class="mp__name">Direct from brands</span></button>
-        <button class="mp"><span class="mp__logo"><img src="assets/gf/mp-express.svg" width="67" height="20" alt="express" /></span><span class="mp__name">Get Everything</span></button>
-        <button class="mp"><span class="mp__logo"><span class="gfmp__pill gfmp__pill--global"><img src="assets/gf/mp-global.svg" width="50" height="14" alt="Global" /></span></span><span class="mp__name">Sourced Globally</span></button>
-        <button class="mp"><span class="mp__logo"><span class="gfmp__pill gfmp__pill--min"><img src="assets/gf/mp-minutes.svg" width="51" height="7" alt="15 minutes" /></span></span><span class="mp__name">Groceries &amp; more</span></button>
+        <!-- Figma PLP 709:31298: five 96px marketplaces 12 apart, each its mark over a ticking two-line label -->
+        <button class="mp is-on" aria-current="true" style="--i:0"><span class="mp__logo"><img class="mp__noon" src="assets/gf/mpf-noon.svg" width="53" height="18" alt="noon" /></span><span class="mp__sub"><span class="mp__tick mp__tick--noon"><i>Everything on noon</i><i>in one place</i><i>Everything on noon</i></span></span></button>
+        <button class="mp" style="--i:1"><span class="mp__logo"><span class="mp__sm"><span class="mp__smIn"><img src="assets/gf/mpf-sm-a.svg" width="34" height="10" alt="" style="left:0;top:2.7px;width:33.629px;height:10.194px" /><img src="assets/gf/mpf-sm-b.svg" width="24" height="10" alt="supermall" style="left:34.36px;top:0;width:23.83px;height:10.113px" /></span></span></span><span class="mp__sub"><span class="mp__tick mp__tick--sm"><i>Direct from brands</i><i>in 60 Mins</i><i>Direct from brands</i></span></span></button>
+        <button class="mp" style="--i:2"><span class="mp__logo"><img class="mp__express" src="assets/gf/mpf-express.svg" width="64" height="19" alt="express" /></span><span class="mp__sub"><span class="mp__tick mp__tick--express"><i>Get Everything</i><i>in 1-2 days</i><i>Get Everything</i></span></span></button>
+        <button class="mp" style="--i:3"><span class="mp__logo"><span class="mp__min"><img src="assets/gf/mpf-minutes.png" width="73" height="17" alt="15 minutes" /></span></span><span class="mp__sub"><span class="mp__tick mp__tick--min"><i>Groceries &amp; more</i><i>in ⚡️15 Mins</i><i>Groceries &amp; more</i></span></span></button>
+        <button class="mp" style="--i:4"><span class="mp__logo"><span class="mp__global"><img src="assets/gf/mpf-global.svg" width="19" height="18" alt="" /><b>Global</b></span></span><span class="mp__sub"><span class="mp__tick mp__tick--global"><i>Sourced Globally</i><i>Priced Locally</i><i>Sourced Globally</i></span></span></button>
         <i class="mps__tab" aria-hidden="true"></i>
       </div>
     </nav>
@@ -144,13 +146,14 @@
 </div>
 </div>
 
-<!-- Iteration switcher (prototype tool, outside the phone): the project now carries one iteration, 1 = / (formerly /v43/, "Cleaner + what the series is"); the page carries data-variant="1" -->
-<nav class="vswitch" id="vswitch" aria-label="Prototype tools">
-  <button class="vswitch__b" data-v="1" aria-pressed="true" aria-label="Iteration 1">1</button>
+<nav class="vswitch" id="vswitch" aria-label="Design variations">
+  <button class="vswitch__b" data-v="1" aria-pressed="true">1</button>
   <i class="vswitch__sep" aria-hidden="true"></i>
-  <button class="vswitch__b vswitch__reset" id="vreset" title="Reset the flow" aria-label="Reset the flow — start again from Home"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 10a6.5 6.5 0 1 0 1.9-4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3.8 2.8v3.4h3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <button class="vswitch__b vswitch__reset vswitch__tip" id="vreset" data-tip="Reset" aria-label="Reset the flow — start again from the top"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 10a6.5 6.5 0 1 0 1.9-4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3.8 2.8v3.4h3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 </nav>
 <!-- Iteration 8 only: which UI the "model year" filter uses (prototype tool, beside the phone; remembered per browser, or ?yui=) -->
+<!-- prototype tool, right of the phone: what to type in the prototype's search to reach this flow -->
+<aside class="qhint" aria-label="Prototype search query"><span class="qhint__l">Search query</span><b class="qhint__q">garmin</b></aside>
 <nav class="yswitch" id="yswitch" aria-label="Year filter UI">
   <span class="yswitch__h">Year UI</span>
   <button class="yswitch__b" type="button" data-yui="pills" aria-pressed="false">Pills</button>
@@ -160,12 +163,16 @@
 </nav>
 <script src="assets/suggest-data.js"></script>
 <script src="app.js"></script>
-<script src="assets/vnames.js"></script>
 <script>/* phones: the prototype is drawn at 375×812 — scale it to the phone's width so it fills the screen exactly
    (no white strip on wider phones, nothing running past the bottom bar on taller ones) */
 (function fitPhone(){ function fit(){ var s=document.getElementById('screen'); if(!s) return; var w=innerWidth;
   if (w > 520) { s.style.width=''; s.style.height=''; s.style.transform=''; document.body.style.overflow=''; return; }
   var k=w/375; s.style.width='375px'; s.style.height=(innerHeight/k)+'px'; s.style.transform='scale('+k+')'; s.style.transformOrigin='0 0'; document.body.style.overflow='hidden'; }
   addEventListener('resize', fit); fit(); })();</script>
+<script src="switcher.js"></script>
+<script>/* iteration 1's search query: a pill 8px left of its "1", centred on it */
+(function pinQuery(){ var q=document.querySelector('.qhint'), v=document.getElementById('vswitch'), b=v && v.querySelector('.vswitch__b[data-v="1"]'); if(!q||!b) return;
+  function pin(){ var r=b.getBoundingClientRect(), n=v.getBoundingClientRect(); if(!r.height) return; q.style.top=(r.top+r.height/2)+'px'; q.style.left=(n.left-8)+'px'; }
+  addEventListener('resize', pin); pin(); })();</script>
 </body>
 </html>

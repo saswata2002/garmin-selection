@@ -3,6 +3,9 @@
    motion keeps its timing and curves but drops the blur (transform + opacity only); html.is-android
    switches the CSS backdrop blurs off. Nothing changes on iPhone or desktop. */
 const IS_ANDROID = /Android/i.test(navigator.userAgent);
+// iOS (and Safari on the Mac) rubber-band their own scroll views; elsewhere the line-up's rows get one in JS
+const NATIVE_BAND = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  || /^((?!chrome|chromium|crios|android|edg).)*safari/i.test(navigator.userAgent);
 if (IS_ANDROID) document.documentElement.classList.add('is-android');
 /* noon Home — rails are data; everything else is static markup. */
 (() => {
@@ -1003,7 +1006,15 @@ const PP = (() => {
   const gp = ([, , , price, rating, title, img, local]) => ({ sku: '', best: false, img, photo: `assets/garmin/${local}-card.jpg`, title, rating, reviews: 0, price: price.toLocaleString('en-US'), offers: 1, low: 'Lowest price in 30 days' });
   const GARMIN_LISTS = { all: ['Forerunner|165', 'fēnix|8', 'Venu|3', 'Instinct|2 Solar', 'Forerunner|265', 'vívoactive|5', 'Lily|2', 'Forerunner|965']
     .map((k) => GARMIN.find((g) => `${g[0]}|${g[1]}` === k)).map(gp) };
-  GARMIN.forEach((g) => { (GARMIN_LISTS[`s:${g[0]}`] = GARMIN_LISTS[`s:${g[0]}`] || []).push(gp(g)); GARMIN_LISTS[`m:${g[0]} ${g[1]}`] = [gp(g)]; });
+  GARMIN.forEach((g) => { (GARMIN_LISTS[`s:${g[0]}`] = GARMIN_LISTS[`s:${g[0]}`] || []).push(gp(g)); });
+  // a picked model leads its results, never a list of one: the rest of its series follows (closest in price
+  // first), topped up from the other series to at least four watches when the series is small
+  const gPrice = (g) => Number(String(g[3]).replace(/,/g, ''));
+  GARMIN.forEach((g) => {
+    const near = (a, b) => Math.abs(gPrice(a) - gPrice(g)) - Math.abs(gPrice(b) - gPrice(g));
+    const same = GARMIN.filter((x) => x !== g && x[0] === g[0]).sort(near), other = GARMIN.filter((x) => x[0] !== g[0]).sort(near);
+    GARMIN_LISTS[`m:${g[0]} ${g[1]}`] = [g, ...same, ...other].slice(0, Math.min(8, Math.max(4, same.length + 1))).map(gp);
+  });
   window.NOON_GARMIN = GARMIN;   // the lineup picker reads the same data
   // the page's category follows the query that opened it; LISTS is the current one
   const CATS = { phone: PHONE_LISTS, fitness: FIT_LISTS, tv: TV_LISTS, garmin: GARMIN_LISTS };
@@ -2490,7 +2501,7 @@ const PP = (() => {
      Swiping to another series resets the pills to its own models. */
   const G_SERIES = [['Forerunner', 'For runners', 'Forerunner|965'], ['fēnix', 'Adventure & multisport', 'fēnix|8'], ['Venu', 'Everyday health & style', 'Venu|3'],
     ['Instinct', 'Rugged & outdoor', 'Instinct|2X Solar'], ['vívoactive', 'Fitness all-rounder', 'vívoactive|5'], ['Lily', 'Small & elegant', 'Lily|2']];
-  const G = { H0: 318, H1: 384, PITCH: 152, GAP: 22 };   // GAP: the widget's card bottom → the first product row (Figma PLP 691:31072)
+  const G = { H0: 318, H1: 384, PITCH: 152, GAP: 16, GAP2: 28 };   // GAP2: the line-up's card → the products (Figma PLP 709:31281)   // GAP: the widget's card bottom → the first product row (Figma PLP 707:30165)
   // the framed copy of noon's hero photo: every watch centred at one size on white (assets/garmin/)
   const gImg = (g) => `assets/garmin/${g[7]}.jpg`;
   const gFind = (k) => (window.NOON_GARMIN || []).find((g) => `${g[0]}|${g[1]}` === k);
@@ -2542,7 +2553,7 @@ const PP = (() => {
      the listed models it names tagged "Latest" and moved up next to "All" (Venu 4, vívoactive 6 and Lily 2
      Active aren't on noon yet, so those series have the card but no tagged chip) */
   const G_NEW = {
-    Forerunner: ['Forerunner 970 and 570 (2025)', ['Bright AMOLED display, with calls and voice commands from the wrist.', 'The 970 adds a built-in flashlight and running economy insights.'], ['970', '570']],
+    Forerunner: ['Forerunner 570 and 970 (2025)', ['Bright AMOLED display, with calls and voice commands from the wrist.', 'The 970 adds a built-in flashlight and running economy insights.'], ['970', '570']],
     'fēnix': ['fēnix 8 Pro (2025)', ['LTE and satellite messaging built in, so you can call or text without your phone.', 'Also comes with a MicroLED display, the brightest Garmin has made.'], ['8 Pro']],
     Venu: ['Venu 4 and Venu X1 (2025)', ['Lifestyle smartwatch with an AMOLED display and advanced health tracking.', 'Take calls and use voice commands with the built-in speaker and mic.'], []],
     Instinct: ['Instinct 3 (2025)', ['Rugged build with an AMOLED or solar display and a built-in flashlight.', 'Unlimited battery on the solar models, given enough sunlight.'], ['3 Solar']],
@@ -2554,7 +2565,7 @@ const PP = (() => {
   const GN_STAR = '<svg class="gn__star" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><defs><linearGradient id="gnS" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c04ee0"/><stop offset="1" stop-color="#6f3cf5"/></linearGradient></defs><path d="M6 0c.4 3.1 2.9 5.6 6 6-3.1.4-5.6 2.9-6 6-.4-3.1-2.9-5.6-6-6 3.1-.4 5.6-2.9 6-6z" fill="url(#gnS)"/></svg>';
   const gOrder = (n, ms) => ms.map((g, m) => m).sort((x, y) => isNew(n, ms[y]) - isNew(n, ms[x]));
   const G_WHAT = {   // prototype copy: what the series is, said with intent
-    Forerunner: 'Built for runners: accurate GPS, training plans and recovery advice that tell you when to push.',
+    Forerunner: 'Precise GPS, training plans, and recovery tips to know when to push.',   // Figma PLP 707:30376
     'fēnix': 'Garmin’s toughest flagship: titanium and sapphire, offline maps, a flashlight and weeks of battery.',
     Venu: 'Your everyday smartwatch: take calls, track sleep and stress, and go up to 2 weeks between charges.',
     Instinct: 'Built to military standards for the outdoors, and the solar models can run on sunlight indefinitely.',
@@ -2590,7 +2601,7 @@ const PP = (() => {
     // the card is styled as the brand widget project's brand card (State 16 · Hierarchy); its content is the
     // question, what the series is, and the way in (its full-width grey button). A new series changes it in place
     // (whSwap): the card never blinks, its height and button move on the grid's spring
-    const whH = whSwap(wh, st.at, `What’s ${n}?`, G_WHAT[n] || '', `See all ${c} ${n} model${c > 1 ? 's' : ''}${chevR}`);
+    const whH = whSwap(wh, st.at, n, G_WHAT[n] || '', `See all ${c} ${n} model${c > 1 ? 's' : ''}${chevR}`);
     sa.hidden = true;
     requestAnimationFrame(() => {
       if (!wh.isConnected) return;
@@ -2625,7 +2636,9 @@ const PP = (() => {
     wh.dataset.k = k;
     const fresh = !wh.querySelector('.wh__q');
     if (fresh) {
-      wh.innerHTML = `<p class="wh__q"><span class="wh__t">${q}</span></p><p class="wh__d"><span class="wh__t">${d}</span></p>
+      // Figma PLP 707:30368: the Garmin logo, a divider and the series, over its copy and the button
+      wh.innerHTML = `<div class="wh__h"><span class="wh__logo"><img src="assets/garmin/garmin-logo.svg" width="52" height="14" alt="Garmin" /></span><i class="wh__div" aria-hidden="true"></i>
+        <p class="wh__q"><span class="wh__t">${q}</span></p></div><p class="wh__d"><span class="wh__t">${d}</span></p>
         <button class="wh__go" type="button"><span class="wh__t">${go}</span></button>`;
       wh.querySelector('.wh__go').addEventListener('click', () => { if (st && !st.look) gMorph(st.at); });
       return wh.offsetHeight;
@@ -2855,56 +2868,211 @@ const PP = (() => {
   }
   function gH9(aiH) {   // aiH: the card's new natural height while its own height is still gliding there
     const root = story.querySelector('.m9'); if (!root) return;
-    const to = root.offsetTop + Math.max(...[...root.children].filter((k) => !k.hidden).map((k) => k.offsetTop + (aiH != null && k.classList.contains('m9__ai') ? aiH : k.offsetHeight))) + G.GAP, from = parseFloat(box.style.height) || to;   // the same gap to the products as on the slider
+    const to = root.offsetTop + Math.max(...[...root.children].filter((k) => !k.hidden).map((k) => k.offsetTop + (aiH != null && k.classList.contains('m9__ai') ? aiH : k.offsetHeight))) + G.GAP2, from = parseFloat(box.style.height) || to;   // the same gap to the products as on the slider
     if (Math.abs(to - from) > 1) pushGrid(from, to, (e2, a, b, fmt) => springAnim(e2, a, b, fmt, spr(0.62, 1)));   // critically damped: no bounce
   }
-  /* the widget changing view (slider ⇄ line-up) never blanks: a frozen copy of what it shows now is laid over
-     it and leaves in place — fading and softening (blur 3px) with a 1.5% settle over 240ms — while the next view
-     assembles underneath. The title, which both views share at the same spot, and the watch that flies between
-     them are hidden in the copy, so they never double. */
-  function stGhost(hide) {
-    const g = story.cloneNode(true);
-    g.classList.add('st__ghost'); g.setAttribute('aria-hidden', 'true');
-    g.querySelectorAll(hide).forEach((x) => { x.style.visibility = 'hidden'; });
-    g.querySelectorAll('[id]').forEach((x) => x.removeAttribute('id'));
-    story.after(g);
-    // a clone starts unscrolled: carry each row's scroll across so nothing shifts
-    const src = [...story.querySelectorAll('*')], dst = [...g.querySelectorAll('*')];
-    src.forEach((el, i) => { if (el.scrollLeft && dst[i]) dst[i].scrollLeft = el.scrollLeft; });
-    return g;
+  /* the line-up's rows give past either end, as an iOS scroll view does: the row follows the pull on iOS's
+     rubber band, c·(1 − 1/(x·0.55/c + 1)) with c half the row's width, and springs back on release (the
+     reveal's 0.5s ζ0.92 spring) — for a finger (axis-locked, so a vertical scroll never pulls it), a mouse drag
+     and a trackpad. Where the browser already does this (iOS, Safari) it's left to the browser. */
+  function edgeBand(row) {
+    let raw = 0, back = null;
+    const c = () => (row.clientWidth || 375) / 2;
+    const band = (o) => Math.sign(o) * c() * (1 - 1 / ((Math.abs(o) * 0.55) / c() + 1));
+    const unband = (b) => Math.sign(b) * (c() / 0.55) * (1 / (1 - Math.min(Math.abs(b) / c(), 0.95)) - 1);
+    const show = () => { row.style.translate = raw ? `${band(raw).toFixed(2)}px 0` : ''; };
+    const catchBack = () => {   // a pull during the spring-back picks it up where it is
+      if (!back) return;
+      const t = getComputedStyle(row).translate, now = t === 'none' ? 0 : parseFloat(t) || 0;
+      back.cancel(); back = null; raw = unband(now); show();
+    };
+    const max = () => row.scrollWidth - row.clientWidth;
+    const api = {
+      pull(d) {   // d: how far the pointer moved, px (+ right)
+        catchBack();
+        if (raw > 0 || (!raw && d > 0 && row.scrollLeft <= 0.5)) { raw = Math.max(0, raw + d); row.scrollLeft = 0; }
+        else if (raw < 0 || (!raw && d < 0 && row.scrollLeft >= max() - 0.5)) { raw = Math.min(0, raw + d); row.scrollLeft = max(); }
+        show();
+      },
+      to(over) { catchBack(); raw = over; show(); },   // a mouse drag: how far past the end it wants to be
+      release() {
+        if (!raw) return;
+        const from = band(raw); raw = 0;
+        back = springAnim(row, from, 0, (v) => ({ translate: `${v.toFixed(2)}px 0` }), CARD_SPR);
+        row.style.translate = '';
+        const a = back; a.finished.then(() => { if (back === a) { a.cancel(); back = null; } }, () => {});
+      },
+    };
+    row.band = api;
+    if (NATIVE_BAND) { api.pull = api.to = () => {}; return api; }
+    let x = 0, y = 0, axis = null;
+    row.addEventListener('touchstart', (e) => { const t = e.touches[0]; x = t.clientX; y = t.clientY; axis = null; }, { passive: true });
+    row.addEventListener('touchmove', (e) => {
+      const t = e.touches[0], dx = t.clientX - x, dy = t.clientY - y;
+      if (!axis) { if (Math.hypot(dx, dy) < 6) return; axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'; }
+      x = t.clientX; y = t.clientY;
+      if (axis === 'x') api.pull(dx);
+    }, { passive: true });
+    const end = () => { axis = null; api.release(); };
+    row.addEventListener('touchend', end); row.addEventListener('touchcancel', end);
+    let wheelT = 0;
+    row.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return;
+      if (raw || (e.deltaX < 0 && row.scrollLeft <= 0.5) || (e.deltaX > 0 && row.scrollLeft >= max() - 0.5)) api.pull(-e.deltaX * 0.6);
+      clearTimeout(wheelT); wheelT = setTimeout(() => api.release(), 120);
+    }, { passive: true });
+    return api;
   }
-  function ghostOut(g) {
-    if (!g) return;
-    g.animate([{ opacity: 1, filter: 'blur(0)', transform: 'scale(1)' }, { opacity: 0, filter: 'blur(3px)', transform: 'scale(.985)' }],
-      { duration: 240, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' }).finished.then(() => g.remove()).catch(() => g.remove());
-  }
-  // a mouse can drag the line-up's rows sideways too (touch and trackpads scroll them natively); a drag never
-  // lands as a tap on the pill or tile under the pointer
+  // a mouse can drag the line-up's rows sideways too (touch and trackpads scroll them natively): 1:1 under the
+  // pointer, on the rubber band past the ends, and flung on release — the row coasts on with the pointer's speed
+  // and eases to a stop (or springs back from the band). A drag never lands as a tap on the pill or tile under it.
   function dragRow(el) {
-    let x0 = 0, s0 = 0, id = null, moved = false;
-    el.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button) return; id = e.pointerId; x0 = e.clientX; s0 = el.scrollLeft; moved = false; });
+    let x0 = 0, s0 = 0, id = null, moved = false, samples = [];
+    el.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button) return; id = e.pointerId; x0 = e.clientX; s0 = el.scrollLeft; moved = false; samples = [[performance.now(), e.clientX]]; });
     el.addEventListener('pointermove', (e) => {
       if (e.pointerId !== id) return;
       const dx = e.clientX - x0;
       if (!moved && Math.abs(dx) > 4) { moved = true; try { el.setPointerCapture(id); } catch (_) {} el.classList.add('is-dragging'); }
-      if (moved) el.scrollLeft = s0 - dx;
+      if (!moved) return;
+      samples.push([performance.now(), e.clientX]); while (samples.length > 2 && samples[samples.length - 1][0] - samples[0][0] > 90) samples.shift();
+      const want = s0 - dx, m = el.scrollWidth - el.clientWidth;
+      el.scrollLeft = want;
+      if (el.band) el.band.to(want < 0 ? -want : want > m ? m - want : 0);
     });
     const up = (e) => {
       if (e.pointerId !== id) return;
       id = null; el.classList.remove('is-dragging');
-      if (moved) el.addEventListener('click', (ev) => { ev.stopPropagation(); ev.preventDefault(); }, { capture: true, once: true });
+      if (!moved) return;
+      el.addEventListener('click', (ev) => { ev.stopPropagation(); ev.preventDefault(); }, { capture: true, once: true });
+      const [a, b] = [samples[0], samples[samples.length - 1]], v = b[0] > a[0] ? (b[1] - a[1]) / (b[0] - a[0]) : 0;   // px/ms
+      const over = el.band && el.style.translate;
+      if (el.band) el.band.release();
+      if (!over && Math.abs(v) > 0.2) el.scrollTo({ left: el.scrollLeft - v * 260, behavior: 'smooth' });
     };
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  }
+  /* the line-up's series sit side by side like pages, each series' tiles after the one before, and changing
+     series pages, as a carousel does, on one spring (the reveal's 0.5s ζ0.92). What moves is one continuous
+     strip: a frozen copy of what was on screen,
+     every item whole (a tile, pill or watch half off the edge is not sliced at its row's edge), followed by a
+     copy of the view you're going to, laid out right behind it — `gap` after the last item — so the two never
+     overlap and there's never an empty frame. The real view waits hidden underneath, exactly where its copy
+     lands, and takes over when it does. The title, which both views share, stays put. */
+  const ROWS = '.m9__pills, .m9__vars';
+  function film(parts, W) {   // a frozen copy of these parts as they are on screen, and the extent of what shows
+    const S = story.getBoundingClientRect(), B = box.getBoundingClientRect();
+    const layer = document.createElement('div');
+    layer.className = `${story.className} st__film`; layer.setAttribute('aria-hidden', 'true');
+    const m9 = document.createElement('div'); m9.className = 'm9'; layer.appendChild(m9);
+    let l = Infinity, r = -Infinity;
+    const copies = [];
+    const grow = (rc) => { l = Math.min(l, rc.left - B.left); r = Math.max(r, rc.right - B.left); };
+    const shows = (rc) => rc.right > B.left + 0.5 && rc.left < B.left + W - 0.5;
+    parts.forEach((el) => {
+      const rc = el.getBoundingClientRect(), c = el.cloneNode(true), row = el.matches(ROWS);
+      Object.assign(c.style, { position: 'absolute', left: `${rc.left - S.left}px`, top: `${rc.top - S.top}px`, width: `${rc.width}px`, height: `${rc.height}px`, margin: '0', transform: 'none', clipPath: 'none', visibility: 'visible' });
+      const items = row ? [...el.children] : [...el.querySelectorAll('.rsi')], twins = row ? [...c.children] : [...c.querySelectorAll('.rsi')];
+      if (row) c.style.overflow = 'visible';   // its items show whole, shifted by the row's scroll instead
+      items.forEach((it, i) => {
+        const ir = it.getBoundingClientRect();
+        if (!shows(ir)) { twins[i].style.visibility = 'hidden'; return; }   // off screen now: stays off the strip
+        grow(ir);
+        if (row && el.scrollLeft) twins[i].style.translate = `${-el.scrollLeft}px 0`;
+      });
+      if (!row) grow(rc);
+      c.querySelectorAll('.wh__bar, .wh__t.is-out').forEach((x) => x.remove());   // hidden by animations a copy doesn't carry
+      c.querySelectorAll('[id]').forEach((x) => x.removeAttribute('id')); c.removeAttribute('id');
+      (el.closest('.m9') ? m9 : layer).appendChild(c);
+      copies.push(c);
+    });
+    story.after(layer);
+    return { layer, copies, l, r };
+  }
+  let paging = null;
+  const pageEnd = () => { if (paging) paging(); };   // a change mid-page: the last one lands at once
+  const settle = (el) => el.getAnimations().forEach((a) => { try { a.finish(); } catch (_) { a.cancel(); } });   // a part still arriving lands first
+  function pageTo(dir, outParts, build, inParts, gap) {   // dir +1: on (content moves left), −1: back
+    pageEnd();
+    const W = box.offsetWidth || 375;
+    outParts = outParts.filter(Boolean); outParts.forEach(settle);
+    const out = film(outParts, W);
+    build();
+    const ins = inParts().filter(Boolean); ins.forEach(settle);
+    const inn = film(ins, W);
+    ins.forEach((el) => { el.style.visibility = 'hidden'; });
+    const D = dir > 0 ? out.r + gap - inn.l : inn.r + gap - out.l;
+    const page = (el, from, to) => springAnim(el, from, to, (x) => ({ transform: `translate3d(${x.toFixed(2)}px,0,0)` }), CARD_SPR);
+    const moves = [page(out.layer, 0, -dir * D), page(inn.layer, dir * D, 0)];
+    const done = () => {
+      if (paging !== done) return;
+      paging = null;
+      moves.forEach((m) => m.cancel()); out.layer.remove(); inn.layer.remove();
+      ins.forEach((el) => { el.style.visibility = ''; });
+    };
+    paging = done;
+    Promise.all(moves.map((m) => m.finished)).then(done, () => {});
+  }
+  /* state 01 ⇄ 02 in the widget reveal's language (garminIn / cardsIn), in two beats that never overlap: what
+     you leave (frozen copies of its parts) drifts 8px the other way, softens (blur 0 → 8) and fades out fast
+     (160ms ease-out: under 15% by 80ms), and just as it's gone what you're going to comes in staggered, item by
+     item (`reveal`), so no two things ever show in the same place at once and there's no empty pause: each
+     rises (up from below going on, down from above coming back), settling 0.97 → 1 on the reveal's 0.5s ζ0.92
+     spring as it unblurs 4 → 0 and fades in (340ms, iOS sheet curve). No blur on Android. */
+  const FADE_OUT = 'cubic-bezier(.65,0,.35,1)';
+  const partIn = (el, delay, dx = 0, dy = 16) => {
+    const rise = springAnim(el, 0, 1, (p) => ({ transform: `translate(${(dx * (1 - p)).toFixed(2)}px,${(dy * (1 - p)).toFixed(2)}px) scale(${(0.97 + 0.03 * p).toFixed(4)})` }), CARD_SPR, delay);
+    const fade = el.animate(IS_ANDROID ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, filter: 'blur(4px)' }, { opacity: 1, filter: 'blur(0px)' }], { duration: 340, delay, easing: OUT, fill: 'both' });
+    PP.commit(el, [rise, fade], { opacity: 1, transform: '', filter: '' });
+  };
+  function crossTo(dir, outParts, build, reveal, outAt = []) {   // dir +1: on to the line-up, −1: back; outAt: when each part leaves
+    pageEnd();
+    outParts = outParts.filter(Boolean); outParts.forEach(settle);
+    const out = film(outParts, box.offsetWidth || 375);
+    const t0 = story.querySelector('.st__title span'), r0 = t0 && t0.getBoundingClientRect(), ls0 = t0 && parseFloat(getComputedStyle(t0).letterSpacing);
+    build();
+    // the title both views share sits a little differently in each: it glides there (and its tracking eases)
+    // on the reveal's spring rather than jumping
+    const t1 = story.querySelector('.st__title span');
+    if (t0 && t1 && !reduce11()) {
+      const r1 = t1.getBoundingClientRect(), dy = (r0.top + r0.height / 2) - (r1.top + r1.height / 2), ls1 = parseFloat(getComputedStyle(t1).letterSpacing);
+      if (Math.abs(dy) > 0.5 || Math.abs(ls1 - ls0) > 0.01) {
+        const a = springAnim(t1, 0, 1, (p) => ({ transform: `translateY(${(dy * (1 - p)).toFixed(2)}px)`, letterSpacing: `${(ls0 + (ls1 - ls0) * p).toFixed(3)}px` }), CARD_SPR);
+        PP.commit(t1, [a], { transform: '', letterSpacing: '' });
+      }
+    }
+    const blur = (b) => (IS_ANDROID ? {} : { filter: `blur(${b}px)` });
+    const leave = out.copies.map((c, j) => c.animate([{ opacity: 1, transform: 'none', ...blur(0) }, { opacity: 0, transform: `translateY(${-dir * 8}px) scale(.98)`, ...blur(8) }],
+      { duration: 160, delay: outAt[j] || 0, easing: 'cubic-bezier(.33,1,.68,1)', fill: 'both' }));
+    reveal();
+    const done = () => { if (paging !== done) return; paging = null; leave.forEach((a) => a.cancel()); out.layer.remove(); };
+    paging = done;
+    Promise.all(leave.map((a) => a.finished)).then(done, () => {});
+  }
+  /* the line-up arriving, staggered: each row rises 10px on the reveal's spring as its items come in one by one
+     (partIn, rising 6px more) — the pills left to right 35ms apart, then the tiles 50ms apart, then the card.
+     Only what's on screen staggers; the rest of a row is simply there when it scrolls in. */
+  function m9Reveal(root, d0 = 90) {
+    const B = box.getBoundingClientRect(), W = box.offsetWidth || 375;
+    const shows = (el) => { const r = el.getBoundingClientRect(); return r.right > B.left + 1 && r.left < B.left + W - 1; };
+    const rowIn = (row, delay) => PP.commit(row, [springAnim(row, 0, 1, (p) => ({ transform: `translateY(${(10 * (1 - p)).toFixed(2)}px)` }), CARD_SPR, delay)], { transform: '' });
+    const pills = root.querySelector('.m9__pills'), vars = root.querySelector('.m9__vars'), ai = root.querySelector('.m9__ai');
+    rowIn(pills, d0);
+    [...pills.children].filter(shows).forEach((p, j) => partIn(p, d0 + j * 35, 0, 6));
+    const t0 = d0 + 60;
+    rowIn(vars, t0);
+    [...vars.children].filter(shows).forEach((v, j) => partIn(v, t0 + j * 50, 0, 6));
+    partIn(ai, t0 + 120, 0, 16);
   }
   function gMorph(si) {
     if (!st || st.look) return;
     Haptics.snap();
-    const slot = st.rs && st.rs.querySelector(`#rsi-st-${si} .rsi__img`);
-    const from = slot ? slot.getBoundingClientRect() : null;
     st.roster.stop();
-    const fromH = parseFloat(box.style.height) || GL.H;
-    const ghost = reduce11() ? null : stGhost(`.st__title, #rsi-st-${si} .rsi__img`);
-    // the title and the line-up pill stay exactly where they were on the slider, so only what's under them changes
+    st.sliderH = parseFloat(box.style.height) || gHeight();
+    if (reduce11()) { m9Open(si); return; }
+    crossTo(1, [story.querySelector('.st__roster'), story.querySelector('.wh')], () => m9Open(si),
+      () => m9Reveal(story.querySelector('.m9')), [0, 40]);   // the old card a beat later, still gone before the tiles it borders arrive
+  }
+  function m9Open(si) {
     story.innerHTML = `<div class="m9">
         <p class="st__title"><span>Select your Garmin</span></p>
         <div class="m9__kb"><button class="kb" type="button"><span class="kb__q">Not sure what to buy?</span> <span class="kb__a">See Garmin’s line-up${chevR}</span></button></div>
@@ -2920,13 +3088,11 @@ const PP = (() => {
     root.querySelector('.kb').addEventListener('click', () => gStory(st.at));
     root.querySelector('.m9__pills').addEventListener('click', (e) => { if (e.target.closest('.m9__p--all')) { gBack(); return; } const p = e.target.closest('.m9__p'); if (p && +p.dataset.k !== st.at) m9Series(+p.dataset.k, null, Math.sign(+p.dataset.k - st.at)); });
     root.querySelector('.m9__vars').addEventListener('click', (e) => { const c = e.target.closest('.m9__v'); if (c) m9Pick(root, +c.dataset.m); });
-    dragRow(root.querySelector('.m9__pills')); dragRow(root.querySelector('.m9__vars'));
-    // the pills drop in (6px) outward from the series you're on, as the slider fades out over them
-    if (!reduce11()) root.querySelectorAll('.m9__p').forEach((p, j) => p.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }],
-      { duration: 460, delay: 60 + Math.abs(j - 1 - si) * 30, easing: MG.EASE, fill: 'backwards' }));
-    m9Series(si, from);
+    [root.querySelector('.m9__pills'), root.querySelector('.m9__vars')].forEach((row) => { edgeBand(row); dragRow(row); });
+    m9Series(si, null, 0, true);
     st.keep = keep;
-    ghostOut(ghost);   // (no page scroll: the line-up takes the slider's place where you are)
+    const pills = root.querySelector('.m9__pills'), on = pills.querySelector('.is-on');
+    pills.scrollLeft = Math.max(0, on.offsetLeft - pills.offsetLeft - (pills.clientWidth - on.offsetWidth) / 2);   // arrive already resting on it
   }
   // once you're in the line-up, the page glides so the series pills sit right under the filters
   function m9Focus() {
@@ -2935,7 +3101,7 @@ const PP = (() => {
     const to = pills.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 8;
     if (Math.abs(to - sc.scrollTop) > 4) setTimeout(() => sc.scrollTo({ top: to, behavior: reduce11() ? 'auto' : 'smooth' }), 260);   // after the shared element has mostly landed
   }
-  function m9Series(k, fromRect, dir) {   // dir: a series change inside the line-up (±1, the way you moved)
+  function m9Series(k, fromRect, dir, quiet) {   // dir: a series change inside the line-up (±1, the way you moved); quiet: the caller animates
     Haptics.snap();
     st.at = k; st.pick = -1;
     if (cap9) m9CapFill();
@@ -2949,17 +3115,7 @@ const PP = (() => {
        card fades in. No middle stage, nothing rising or dropping. */
     clearTimeout(st.m9T);
     stage.hidden = true;
-    /* changing series inside the line-up: the old row slides out the way you moved (16px, fading and softening
-       over 200ms) as the new one comes in from the other side (24px → 0, blur 2 → 0, 460ms, tiles 40ms apart) */
-    if (dir && !reduce11() && vars.children.length) {
-      root.querySelectorAll('.m9__ghostrow').forEach((x) => x.remove());
-      const ghost = vars.cloneNode(true);
-      ghost.classList.add('m9__ghostrow'); ghost.setAttribute('aria-hidden', 'true');
-      Object.assign(ghost.style, { position: 'absolute', left: `${vars.offsetLeft}px`, top: `${vars.offsetTop}px`, width: `${vars.offsetWidth}px`, margin: '0' });
-      vars.after(ghost); ghost.scrollLeft = vars.scrollLeft;
-      ghost.animate([{ opacity: 1, transform: 'translateX(0)', filter: 'blur(0)' }, { opacity: 0, transform: `translateX(${-dir * 16}px)`, filter: 'blur(2px)' }],
-        { duration: 200, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' }).finished.then(() => ghost.remove()).catch(() => ghost.remove());
-    }
+    if (dir && !reduce11() && vars.children.length) { m9Swap(root, k, dir); return; }
     vars.innerHTML = m9VarsHTML(n, ms);
     vars.scrollLeft = 0;
     vars.hidden = false; ai.hidden = false;
@@ -2967,13 +3123,8 @@ const PP = (() => {
     st.keep = null;
     m9Ai(dir || 1);
     plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: n } }));
-    if (reduce11()) return;
+    if (reduce11() || quiet || dir) return;
     const tiles = [...vars.children], first = tiles[0], ph = first.querySelector('.m9__ph');
-    if (dir) {
-      tiles.forEach((c, j) => c.animate([{ opacity: 0, transform: `translateX(${dir * 24}px)`, filter: 'blur(2px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }],
-        { duration: 460, delay: 70 + j * 40, easing: MG.EASE, fill: 'backwards' }));
-      return;
-    }
     if (fromRect) {
       const r = ph.getBoundingClientRect(), sc = fromRect.width / r.width;
       const dx = fromRect.left + fromRect.width / 2 - (r.left + r.width / 2), dy = fromRect.top + fromRect.height / 2 - (r.top + r.height / 2);
@@ -2988,19 +3139,40 @@ const PP = (() => {
     ai.animate([{ opacity: 0, transform: 'translateY(10px)', filter: 'blur(3px)' }, { opacity: 1, transform: 'none', filter: 'blur(0)' }],
       { duration: 480, delay: 300, easing: MG.EASE, fill: 'backwards' });
   }
+  /* changing series inside the line-up pages the same way (pageTo), just its tiles and card: the new series'
+     tiles follow the old ones in from the side you tapped, 10px behind like the rest of the row. The results
+     follow the tap at once. */
+  function m9Swap(root, k, dir) {
+    const vars = root.querySelector('.m9__vars'), ai = root.querySelector('.m9__ai'), n = G_SERIES[k][0], ms = gModels(n);
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: n } }));
+    pageTo(dir, [vars, ai], () => {
+      vars.innerHTML = m9VarsHTML(n, ms);
+      vars.scrollLeft = 0;
+      ai.innerHTML = '';   // fresh lines: they arrive with the card, not swapped inside it
+      m9Ai(dir);
+    }, () => [vars, ai], parseFloat(getComputedStyle(vars).columnGap) || 10);   // the new tiles follow the old at the row's own gap
+  }
   // the AI card, kept to one line under a plain title — no sparkles (Rahul: as clean as possible)
   // each listing photo's watch, measured (2026-11-03): background-size / position that make the watch fill ~88% of
   // a square tile, centred — noon's photos are 400×545 with wide white margins, so 'contain' left them small
   const G_FIT = {};   // the framed photos are already centred at one size: no per-photo fit
   const gFit = (g) => { const f = G_FIT[(g[6] || '').split('/')[0]]; return f ? `background-size:${f[0]}% auto;background-position:${f[1]}% ${f[2]}%` : ''; };
   const m9VarsHTML = (n, ms) => gOrder(n, ms).map((m) => { const g = ms[m]; return `<button class="m9__v" type="button" role="option" data-m="${m}" aria-label="${n} ${g[1]}, ${money(g[3])}">
-        <span class="m9__ph" style="background-image:url('${gImg(g)}');${gFit(g)}"></span><b>${n} ${g[1]}</b><small>${isNew(n, g) ? '<em class="m9__new">Latest</em> · ' : ''}Starting ${money(g[3])}</small></button>`; }).join('');   // "Latest" sits with the price, not on the photo
+        <span class="m9__ph" style="background-image:url('${gImg(g)}');${gFit(g)}"></span><span class="m9__tx"><b>${n} ${g[1]}</b><small>${isNew(n, g) ? '<em class="m9__new">Latest</em><i class="m9__dot" aria-hidden="true"></i>' : ''}<span>Starting ${money(g[3])}</span></small></span></button>`; }).join('');   // "Latest" sits with the price, not on the photo
   // a pick in either view: outline it, rewrite the AI card, and the grid follows
   function m9Pick(root, m) {
     const n = G_SERIES[st.at][0], ms = gModels(n), g = m === st.pick ? null : ms[m];
     const order = gOrder(n, ms), was = st.pick;
     st.pick = g ? m : -1; Haptics.snap();
     root.querySelectorAll('.m9__v').forEach((x) => x.classList.toggle('is-on', +x.dataset.m === st.pick));
+    // the row brings the watch you picked to the second slot (the first stays first, the last stops at the end),
+    // so a half-shown tile slides fully into view with the next one peeking after it
+    const row = root.querySelector('.m9__vars'), tile = g && row && row.querySelector(`.m9__v[data-m="${m}"]`), first = row && row.firstElementChild;
+    if (tile && first) {
+      const slot2 = first.offsetLeft + first.offsetWidth + (parseFloat(getComputedStyle(row).columnGap) || 0);   // where tile 2 sits unscrolled
+      const left = Math.max(0, Math.min(row.scrollWidth - row.clientWidth, tile.offsetLeft - slot2));
+      if (Math.abs(left - row.scrollLeft) > 1) row.scrollTo({ left, behavior: reduce11() ? 'auto' : 'smooth' });
+    }
     m9Ai(was < 0 || st.pick < 0 ? 1 : Math.sign(order.indexOf(st.pick) - order.indexOf(was)) || 1);
     plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: g ? { series: n, model: g[1] } : { series: n } }));
   }
@@ -3019,18 +3191,31 @@ const PP = (() => {
      the old lines leave, light skeleton bars shaped like the new ones shimmer, and the new copy rises in with the
      products (swapLines); its height glides on the grid's spring */
   function m9Ai(dir = 1) {
-    const n = G_SERIES[st.at][0], ms = gModels(n), ai = story.querySelector('.m9__ai');
-    const [title, line] = st.pick >= 0 ? [`${n} ${ms[st.pick][1]}`, gWhy(n, ms[st.pick], ms)[0]] : [`Latest: ${G_NEW[n][0]}`, G_NEW[n][1][0]];
+    const n = G_SERIES[st.at][0], ms = gModels(n), ai = story.querySelector('.m9__ai'), g = st.pick >= 0 ? ms[st.pick] : null;
+    const [title, line] = g ? [`${n} ${g[1]}`, gWhy(n, g, ms)[0]] : [G_NEW[n][0], G_NEW[n][1][0]];
+    // the tag over the title (Figma 709:32021): LATEST · the year, or just LATEST on a picked new model
+    const year = (G_NEW[n][0].match(/\((\d{4})\)/) || [])[1], tag = g ? (isNew(n, g) ? ['Latest'] : []) : ['Latest', year].filter(Boolean);
+    // the featured tile (Figma 709:31400): the one you picked, else the first — the series' newest
+    const tiles = [...story.querySelectorAll('.m9:not(.m9b) .m9__v')];
+    tiles.forEach((t, j) => t.classList.toggle('is-feat', g ? +t.dataset.m === st.pick : j === 0));
     let h;
     if (!ai.querySelector('.m9a__t .wh__t')) {
-      ai.innerHTML = `<p class="m9a__t"><span class="wh__t">${title}</span></p><p class="m9a__d"><span class="wh__t">${line}</span></p>`;
+      ai.innerHTML = `<div class="m9a__h"><span class="m9a__tag"></span><p class="m9a__t"><span class="wh__t">${title}</span></p></div><p class="m9a__d"><span class="wh__t">${line}</span></p>`;
+      m9Tag(ai, tag);
       h = ai.offsetHeight;
     } else {
+      m9Tag(ai, tag);
       const slots = [ai.querySelector('.m9a__t'), ai.querySelector('.m9a__d')];
       if (slots[0].querySelector('.wh__t:not(.is-out)').innerHTML === title && slots[1].querySelector('.wh__t:not(.is-out)').innerHTML === line) h = ai.offsetHeight;
       else h = swapLines(ai, slots, [title, line], dir);
     }
     gH9(h);
+  }
+  function m9Tag(ai, words) {
+    const el = ai.querySelector('.m9a__tag');
+    if (!el) return;
+    el.hidden = !words.length;
+    el.innerHTML = words.map((w) => `<span>${w}</span>`).join('<i aria-hidden="true"></i>');
   }
   /* the scroll ties it together:
        scrolling down from the slider turns it into the line-up (2 → 3) in place;
@@ -3051,27 +3236,25 @@ const PP = (() => {
     const on = cap9.querySelector('.is-on'); if (on) cap9.scrollTo({ left: on.offsetLeft - (cap9.clientWidth - on.offsetWidth) / 2, behavior: 'smooth' });
   }
   /* iteration 42: "All", the first pill — back to the slider (the timeline view) as it was before you went
-     in: on the series you were on, no variants under it, the whole series in the results, page at the top */
+     in: on the series you were on, no variants under it, the whole series in the results, page at the top.
+     The mirror of gMorph (crossTo): the line-up dissolves as the slider comes down into place. */
   function gBack() {
     if (!st || !st.look) return;
     Haptics.snap();
     const k = st.at, fromH = parseFloat(box.style.height) || GL.H;
-    const ph = story.querySelector('.m9__v .m9__ph'), from = ph ? ph.getBoundingClientRect() : null;
     clearTimeout(st.m9T);
-    const ghost = reduce11() ? null : stGhost('.st__title, .m9__v:first-child .m9__ph');
+    const sc = document.getElementById('plpScroll'); if (sc && sc.scrollTop > 2) sc.scrollTo({ top: 0, behavior: reduce11() ? 'auto' : 'smooth' });
+    if (reduce11()) { gSlider(k, fromH); return; }
+    crossTo(-1, ['.m9__pills', '.m9__vars', '.m9__ai'].map((sel) => story.querySelector(`.m9 ${sel}`)), () => gSlider(k, fromH),
+      () => [story.querySelector('.st__roster'), story.querySelector('.wh')].filter(Boolean).forEach((el, j) => partIn(el, 90 + j * 60, 0, -16)));
+  }
+  function gSlider(k, fromH) {
     st.look = false; st.engaged = false;
     gLayer(null, k, 0);
-    pushGrid(fromH, gHeight(), (e2, a, b, fmt) => springAnim(e2, a, b, fmt, spr(0.62, 1)));
+    const toH = gHeight();
+    if (Math.abs(toH - fromH) > 1) pushGrid(fromH, toH, (e2, a, b, fmt) => springAnim(e2, a, b, fmt, spr(0.62, 1)));
+    else box.style.height = toH + 'px';
     plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: G_SERIES[k][0] } }));
-    const sc = document.getElementById('plpScroll'); if (sc && sc.scrollTop > 2) sc.scrollTo({ top: 0, behavior: reduce11() ? 'auto' : 'smooth' });
-    ghostOut(ghost);
-    if (reduce11()) return;
-    // the series' watch flies from its tile back into the slot; the rest of the slider settles in around it
-    const img = st.rs && st.rs.querySelector(`#rsi-st-${k} .rsi__img`);
-    if (img && from) { const r = img.getBoundingClientRect(); img.animate([{ transform: `translate(${from.left + from.width / 2 - (r.left + r.width / 2)}px, ${from.top + from.height / 2 - (r.top + r.height / 2)}px) scale(${from.width / r.width})` }, { transform: 'none' }], { duration: 640, easing: MG.EASE }); }
-    [[...story.querySelectorAll(`.rsi:not(#rsi-st-${k})`)], [...story.querySelectorAll('.rs__read, .rs__ruler, .rs__ind, .rs__dot')], [story.querySelector('.wh')]].forEach((els, i) =>
-      els.filter(Boolean).forEach((el) => el.animate([{ opacity: 0, translate: '0 8px', filter: 'blur(3px)' }, { opacity: 1, translate: '0 0', filter: 'blur(0)' }],
-        { duration: 480, delay: 140 + i * 60, easing: MG.EASE, fill: 'backwards' })));
   }
   function gUnmorph() {   // the line-up folds back into the slider, the picked pill's watch flying to the slot
     if (!st || !st.look) return;
@@ -3222,7 +3405,7 @@ const PP = (() => {
   }
   const reduce11 = () => PP.reduce.matches;
   /* scroll — the brand widget project's collapsed state (iteration 8+): scrolling the products up past 10px
-     folds the Garmin widget into its 64px bar — a watch glyph, "Find your Garmin", the series (or model) you're
+     folds the Garmin widget — the slider or the line-up, whichever is showing — into its 64px bar — a watch glyph, "Find your Garmin", the series (or model) you're
      on, and Edit — on the morph spring, the grid riding up under it, and the bottom nav slides down out of
      frame; the marketplace tabs + chips slide up under the search bar on the same scroll (hidable). Scrolling
      back up brings the nav back; reaching the top, or Edit, unfolds the widget where it was (its parts rising
@@ -3237,7 +3420,16 @@ const PP = (() => {
   bar.appendChild(gqd);
   const gqdSub = gqd.querySelector('.qd__s'), gScrollEl = document.getElementById('plpScroll'), gNavEl = document.getElementById('plpNav');
   let gFolded = false, gBusy = false, gNavHidden = false, gLastY = 0, gTravel = 0;
-  const gParts = () => [story.querySelector('.st__title'), story.querySelector('.st__roster'), story.querySelector('.wh')].filter(Boolean);
+  // what folds away: the slider's title, watches and card — or, in the line-up (state 02), its title, pills, tiles
+  // and Latest card — and the height it all opens back to
+  const gParts = () => (st && st.look
+    ? [story.querySelector('.m9 .st__title'), story.querySelector('.m9__pills'), story.querySelector('.m9__vars'), story.querySelector('.m9__ai')]
+    : [story.querySelector('.st__title'), story.querySelector('.st__roster'), story.querySelector('.wh')]).filter(Boolean);
+  const gOpenH = () => {
+    const root = st && st.look && story.querySelector('.m9:not(.m9b)');
+    if (!root) return gHeight();
+    return root.offsetTop + Math.max(...[...root.children].filter((k) => !k.hidden).map((k) => k.offsetTop + k.offsetHeight)) + G.GAP2;   // as gH9
+  };
   const gMoving = () => gParts().some((el) => el.getAnimations().some((a) => a.playState === 'running'));   // still revealing
   const gNavMove = (from, to) => PP.commit(gNavEl, [springAnim(gNavEl, from, to, (v) => ({ transform: `translate3d(0,${(+v).toFixed(2)}px,0)` }), MORPH)], { transform: to ? `translate3d(0,${to}px,0)` : 'none' });
   function gSetNav(hide) {
@@ -3248,11 +3440,11 @@ const PP = (() => {
     gNavMove(y, hide ? 110 : 0);
   }
   function gFold() {
-    if (gBusy || gFolded || catKey !== 'garmin' || !st || !st.garmin || st.look || !box.classList.contains('is-story') || gMoving()) return;
+    if (gBusy || gFolded || catKey !== 'garmin' || !st || !st.garmin || !box.classList.contains('is-story') || gMoving() || paging) return;
     gBusy = gFolded = true;
     const [n, tag] = G_SERIES[st.at], g = st.pick >= 0 ? gModels(n)[st.pick] : null;
     gqdSub.textContent = g ? `${n} ${g[1]} · ${money(g[3])}` : `${n} · ${tag}`;
-    const fromH = parseFloat(box.style.height) || gHeight(), fromBar = bar.offsetHeight;
+    const fromH = parseFloat(box.style.height) || gOpenH(), fromBar = bar.offsetHeight;
     gParts().forEach((el) => { el.getAnimations().forEach((a) => a.cancel()); PP.commit(el, [el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'both' })], { opacity: 0 }); });
     box.classList.add('is-done');
     PP.commit(bar, [springAnim(bar, fromBar, GQ.COL_BAR, (v) => ({ height: `${(+v).toFixed(2)}px` }), MORPH)], { height: GQ.COL_BAR + 'px' });
@@ -3269,7 +3461,7 @@ const PP = (() => {
     box.classList.remove('is-done');
     bar.style.height = ''; const toBar = bar.offsetHeight; bar.style.height = GQ.COL_BAR + 'px';
     PP.commit(bar, [springAnim(bar, GQ.COL_BAR, toBar, (v) => ({ height: `${(+v).toFixed(2)}px` }), GQ_EXPAND)], { height: '' });
-    pushGrid(GQ.COL_H, gHeight(), (el, a, b, fmt) => springAnim(el, a, b, fmt, GQ_EXPAND));
+    pushGrid(GQ.COL_H, gOpenH(), (el, a, b, fmt) => springAnim(el, a, b, fmt, GQ_EXPAND));
     gParts().forEach((el, k) => {
       el.getAnimations().forEach((a) => a.cancel()); el.style.opacity = '';
       const delay = 110 + k * 45;
@@ -3578,27 +3770,4 @@ const Haptics = (() => {
   if (document.readyState === 'complete') idle(warm); else addEventListener('load', () => idle(warm), { once: true });
 })();
 
-/* ══ Prototype tools ═══════════════════════════════════════════════════════
-   Beside the phone: iterations 1–4, then Reset. Each iteration is its OWN copy of
-   the flow, so they can be changed independently: 1 = / (this folder), 2 = /v2/, 3 = /v3/, 4 = /v4/,
-   each with its own index.html, styles.css and app.js, sharing /assets and /fonts.
-   The page's iteration is <html data-variant="n">; picking another number opens
-   that copy, and /?v=n jumps straight to iteration n. Reset restarts the flow on
-   the same iteration (a clean reload back to Home). */
-(() => {
-  const nav = document.getElementById('vswitch'); if (!nav) return;
-  const PATHS = { 1: '/' };
-  const here = document.documentElement.dataset.variant || '1';
-  const want = new URLSearchParams(location.search).get('v');
-  if (want && PATHS[want] && want !== here) { location.replace(PATHS[want]); return; }
-  nav.querySelectorAll('.vswitch__b[data-v]').forEach((btn) => {
-    btn.setAttribute('aria-pressed', String(btn.dataset.v === here));
-    btn.addEventListener('click', () => { if (btn.dataset.v !== here) location.href = PATHS[btn.dataset.v]; });
-  });
-  const reset = document.getElementById('vreset');
-  if (reset) reset.addEventListener('click', () => {
-    reset.classList.add('is-spinning');
-    setTimeout(() => location.replace(PATHS[here] || '/'), 260);   // let the icon turn before the page restarts
-  });
-})();
 
