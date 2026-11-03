@@ -1876,11 +1876,12 @@ img.contain { object-fit: contain; }
 .st--garmin .m9__v b, .st--garmin .m9__v small { max-width: 136px; }
 .st--garmin .m9__v b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* iteration 1's search query: an arm of the switcher pill (index.html adds it) — white, as thick as the pill, round
-   at its left end, running under the pill to its centre (beneath the "1", inside the pill's own stacking context);
-   one line, grey label + bold query, 12px clear of the "1" */
-.vswitch__q { position: absolute; z-index: -1; display: flex; align-items: center; gap: 6px; padding: 0 calc(26px + 12px) 0 18px;
-  background: #fff; border-radius: 999px 0 0 999px; box-shadow: 0 4px 18px rgba(20, 24, 40, .08), 0 1px 3px rgba(20, 24, 40, .06);
-  font-family: var(--noon); white-space: nowrap; pointer-events: none; }
-.vswitch__ql { font-size: 12px; line-height: 16px; font-weight: 500; color: #8a91a8; }
-.vswitch__qq { font-size: 13px; line-height: 16px; font-weight: 700; color: #1d2539; }
+/* prototype tool: iteration 1's search query, a pill 8px left of its "1" in the switcher (index.html pins it to the
+   button), styled like the switcher — white, round, its soft shadow — one line: grey label, bold query.
+   Hidden at phone widths, like the switcher. */
+.qhint { position: fixed; top: 50%; left: 0; transform: translate(-100%, -50%); z-index: 1000;
+  display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 14px; background: #fff; border-radius: 999px;
+  box-shadow: 0 4px 18px rgba(20, 24, 40, .08), 0 1px 3px rgba(20, 24, 40, .06); font-family: var(--noon); white-space: nowrap; pointer-events: none; }
+.qhint__l { font-size: 12px; line-height: 16px; font-weight: 500; color: #8a91a8; }
+.qhint__q { font-size: 13px; line-height: 16px; font-weight: 700; color: #1d2539; }
+@media (max-width: 520px) { .qhint { display: none; } }

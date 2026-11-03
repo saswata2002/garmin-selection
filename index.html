@@ -152,6 +152,8 @@
   <button class="vswitch__b vswitch__reset vswitch__tip" id="vreset" data-tip="Reset" aria-label="Reset the flow — start again from the top"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3.5 10a6.5 6.5 0 1 0 1.9-4.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3.8 2.8v3.4h3.4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 </nav>
 <!-- Iteration 8 only: which UI the "model year" filter uses (prototype tool, beside the phone; remembered per browser, or ?yui=) -->
+<!-- prototype tool, right of the phone: what to type in the prototype's search to reach this flow -->
+<aside class="qhint" aria-label="Prototype search query"><span class="qhint__l">Search query</span><b class="qhint__q">garmin</b></aside>
 <nav class="yswitch" id="yswitch" aria-label="Year filter UI">
   <span class="yswitch__h">Year UI</span>
   <button class="yswitch__b" type="button" data-yui="pills" aria-pressed="false">Pills</button>
@@ -168,16 +170,9 @@
   var k=w/375; s.style.width='375px'; s.style.height=(innerHeight/k)+'px'; s.style.transform='scale('+k+')'; s.style.transformOrigin='0 0'; document.body.style.overflow='hidden'; }
   addEventListener('resize', fit); fit(); })();</script>
 <script src="switcher.js"></script>
-<script>/* iteration 1's search query, as an arm of the switcher pill: a white band as thick as the pill, running left
-   from the "1" and tucked under it so the two read as one shape. Added here, not in the nav's markup, so the
-   iterations skill's sync (which rewrites the nav) keeps it; the buttons stay plain numbers for the Sim apps. */
-(function queryArm(){ var v=document.getElementById('vswitch'), b=v && v.querySelector('.vswitch__b[data-v="1"]'); if(!b) return;
-  var q=document.createElement('span'); q.className='vswitch__q'; q.setAttribute('aria-label','Search query: garmin');
-  q.innerHTML='<span class="vswitch__ql">Search query</span><b class="vswitch__qq">garmin</b>'; v.insertBefore(q, v.firstChild);
-  function place(){ var w=v.offsetWidth, H=w; q.style.height=H+'px'; q.style.top=(b.offsetTop+b.offsetHeight/2-H/2)+'px'; q.style.right=(w/2)+'px';
-    var W=q.offsetWidth, s=24, o=w/2;   /* its shadow stops where it tucks under the pill, so no line shows inside the pill */
-    q.style.clipPath='polygon('+(-s)+'px '+(-s)+'px,'+(W-o)+'px '+(-s)+'px,'+(W-o)+'px 0,'+W+'px 0,'+W+'px '+H+'px,'+(W-o)+'px '+H+'px,'+(W-o)+'px '+(H+s)+'px,'+(-s)+'px '+(H+s)+'px)';
-    q.style.visibility = q.getBoundingClientRect().left < 8 ? 'hidden' : '';   /* a narrow window: no room for it, the pill alone */ }
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(place); addEventListener('resize', place); place(); })();</script>
+<script>/* iteration 1's search query: a pill 8px left of its "1", centred on it */
+(function pinQuery(){ var q=document.querySelector('.qhint'), v=document.getElementById('vswitch'), b=v && v.querySelector('.vswitch__b[data-v="1"]'); if(!q||!b) return;
+  function pin(){ var r=b.getBoundingClientRect(), n=v.getBoundingClientRect(); if(!r.height) return; q.style.top=(r.top+r.height/2)+'px'; q.style.left=(n.left-8)+'px'; }
+  addEventListener('resize', pin); pin(); })();</script>
 </body>
 </html>
