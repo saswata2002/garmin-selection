@@ -1402,3 +1402,7 @@ button { -webkit-appearance: none; appearance: none; border: 0; background: none
   .pdp-expanding .pdp-thumb,
   .pdp-expanding .pdp-ring { transition: none; }
 }
+
+/* phones: no double-tap-to-zoom (iPhone Safari ignores user-scalable=no), so a quick second tap is a tap, never
+   half of a zoom gesture; pinch-zoom still works */
+html { touch-action: manipulation; }

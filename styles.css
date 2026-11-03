@@ -28,6 +28,9 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+/* phones: no double-tap-to-zoom (iPhone Safari ignores user-scalable=no), so a quick second tap is a tap, never
+   half of a zoom gesture; pinch-zoom still works */
+html { touch-action: manipulation; }
 body {
   min-height: 100vh; min-height: 100dvh;
   display: flex; align-items: center; justify-content: center;

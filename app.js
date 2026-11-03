@@ -2923,6 +2923,26 @@ const PP = (() => {
     }, { passive: true });
     return api;
   }
+  /* scrolling a row (or the page) from code glides it frame by frame — never behavior:'smooth'. iPhone Safari runs a
+     native smooth scroll like a fling, and the next touch on that scroller only stops it: the tap is lost, so you'd
+     have to tap twice. A frame-by-frame glide isn't a fling; a touch on it simply stops it where it is and the tap
+     goes through. Snapping is off while it glides (each step would snap). */
+  function glide(el, to, { axis = 'x', ms = 420 } = {}) {
+    const key = axis === 'x' ? 'scrollLeft' : 'scrollTop';
+    const max = axis === 'x' ? el.scrollWidth - el.clientWidth : el.scrollHeight - el.clientHeight;
+    if (el._glide) el._glide();
+    to = Math.max(0, Math.min(max, to));
+    const from = el[key];
+    if (!ms || reduce11() || Math.abs(to - from) < 1) { el[key] = to; return; }
+    const snap = el.style.scrollSnapType, t0 = performance.now(), ease = (t) => 1 - Math.pow(1 - t, 3);   // ease-out cubic
+    el.style.scrollSnapType = 'none';
+    let raf = 0;
+    const stop = () => { cancelAnimationFrame(raf); el.style.scrollSnapType = snap; ['pointerdown', 'touchstart', 'wheel'].forEach((t) => el.removeEventListener(t, stop)); if (el._glide === stop) el._glide = null; };
+    ['pointerdown', 'touchstart', 'wheel'].forEach((t) => el.addEventListener(t, stop, { passive: true }));
+    el._glide = stop;
+    const step = (now) => { const t = Math.min(1, (now - t0) / ms); el[key] = from + (to - from) * ease(t); if (t < 1) raf = requestAnimationFrame(step); else stop(); };
+    raf = requestAnimationFrame(step);
+  }
   // a mouse can drag the line-up's rows sideways too (touch and trackpads scroll them natively): 1:1 under the
   // pointer, on the rubber band past the ends, and flung on release — the row coasts on with the pointer's speed
   // and eases to a stop (or springs back from the band). A drag never lands as a tap on the pill or tile under it.
@@ -2999,7 +3019,7 @@ const PP = (() => {
     build();
     const ins = inParts().filter(Boolean); ins.forEach(settle);
     const inn = film(ins, W);
-    ins.forEach((el) => { el.style.visibility = 'hidden'; });
+    ins.forEach((el) => { el.style.opacity = '0'; });   // invisible under the strip but still tappable: a tap mid-slide lands where it's aimed
     const D = dir > 0 ? out.r + gap - inn.l : inn.r + gap - out.l;
     const page = (el, from, to) => springAnim(el, from, to, (x) => ({ transform: `translate3d(${x.toFixed(2)}px,0,0)` }), CARD_SPR);
     const moves = [page(out.layer, 0, -dir * D), page(inn.layer, dir * D, 0)];
@@ -3007,7 +3027,7 @@ const PP = (() => {
       if (paging !== done) return;
       paging = null;
       moves.forEach((m) => m.cancel()); out.layer.remove(); inn.layer.remove();
-      ins.forEach((el) => { el.style.visibility = ''; });
+      ins.forEach((el) => { el.style.opacity = ''; });
     };
     paging = done;
     Promise.all(moves.map((m) => m.finished)).then(done, () => {});
@@ -3092,7 +3112,7 @@ const PP = (() => {
     m9Series(si, null, 0, true);
     st.keep = keep;
     const pills = root.querySelector('.m9__pills'), on = pills.querySelector('.is-on');
-    pills.scrollLeft = Math.max(0, on.offsetLeft - pills.offsetLeft - (pills.clientWidth - on.offsetWidth) / 2);   // arrive already resting on it
+    glide(pills, on.offsetLeft - pills.offsetLeft - (pills.clientWidth - on.offsetWidth) / 2, { ms: 0 });   // arrive already resting on it
   }
   // once you're in the line-up, the page glides so the series pills sit right under the filters
   function m9Focus() {
@@ -3109,7 +3129,7 @@ const PP = (() => {
     const pills = root.querySelector('.m9__pills'), stage = root.querySelector('.m9__stage'), vars = root.querySelector('.m9__vars'), ai = root.querySelector('.m9__ai');
     pills.querySelectorAll('.m9__p').forEach((p) => { const on = +p.dataset.k === k; p.classList.toggle('is-on', on); p.setAttribute('aria-selected', String(on)); });
     const on = pills.querySelector('.is-on');
-    pills.scrollTo({ left: on.offsetLeft - pills.offsetLeft - (pills.clientWidth - on.offsetWidth) / 2, behavior: reduce11() ? 'auto' : 'smooth' });
+    glide(pills, on.offsetLeft - pills.offsetLeft - (pills.clientWidth - on.offsetWidth) / 2);
     /* one linear move: the watch you tapped (the slot's, or the pill's — the series' first model either way)
        grows straight into the first variant tile, then the rest of the row reveals left to right and the AI
        card fades in. No middle stage, nothing rising or dropping. */
@@ -3171,7 +3191,7 @@ const PP = (() => {
     if (tile && first) {
       const slot2 = first.offsetLeft + first.offsetWidth + (parseFloat(getComputedStyle(row).columnGap) || 0);   // where tile 2 sits unscrolled
       const left = Math.max(0, Math.min(row.scrollWidth - row.clientWidth, tile.offsetLeft - slot2));
-      if (Math.abs(left - row.scrollLeft) > 1) row.scrollTo({ left, behavior: reduce11() ? 'auto' : 'smooth' });
+      glide(row, left);
     }
     m9Ai(was < 0 || st.pick < 0 ? 1 : Math.sign(order.indexOf(st.pick) - order.indexOf(was)) || 1);
     plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: g ? { series: n, model: g[1] } : { series: n } }));
@@ -3243,7 +3263,7 @@ const PP = (() => {
     Haptics.snap();
     const k = st.at, fromH = parseFloat(box.style.height) || GL.H;
     clearTimeout(st.m9T);
-    const sc = document.getElementById('plpScroll'); if (sc && sc.scrollTop > 2) sc.scrollTo({ top: 0, behavior: reduce11() ? 'auto' : 'smooth' });
+    const sc = document.getElementById('plpScroll'); if (sc && sc.scrollTop > 2) glide(sc, 0, { axis: 'y', ms: 480 });
     if (reduce11()) { gSlider(k, fromH); return; }
     crossTo(-1, ['.m9__pills', '.m9__vars', '.m9__ai'].map((sel) => story.querySelector(`.m9 ${sel}`)), () => gSlider(k, fromH),
       () => [story.querySelector('.st__roster'), story.querySelector('.wh')].filter(Boolean).forEach((el, j) => partIn(el, 90 + j * 60, 0, -16)));
@@ -3477,7 +3497,7 @@ const PP = (() => {
   }
   gqd.querySelector('.qd__edit').addEventListener('click', () => {
     gUnfold();
-    gScrollEl.scrollTo({ top: 0, behavior: reduce11() ? 'auto' : 'smooth' });
+    glide(gScrollEl, 0, { axis: 'y', ms: 480 });
   });
   gScrollEl.addEventListener('scroll', () => {
     const y = gScrollEl.scrollTop, d = y - gLastY; gLastY = y;
