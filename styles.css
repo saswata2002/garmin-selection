@@ -1670,7 +1670,7 @@ img.contain { object-fit: contain; }
 .st--garmin .st__roster { top: 67px; }
 .st--garmin .rs__read { height: 49px; }
 .st--garmin .rs__line b { font-size: 22.308px; line-height: 29px; letter-spacing: -0.5577px; }
-.st--garmin .wh { top: 299px; }
+.st--garmin .wh { top: 292px; }   /* Figma 691:30749: 292 under the panel's top */
 
 /* Garmin photos are the framed copies in assets/garmin/ (each watch centred at one size on white), so the
    thumbnails that zoomed into noon's loosely framed originals show the whole photo now */
@@ -1712,15 +1712,15 @@ img.contain { object-fit: contain; }
 /* no floor shadow under the watches (user request): the framed photos sit straight on the white */
 .st--garmin .rsi::after { display: none; }
 
-/* "What's …" card, styled as the brand widget project's brand card (product-upscale, State 16 · Hierarchy
-   1232:9469): white, radius 20, a 1px #eceef3 edge, 12px body — the question in its name style (14/18 600 −0.2
-   #1d2539), the copy, and its full-width button (36 tall, radius 10, #f3f4f7, 13/18 600 ink). */
-.st--garmin .wh { display: flex; flex-direction: column; gap: 3px; padding: 12px; border-radius: 20px; background: #fff;
-  box-shadow: inset 0 0 0 1px #eceef3; text-align: left; letter-spacing: -0.1px; color: #1d2539; }
-.st--garmin .wh__q { margin: 0; font-weight: 600; font-size: 14px; line-height: 18px; letter-spacing: -0.2px; color: #1d2539; }
-.st--garmin .wh__d { margin: 0; font-weight: 400; font-size: 12px; line-height: 16px; letter-spacing: 0; color: #666d85; }
-.st--garmin .wh__go { display: flex; align-items: center; justify-content: center; gap: 2px; align-self: stretch; width: 100%; height: 36px; margin-top: 10px; padding: 0 8px 0 12px;
-  border: 0; border-radius: 10px; background: #f3f4f7; color: #1d2539; font: inherit; font-weight: 600; font-size: 13px; line-height: 18px; letter-spacing: -0.1px; white-space: nowrap;
+/* "What's …" card = Figma PLP 691:30749: white, radius 16, a 1px #e6e8ee edge, 16px inside; the question
+   15/20 600 −0.2, the copy 13/18 #666d85, 4px apart; the button 12px under them — full width, 40 tall, radius 12,
+   #f3f4f7, 13/18 600 −0.1 ink with the 12px chevron 2px after it. */
+.st--garmin .wh { display: flex; flex-direction: column; gap: 4px; padding: 17px; border-radius: 16px; background: #fff;
+  box-shadow: inset 0 0 0 1px #e6e8ee; text-align: left; letter-spacing: -0.1px; color: #1d2539; }
+.st--garmin .wh__q { margin: 0; font-weight: 600; font-size: 15px; line-height: 20px; letter-spacing: -0.2px; color: #1d2539; }
+.st--garmin .wh__d { margin: 0; font-weight: 400; font-size: 13px; line-height: 18px; letter-spacing: 0; color: #666d85; }
+.st--garmin .wh__go { display: flex; align-items: center; justify-content: center; gap: 2px; align-self: stretch; width: 100%; height: 40px; margin-top: 12px; padding: 0 8px 0 12px;
+  border: 0; border-radius: 12px; background: #f3f4f7; color: #1d2539; font: inherit; font-weight: 600; font-size: 13px; line-height: 18px; letter-spacing: -0.1px; white-space: nowrap;
   cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .2s, transform .2s cubic-bezier(.32,.72,0,1); }
 .st--garmin .wh__go svg { display: block; flex: none; }
 .st--garmin .wh__go:active { background: #e9ebf0; transform: scale(.97); opacity: 1; }
@@ -1731,3 +1731,75 @@ img.contain { object-fit: contain; }
 .st--garmin .rsi__img--watch { width: 136px; height: 136px; margin-bottom: -14px; }
 /* …and none under the series sheet's big watch either */
 .gs2__glow { display: none; }
+
+/* the card's content changing series (app.js whSwap): each line is a layer, so the leaving copy can sit over
+   the arriving one; the card clips while its height glides to the new copy's */
+.st--garmin .wh { overflow: hidden; }
+.st--garmin .wh__q, .st--garmin .wh__d, .st--garmin .wh__go { position: relative; }
+.st--garmin .wh__q .wh__t, .st--garmin .wh__d .wh__t { display: block; }
+.st--garmin .wh__go .wh__t { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.st--garmin .wh__t.is-out { pointer-events: none; }
+.st--garmin .wh__go .wh__t svg { display: block; flex: none; }
+/* the layers take their line's type (an older `.wh span` rule would set them to 13/19) */
+.st--garmin .wh .wh__t { font: inherit; line-height: inherit; letter-spacing: inherit; color: inherit; }
+
+/* the card's skeleton while it changes series (app.js whSwap): light bars shaped like the new lines, the product
+   grid's #f6f5fa and its shimmer band, offset per bar (--sk-at) so one sweep crosses the whole card */
+.st--garmin .wh__bar { position: absolute; display: block; border-radius: 6px; background: #f6f5fa; overflow: hidden; pointer-events: none; }
+.st--garmin .wh__go .wh__bar { background: #e9ebf0; }   /* on the button's grey */
+.st--garmin .wh__bar::after { content: ''; position: absolute; left: 0; top: 0; width: 195px; height: 100%;
+  background: linear-gradient(90deg, rgba(255,255,255,0) 0px, rgba(255,255,255,.22) 20px, rgba(255,255,255,.45) 40px, rgba(255,255,255,.7) 60px,
+    rgba(255,255,255,.9) 75px, rgba(255,255,255,.7) 87px, rgba(255,255,255,.78) 95px, rgba(255,255,255,.67) 107px, rgba(255,255,255,.56) 123px,
+    rgba(255,255,255,.3) 137px, rgba(255,255,255,.22) 155px, rgba(255,255,255,.12) 175px, rgba(255,255,255,0) 195px);
+  transform-origin: 0 0; transform: translateX(-200px) skewX(-17deg); will-change: transform;
+  animation: shimmer 1.867s linear var(--sk-at, 0s) infinite both; }
+@media (prefers-reduced-motion: reduce) { .st--garmin .wh__bar::after { animation: none; opacity: 0; } }
+
+/* ══ Line-up view = Figma PLP 691:30088 ════════════════════════════════════════════════════════════════
+   series pills: 44 tall, radius 22, white on a 1px #ececf0 edge, 4px (All 6px) → a 36px round photo on #f5f5f7,
+   6px → the name 13.5 700 ink, 16px right; the one you're on keeps white with a #8fc2ff edge. Model tiles: the
+   136px photo (radius 18, no frame), name 6px under it (13.5 600 ink), price line 2px under that (11.5 #8a91a8,
+   "Latest" 700 #7a3cf0); 10px apart. The Latest / pick card: the accent-blue wash on #fbfdff, radius 16, 12/16
+   inside, 14/19 700 ink + 13/19 #5b6175 4px under it. 26px title → pills, 20px → tiles, 20px → card. */
+.st__ghost { pointer-events: none; }
+.st--garmin .m9__p { height: 44px; padding: 0 17px 0 5px; gap: 6px; border: 0; border-radius: 22px; background: #fff; box-shadow: inset 0 0 0 1px #ececf0;
+  color: #1d2539; transition: box-shadow .28s cubic-bezier(.33,1,.68,1); }
+.st--garmin .m9__p i { width: 36px; height: 36px; padding: 0; border-radius: 18px; background-color: #f5f5f7; }
+.st--garmin .m9__p b { font-size: 13.5px; line-height: 16px; font-weight: 700; letter-spacing: 0; }
+.st--garmin .m9__p.is-on { background: #fff; color: #1d2539; box-shadow: inset 0 0 0 1px #8fc2ff; }
+.st--garmin .m9__p:active { transform: scale(.96); }
+.st--garmin .m9__p--all { padding: 0 17px 0 7px; }   /* Figma's 1px border sits outside its 6/16 padding */
+.st--garmin .m9__allic { width: 36px; height: 36px; border-radius: 18px; background: #f5f5f7; color: #5b6175; }
+
+.st--garmin .m9__v { width: 136px; }
+.st--garmin .m9__v .m9__ph, .st--garmin .m9__v.is-on .m9__ph { width: 136px; height: 136px; padding: 0; border-radius: 18px; background-color: transparent; mix-blend-mode: multiply; box-shadow: none; }
+.st--garmin .m9__v::before { top: 68px; }
+.st--garmin .m9__v b { margin-top: 6px; font-size: 13.5px; line-height: 16px; font-weight: 600; letter-spacing: 0; color: #1d2539; }
+.st--garmin .m9__v small { margin-top: 2px; font-size: 11.5px; line-height: 14px; color: #8a91a8; }
+.st--garmin .m9__new { color: #7a3cf0; font-weight: 700; }
+
+.st--garmin .m9 .gn { padding: 12px 16px; border-radius: 16px; box-shadow: none;
+  background: radial-gradient(120% 95% at 100% 0%, rgba(0,118,255,.08), rgba(0,118,255,0) 62%),
+    radial-gradient(90% 80% at 0% 100%, rgba(90,160,255,.06), rgba(90,160,255,0) 60%), #fbfdff; }
+.st--garmin .m9a__t { font-size: 14px; line-height: 19px; font-weight: 700; letter-spacing: 0; color: #1d2539; }
+.st--garmin .m9a__d { margin-top: 4px; font-size: 13px; line-height: 19px; letter-spacing: 0; color: #5b6175; }
+
+/* line-up spacing — the pills and tiles rows run exactly edge to edge (0 → 375, so the page never scrolls
+   sideways) and scroll inside, their first item on the panel's 12px edge; 22px to the products (G.GAP) */
+.st--garmin .m9__pills { margin: 70px -12px 0; padding: 0 12px; gap: 8px; scroll-padding: 0 12px; overscroll-behavior-x: contain; }
+.st--garmin .m9 .m9__vars { margin: 20px -12px 0; padding: 0 12px; gap: 10px; scroll-padding: 0 12px; overscroll-behavior-x: contain; }
+.st__ghost .m9__pills, .st__ghost .m9__vars { overflow: hidden; }   /* the frozen copy's rows hold their scroll */
+.st--garmin .m9__pills.is-dragging, .st--garmin .m9 .m9__vars.is-dragging { scroll-snap-type: none; cursor: grabbing; }
+.st--garmin .m9__pills.is-dragging *, .st--garmin .m9 .m9__vars.is-dragging * { pointer-events: none; }
+.st--garmin .m9 .gn { margin-top: 20px; }
+
+/* the line-up card's lines are layers too (app.js swapLines), like the "What's …" card's */
+.st--garmin .m9__ai { overflow: hidden; }
+.st--garmin .m9a__t, .st--garmin .m9a__d { position: relative; }
+.st--garmin .m9__ai .wh__t { display: block; font: inherit; line-height: inherit; letter-spacing: inherit; color: inherit; }
+.st--garmin .m9__ai .wh__t.is-out { pointer-events: none; }
+.m9__ghostrow { pointer-events: none; }
+/* a picked tile settles in: its blue glow and a 2% lift ease in together */
+.st--garmin .m9__v .m9__ph { transition: transform .35s cubic-bezier(.2,0,0,1); }
+.st--garmin .m9__v.is-on .m9__ph { transform: scale(1.02); }
+.st--garmin .m9__v:active .m9__ph { transform: scale(.96); transition-duration: .12s; }
