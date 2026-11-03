@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="theme-color" content="#d8e8fb" />
+<title>noon — Home (interop)</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="gitflow-home.css" />
+<!-- Home of the Brand Widget PLP prototype: the interop 2.0 homepage (Figma Scene 01, 1191:123795),
+     pulled from interop-2.0/flow.html without its takeover, Cornetto nudge or status bar. The parent
+     page frames it in #home; it fills that frame instead of centring a 375×812 device. -->
+<style>
+  html, body { background: transparent; }
+  body { display: block; min-height: 0; }
+  .screen { width: 100%; height: 100vh; height: 100dvh; }
+  .search { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<!-- ══ 1191:123795 — Scene 01 (375 × 812) ══════════════════════════════ -->
+<div class="screen" data-node-id="1191:123795">
+
+  <!-- ══ 'Home Page' — the card that scales, drops and rounds off ═════ -->
+  <div class="stage">
+
+    <!-- Scene fill: the blue-to-white wash behind everything -->
+    <div class="screen__wash" aria-hidden="true"></div>
+
+    <!-- 'Content' — chrome + scrolling body, moved as one -->
+    <div class="hp-content">
+
+  <!-- ── 1191:123824 — Frame 2147226002: the scrolling body ─────────── -->
+  <div class="scroll">
+    <div class="body" data-node-id="1191:123824">
+
+      <!-- ══ noon App GitFlow home feed ═══════════════════════════════
+           Ported from @noon/flow-kit src/flows/home (ClassicHomeScreen +
+           home.module.css + data.ts). Section order, box sizes, gaps and
+           padding are the kit's; the creatives are its own assets/home.
+           Only the feed is GitFlow — the brand rail, address, search,
+           tab bar and the touchpoint tile are the prototype's, because
+           the takeover is tuned against them. ══════════════════════ -->
+      <div class="gf-feed">
+        <div class="gf-heroWrap">
+          <div class="gf-hero gf-hscroll" id="gf-hero">
+            <div class="gf-heroCard"><img decoding="async" src="assets/gitflow/hero-01.webp" alt=""></div>
+            <div class="gf-heroCard"><img decoding="async" src="assets/gitflow/hero-02.webp" alt=""></div>
+            <div class="gf-heroCard"><img decoding="async" src="assets/gitflow/hero-03.webp" alt=""></div>
+          </div>
+        </div>
+        <div class="gf-strip"><img decoding="async" src="assets/gitflow/strip-01.webp" alt=""></div>
+        <div class="gf-tileRows gf-hscroll-y">
+          <div class="gf-tileRow">
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-02.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-03.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-04.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-05.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-06.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-01.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-07.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-08.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-09.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-10.webp" alt=""></div>
+          </div>
+          <div class="gf-tileRow">
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-12.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-13.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-14.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-15.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-16.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-17.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-11.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-18.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-19.webp" alt=""></div>
+            <div class="gf-tile"><img loading="lazy" decoding="async" src="assets/gitflow/tile-20.webp" alt=""></div>
+          </div>
+        </div>
+        <section class="gf-module">
+          <h2 class="gf-section">Offers for you</h2>
+          <div class="gf-hscroll" style="gap:10px">
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-01.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-02.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-03.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-04.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-05.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-06.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-07.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-08.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-09.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:192px"><img loading="lazy" decoding="async" src="assets/gitflow/offer-10.webp" alt=""></div>
+          </div>
+        </section>
+        <section class="gf-module">
+          <h2 class="gf-section">In the spotlight</h2>
+          <div class="gf-hscroll" style="gap:10px">
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-01.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-02.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-03.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-04.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-05.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-06.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-07.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-08.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-09.webp" alt=""></div>
+            <div class="gf-card" style="width:147px;height:205px"><img loading="lazy" decoding="async" src="assets/gitflow/spotlight-10.webp" alt=""></div>
+          </div>
+        </section>
+        <section class="gf-module">
+          <h2 class="gf-section">Maximize your savings</h2>
+          <div class="gf-tileRows gf-hscroll-y" style="gap:10px">
+            <div class="gf-tileRow" style="gap:10px">
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-01.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-02.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-03.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-04.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-05.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-06.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-07.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-08.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-09.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-10.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-11.webp" alt=""></div>
+            </div>
+            <div class="gf-tileRow" style="gap:10px">
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-12.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-13.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-15.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-16.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-17.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-18.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-19.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-20.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-21.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-22.webp" alt=""></div>
+              <div class="gf-card" style="width:102px;height:193px"><img loading="lazy" decoding="async" src="assets/gitflow/saving-23.webp" alt=""></div>
+            </div>
+          </div>
+        </section>
+        <section class="gf-module">
+          <div class="gf-hscroll" style="gap:15px">
+            <div class="gf-card" style="width:357px;height:147px"><img loading="lazy" decoding="async" src="assets/gitflow/banner-01.webp" alt=""></div>
+            <div class="gf-card" style="width:357px;height:147px"><img loading="lazy" decoding="async" src="assets/gitflow/banner-02.webp" alt=""></div>
+            <div class="gf-card" style="width:357px;height:147px"><img loading="lazy" decoding="async" src="assets/gitflow/banner-03.webp" alt=""></div>
+          </div>
+        </section>
+        <section class="gf-dealCard">
+          <div class="gf-moduleHeader">
+            <div>
+              <p class="gf-dealTitle">Deals of the <span class="gf-link">day</span></p>
+              <p class="gf-dealTimer">23% left</p>
+            </div>
+            <span class="gf-viewAll">View all</span>
+          </div>
+          <div class="gf-hscroll" style="gap:8px;padding:0 12px 12px">
+          <article class="gf-pc gf-pc--carousel" style="width:156px;flex:0 0 auto">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70013289V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Google Pixel 8 Obsidian 8GB RAM 256GB 5G - International Version</p>
+              <span class="gf-pcRate">★ 3.4 <span class="gf-pcCount">(5)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>1799</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc gf-pc--carousel" style="width:156px;flex:0 0 auto">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70085256V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">realme GT6 Dual SIM Fluid Silver 12+12GB RAM 256GB 5G - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.5 <span class="gf-pcCount">(304)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>1750</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc gf-pc--carousel" style="width:156px;flex:0 0 auto">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70137875V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Honor Magic7 Pro Dual SIM Black 12GB RAM 512 GB 5G - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.4 <span class="gf-pcCount">(246)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>2839</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc gf-pc--carousel" style="width:156px;flex:0 0 auto">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70140492V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Galaxy S25 Ultra AI Dual SIM Titanium Grey 12GB RAM 256GB 5G - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.7 <span class="gf-pcCount">(50774)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>2939</p>
+            </div>
+            <div class="gf-pcDelivery"></div>
+          </article>
+          <article class="gf-pc gf-pc--carousel" style="width:156px;flex:0 0 auto">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70142941V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Galaxy S25 Ultra Dual SIM Titanium Black 12GB RAM 1TB 5G - International Version</p>
+              <span class="gf-pcRate">★ 4.7 <span class="gf-pcCount">(50774)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>3649</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc gf-pc--carousel" style="width:156px;flex:0 0 auto">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70164932V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">motorola Edge 60 Fusion 5G Dual SIM Pantone Amazonite(Blue) 12GB RAM 256GB - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.3 <span class="gf-pcCount">(2767)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>899</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          </div>
+        </section>
+        <section class="gf-module">
+          <h2 class="gf-section" style="padding:0 12px">Recommended for you</h2>
+          <div class="gf-grid">
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70013289V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Google Pixel 8 Obsidian 8GB RAM 256GB 5G - International Version</p>
+              <span class="gf-pcRate">★ 3.4 <span class="gf-pcCount">(5)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>1799</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70085256V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">realme GT6 Dual SIM Fluid Silver 12+12GB RAM 256GB 5G - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.5 <span class="gf-pcCount">(304)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>1750</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70137875V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Honor Magic7 Pro Dual SIM Black 12GB RAM 512 GB 5G - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.4 <span class="gf-pcCount">(246)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>2839</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70140492V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Galaxy S25 Ultra AI Dual SIM Titanium Grey 12GB RAM 256GB 5G - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.7 <span class="gf-pcCount">(50774)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>2939</p>
+            </div>
+            <div class="gf-pcDelivery"></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70142941V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Galaxy S25 Ultra Dual SIM Titanium Black 12GB RAM 1TB 5G - International Version</p>
+              <span class="gf-pcRate">★ 4.7 <span class="gf-pcCount">(50774)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>3649</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70164932V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">motorola Edge 60 Fusion 5G Dual SIM Pantone Amazonite(Blue) 12GB RAM 256GB - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.3 <span class="gf-pcCount">(2767)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>899</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70176681V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Nothing Phone 3a Pro 5G Dual SIM Grey 12GB RAM 256GB - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.4 <span class="gf-pcCount">(995)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>1449</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70176926V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">OnePlus 13s Dual SIM Black Velvet with AI 16GB RAM 512GB 5G - Indian Version</p>
+              <span class="gf-pcRate">★ 4.3 <span class="gf-pcCount">(223)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>2149</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70187031V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Galaxy Z Fold 7 Dual SIM Blue Shadow 12GB 256GB 5G - International Version</p>
+              <span class="gf-pcRate">★ 4.6 <span class="gf-pcCount">(2025)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>4399</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70189143V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">HUAWEI Pura 80 Ultra Dual SIM Smartphone Prestige Gold 16GB RAM 512GB - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.4 <span class="gf-pcCount">(68)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>3299</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70190662V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">OnePlus Nord CE5 Dual SIM Marble Mist 8GB RAM 256GB 5G - International Version</p>
+              <span class="gf-pcRate">★ 4.3 <span class="gf-pcCount">(875)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>1049</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70193813V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Nothing Phone 3 Dual SIM 5G Black 12GB RAM 256GB - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.6 <span class="gf-pcCount">(13)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>2098</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70199709V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Xiaomi Redmi 15 5G Dual SIM Ripple Green 8GB RAM 256GB - Global Version</p>
+              <span class="gf-pcRate">★ 4.3 <span class="gf-pcCount">(2582)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>948.9</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          <article class="gf-pc">
+            <div class="gf-pcMedia"><img loading="lazy" decoding="async" src="assets/gitflow/products/N70204598V.webp" alt=""></div>
+            <div class="gf-pcInfo">
+              <p class="gf-pcTitle">Infinix Hot 60 Pro + Dual SIM Misty Violet 8+8GB RAM 256 GB 4G - Middle East Version</p>
+              <span class="gf-pcRate">★ 4.4 <span class="gf-pcCount">(214)</span></span>
+              <p class="gf-pcPrice"><span class="gf-dh">&#xE001;</span>880</p>
+            </div>
+            <div class="gf-pcDelivery"><span class="gf-pcEta">express</span></div>
+          </article>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ Fixed chrome: status bar, brand rail, address, search ════════ -->
+  <div class="chrome">
+    <div class="chrome__wash" aria-hidden="true"></div>
+
+    <!-- 1191:125529 — Frame 2147242599: brand tile rail -->
+    <div class="brands" data-node-id="1191:125529">
+      <div class="brands__track">
+        <!-- 1191:125530 — Component 2 · core -->
+        <div class="btile btile--core" data-node-id="1191:125530">
+          <img loading="lazy" decoding="async" class="btile__mask" src="assets/brand-noon-mask.svg" alt="noon" />
+          <img loading="lazy" decoding="async" class="btile__word" src="assets/brand-noon-word.svg" alt="" />
+          <img loading="lazy" decoding="async" class="btile__cmp" src="assets/gitflow/switcher/noon-compact.png" alt="" aria-hidden="true" />
+        </div>
+        <!-- 1191:125531 — Component 3 · supermall -->
+        <div class="btile btile--soft" data-node-id="1191:125531">
+          <img loading="lazy" decoding="async" class="btile__sm1" src="assets/brand-supermall-1.svg" alt="supermall" />
+          <img loading="lazy" decoding="async" class="btile__sm2" src="assets/brand-supermall-2.svg" alt="" />
+          <img loading="lazy" decoding="async" class="btile__cmp" src="assets/gitflow/switcher/rocket-compact.png" alt="" aria-hidden="true" />
+        </div>
+        <!-- 1191:125532 — Component 4 · noon food -->
+        <div class="btile btile--white" data-node-id="1191:125532">
+          <img loading="lazy" decoding="async" class="btile__food" src="assets/brand-noonfood.svg" alt="noon food" />
+          <img loading="lazy" decoding="async" class="btile__cmp" src="assets/gitflow/switcher/food-compact.png" alt="" aria-hidden="true" />
+        </div>
+        <!-- 1191:125533 — Component 5 · minutes -->
+        <div class="btile btile--white" data-node-id="1191:125533">
+          <img loading="lazy" decoding="async" class="btile__mins" src="assets/brand-15minutes.png" alt="15 minutes" />
+          <img loading="lazy" decoding="async" class="btile__cmp" src="assets/gitflow/switcher/nooninstant-compact.png" alt="" aria-hidden="true" />
+        </div>
+        <!-- 1191:125534 — Component 6 -->
+        <div class="btile btile--white" data-node-id="1191:125534">
+          <img loading="lazy" decoding="async" class="btile__layer" src="assets/brand-layer1.svg" alt="" />
+          <img loading="lazy" decoding="async" class="btile__cmp" src="assets/gitflow/switcher/noonnownow-compact.png" alt="" aria-hidden="true" />
+        </div>
+        <!-- 1191:125535 — Component 7 · namshi -->
+        <div class="btile btile--soft" data-node-id="1191:125535">
+          <img loading="lazy" decoding="async" class="btile__namshi" src="assets/brand-namshi.png" alt="" />
+          <p class="btile__label">Namshi</p>
+          <p class="btile__cmp btile__cmp--word" aria-hidden="true">namshi</p>
+        </div>
+        <!-- 1191:125536 — Component 8 · pay -->
+        <div class="btile btile--soft" data-node-id="1191:125536">
+          <div class="paylogo">
+            <div class="paylogo__shadow"></div>
+            <div class="paylogo__fill"></div>
+            <img loading="lazy" decoding="async" class="paylogo__send paylogo__send--a" src="assets/brand-pay-send.svg" alt="" />
+            <img loading="lazy" decoding="async" class="paylogo__send paylogo__send--b" src="assets/brand-pay-send-2.svg" alt="" />
+          </div>
+          <p class="btile__label">Pay</p>
+          <img loading="lazy" decoding="async" class="btile__cmp" src="assets/gitflow/switcher/money-compact.png" alt="" aria-hidden="true" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 1191:123796 — Frame 2147242535: address -->
+    <div class="addr" data-node-id="1191:123796">
+      <div class="addr__col" data-node-id="1191:123797">
+        <div class="addr__row" data-node-id="1191:123798">
+          <div class="addr__name-wrap" data-node-id="1191:123799">
+            <div class="addr__home" data-node-id="1191:123800"><img loading="lazy" decoding="async" src="assets/home-glyph.svg" alt="" /></div>
+            <p class="addr__name" data-node-id="1191:123807">Rahul&rsquo;s home</p>
+          </div>
+          <img loading="lazy" decoding="async" class="addr__chevron" src="assets/chevron-down.svg" alt="" data-node-id="1191:123808" />
+        </div>
+        <div class="addr__line" data-node-id="1191:123809">
+          <p data-node-id="1191:123810">403, Tower 1, 4th floor BLVD Heights- Down&hellip;</p>
+        </div>
+      </div>
+      <button class="addr__fav" data-node-id="1191:123811" aria-label="Wishlist">
+        <img loading="lazy" decoding="async" src="assets/heart-red.svg" alt="" />
+      </button>
+    </div>
+
+    <!-- 1191:123816 — Frame 2147225906: search -->
+    <div class="search" data-node-id="1191:123816">
+      <div class="search__field" data-node-id="1191:123817">
+        <div class="search__inner" data-node-id="1191:123818">
+          <img loading="lazy" decoding="async" class="search__icon" src="assets/search.svg" alt="" data-node-id="1191:123819" />
+          <p class="search__ph" data-node-id="1191:123820">Search for &ldquo;Maybelline&rdquo;</p>
+        </div>
+      </div>
+      <span class="search__divider" data-node-id="1191:123821"></span>
+      <img loading="lazy" decoding="async" class="search__camera" src="assets/camera.svg" alt="Search by image" data-node-id="1191:123822" />
+    </div>
+  </div>
+
+    </div><!-- /.hp-content -->
+
+
+  <!-- ══ 1191:125436 — Tab Bar - iPhone ══════════════════════════════ -->
+  <!-- ══ Bottom tabs — the Flow Kit's Liquid Glass dock ══════════════
+       @noon/flow-kit components/TabBar (the default `glass` variant,
+       not the labelled native bar): a floating platter inset 21,
+       62 tall, 8 off the bottom, fully rounded, over blur(14px)
+       saturate(180%) with a 1px specular rim and a top-left sheen.
+       Icon-only, the kit's own tabbar webps; the selected tab is the
+       filled glyph on a blackAlpha6 lens, and the cart carries the
+       #1D2539 badge with its white ring.
+
+       The <nav class="tabbar"> wrapper is kept exactly as it was:
+       the five touchpoint iterations transform it through the dip
+       and the takeover (25 references), and all of that still
+       applies — only what is inside it changed. ══════════════════ -->
+  <!-- ══ Bottom tabs — the Flow Kit's Liquid Glass dock, 1:1 ════════
+       @noon/flow-kit components/TabBar, the default `glass` variant.
+       Platter: 62 tall, inset 21, 8 off the bottom, radius full,
+       padded by glassLensInset 4. Blur 14 / saturate 180 under
+       whiteAlpha64, a whiteAlpha70 rim, the 160° sheen, and the
+       two-part shadow with its inset highlight.
+
+       Icons are MASKS, not pictures: the kit paints every tab webp
+       in one colour (tabBar.glassIcon #1D2539) through MaskIcon, so
+       selected and unselected are the same colour and it is the
+       filled shape that marks the selection. At glassIconScale
+       0.875 the 32pt tabs are 28 and the 28pt deals glyph is 25.
+
+       The selection is a lens on its own track — a slot 1/5 wide
+       inset 4, which in the kit slides between tabs — not a pill
+       drawn on the active tab.
+
+       <nav class="tabbar"> is kept: the five touchpoint iterations
+       transform it through the dip and the takeover. ═══════════ -->
+  <nav class="tabbar" data-node-id="1191:125436">
+    <span class="gf-tabFade" aria-hidden="true"></span>
+    <div class="gf-tabs">
+      <span class="gf-tabTrack" aria-hidden="true"><span class="gf-tabLensSlot" style="width:20%;transform:translateX(0%)"><span class="gf-tabLens"></span></span></span>
+      <button class="gf-tab" type="button" aria-label="Home" aria-current="page">
+        <span class="gf-tabIcon"><i class="gf-tabGlyph" style="--glyph:url(assets/gitflow/tabbar/home-selected.webp);width:28px;height:28px"></i></span>
+      </button>
+      <button class="gf-tab" type="button" aria-label="Categories">
+        <span class="gf-tabIcon"><i class="gf-tabGlyph" style="--glyph:url(assets/gitflow/tabbar/categories.webp);width:28px;height:28px"></i></span>
+      </button>
+      <button class="gf-tab" type="button" aria-label="Deals">
+        <span class="gf-tabIcon"><i class="gf-tabGlyph" style="--glyph:url(assets/gitflow/tabbar/deals-bag.svg);width:25px;height:25px"></i></span>
+      </button>
+      <button class="gf-tab" type="button" aria-label="Account">
+        <span class="gf-tabIcon"><i class="gf-tabGlyph" style="--glyph:url(assets/gitflow/tabbar/account.webp);width:28px;height:28px"></i></span>
+      </button>
+      <button class="gf-tab" type="button" aria-label="Cart">
+        <span class="gf-tabIcon"><i class="gf-tabGlyph" style="--glyph:url(assets/gitflow/tabbar/cart.webp);width:28px;height:28px"></i><span class="gf-tabBadge">4</span></span>
+      </button>
+    </div>
+  </nav>
+
+  </div><!-- /.stage -->
+
+
+</div>
+
+<!-- The GitFlow hero advances itself every 4s, as the kit's HeroCarousel
+     does. It is the feed's only behaviour, and it lives here rather than in
+     a variant because the feed is the same in all of them. It holds while a
+     finger is down and while the takeover is up — the home is behind the
+     scene then, and a slide moving under it would be visible on the way
+     back. prefers-reduced-motion leaves it swipeable but still. -->
+<script>
+(() => {
+  const rail = document.getElementById('gf-hero');
+  if (!rail) return;
+  const W = 244 + 12;                       // heroCardWidth + heroGap
+  const n = rail.children.length;
+  const still = matchMedia('(prefers-reduced-motion: reduce)');
+  let held = false;
+  rail.addEventListener('pointerdown', () => { held = true; }, { passive: true });
+  addEventListener('pointerup', () => { held = false; }, { passive: true });
+  addEventListener('pointercancel', () => { held = false; }, { passive: true });
+  setInterval(() => {
+    if (held || still.matches) return;
+    if (document.querySelector('.screen')?.classList.contains('is-tk')) return;
+    rail.scrollTo({ left: ((Math.round(rail.scrollLeft / W) + 1) % n) * W, behavior: 'smooth' });
+  }, 4000);
+})();
+</script>
+<!-- The home's scroll collapse, from the kit's ClassicHomeScreen:
+     `const onScroll = (y) => setCollapsed(y >= 100)`. Past 100px the
+     experience switcher compacts and the address row folds away; the
+     search bar stays. One class on .screen drives all of it from CSS,
+     so the listener does nothing but cross the threshold — it is
+     passive, and it only writes when the answer changes. -->
+<script>
+(() => {
+  const scroller = document.querySelector('.scroll');
+  const screen = document.querySelector('.screen');
+  if (!scroller || !screen) return;
+  let collapsed = false;
+  scroller.addEventListener('scroll', () => {
+    const next = scroller.scrollTop >= 100;
+    if (next === collapsed) return;
+    collapsed = next;
+    screen.classList.toggle('is-gf-collapsed', next);
+  }, { passive: true });
+})();
+</script>
+<!-- Search: the parent's own Home → Search push (its #searchEntry). -->
+<script>
+(() => {
+  const bar = document.querySelector('.search');
+  const entry = () => { try { return parent !== window && parent.document.getElementById('searchEntry'); } catch (_) { return null; } };
+  if (!bar) return;
+  bar.setAttribute('role', 'button'); bar.tabIndex = 0; bar.setAttribute('aria-label', 'Search noon');
+  const open = (e) => { const el = entry(); if (el) { e.preventDefault(); el.click(); } };
+  bar.addEventListener('click', open);
+  bar.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') open(e); });
+})();
+</script>
+</body>
+</html>

@@ -5,17 +5,10 @@
    where you are. The rail grows to the left, away from the phone. */
 (() => {
   const GROUPS = [
-    // [card, search to type in the prototype to reach it, rows]
-    ['3 tier', 'tv', [[8, '3 tier filter'], [18, 'Progressive filters'], [20, 'Parallel Filters'], [22, 'Progressive Parallel Filters']]],
-    ['Guide', 'tv', [[9, '3 tier to guide']]],
-    ['Garmin', 'garmin', [[11, 'Garmin vertical'], [19, 'Garmin layers'], [28, 'Garmin layers, interactive'], [29, 'Garmin bezel dial'], [30, 'Garmin hold & slide'], [26, 'Garmin model chips'], [31, 'Model chips + Guide & Compare'], [32, 'Big model cards + Guide & Compare'], [33, 'Big view (lookbook sheet)'], [34, 'Lookbook on the page'], [35, 'Lookbook, tighter top'], [36, 'Lookbook + series story sheet'], [37, 'Models on request (pills + 2-row)'], [38, 'No default pick (types → pills)'], [39, 'Line-up in place (Figma 625:57651)'], [40, 'Line-up, stays as pills once picked'], [41, 'Line-up via "See all models"'], [42, 'Line-up, cleaner (no line-up link)'], [43, 'Cleaner + what the series is'], [27, 'Garmin series tabs']]],
-    ['Compare', 'tv', [[13, 'Compare'], [14, 'Compare dock'], [15, 'Compare mode'], [25, 'Compare mode + spotlight'], [21, 'Parallel Filters + Compare']]],
-    // a row can carry its own search when the card's rows differ
-    ['Compare upsell', '', [[23, 'Previously bought → compare', 'headphones · garmin'], [24, 'Tell us your current model', 'headphones · garmin']]],
+    // [card, search to type in the prototype to reach it, rows] — only the former v43 is left, now iteration 1 at /
+    ['Garmin', 'garmin', [[1, 'Cleaner + what the series is']]],
   ];
-  // v20–v22 are Ayush's v11–v13 (aykapoor-hub/Brand-Widget-PLP v6-find-your-tv)
-  const OTHER = { 1: 'Brand widget', 2: 'Brand cards', 3: 'TV brands', 4: 'TV ask-first', 5: 'TV pills', 6: 'TV storyboard',
-    7: 'Size pill', 10: 'Help me choose', 12: 'Calm Guide', 16: 'Personalise', 17: 'Progressive 3 tier' };
+  const OTHER = {};
   const nav = document.getElementById('vswitch'); if (!nav) return;
   const css = document.createElement('style');
   css.textContent = `
@@ -43,7 +36,7 @@
     b.innerHTML = `<span class="vswitch__num">${n}</span><span class="vswitch__name">${name}${q ? `<small class="vswitch__rq">Search = <b>${q}</b></small>` : ''}</span>`;
     if (q) b.classList.add('vswitch__b--q');
     b.setAttribute('aria-label', `${name} (iteration ${v})`);
-    b.title = `/v${v}/`;
+    b.title = v === 1 ? '/' : `/v${v}/`;
     return b;
   };
   const card = (title, rows, q) => {

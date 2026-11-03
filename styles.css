@@ -576,6 +576,7 @@ img.contain { object-fit: contain; }
 /* ══ Navigation: home ⇄ search push (driven by app.js springs) ══════════ */
 .view { position: absolute; inset: 0; overflow: hidden; backface-visibility: hidden; }
 .view--home { z-index: 1; }
+.home-frame { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; background: #d9e9fb; }
 /* 98:27985 — iOS light status bar, 375×42.565, fixed above every view (it doesn't travel with the push).
    Transparent like the Figma frame; a white backdrop fades in only while Home content scrolls beneath it. */
 .sbar { position: absolute; left: 0; top: 0; width: 375px; height: 42.565px; z-index: 60; pointer-events: none; }
@@ -948,7 +949,785 @@ img.contain { object-fit: contain; }
    frame they scroll; at 64 % / 100 % black the blur is invisible anyway) — see IS_ANDROID in app.js */
 .is-android .vid, .is-android .lc__btn { -webkit-backdrop-filter: none; backdrop-filter: none; }
 
+/* ── Iteration 4: the TV brand widget asks first (app.js "TV searches ask before they show") ──
+   A three-step picker where the rail sits. One 14px side margin throughout; vertical rhythm from the
+   header: progress 12 below the title · question 20 below it · tiles 16 below the subtitle · footer
+   pinned 12 above the panel's bottom edge. Then "Personalizing for you": text over soft glows. */
+.brw__note--match { font-weight: 600; color: #0f8857; }
+.brw__ask { position: absolute; left: 0; top: 0; width: 343px; height: 450px; pointer-events: none; visibility: hidden; }
+.brw.is-asking .brw__ask { pointer-events: auto; visibility: visible; }
+.brw.is-handoff .brw__ask { visibility: visible; pointer-events: none; }   /* the picker fading out over the rail coming in */
+.brw.is-asking .brw__rail { visibility: hidden; }
+.brw.is-asking .brw__head { visibility: hidden; }   /* the picker draws its own top */
+/* top: eyebrow + step count + step pills (y 18), then the question (stage, y 50) */
+.qz__top { position: absolute; left: 14px; top: 18px; width: 315px; height: 20px; display: flex; align-items: center; justify-content: space-between; }
+.qz__eyebrow { font-weight: 600; font-size: 11px; line-height: 14px; letter-spacing: 0.8px; text-transform: uppercase; color: #8a91a8; }
+.qz__prog { display: flex; align-items: center; gap: 8px; }
+.qz__count { font-weight: 500; font-size: 12px; line-height: 16px; color: #8a91a8; font-variant-numeric: tabular-nums; }
+.qz__steps { display: flex; align-items: center; gap: 4px; }
+.qz__steps i { display: block; width: 6px; height: 6px; border-radius: 3px; background: #dfe2ea;
+  transition: width .42s cubic-bezier(.22,1,.36,1), background-color .25s ease; }
+.qz__steps i.is-done { background: #1d2539; }
+.qz__steps i.is-cur { width: 20px; background: #1d2539; }
+.qz__stage { position: absolute; left: 0; top: 50px; width: 343px; height: 340px; overflow: hidden; }
+.qz__page { position: absolute; left: 14px; top: 0; width: 315px; }
+.qz__q { font-weight: 700; font-size: 24px; line-height: 30px; letter-spacing: -0.6px; color: #1d2539; }
+.qz__sub { margin-top: 4px; font-weight: 400; font-size: 14px; line-height: 20px; letter-spacing: -0.15px; color: #666d85; }
+/* the roster slider (noon-home "Meet the iPhone lineup"), TV edition: full panel width, 228 tall.
+   Slot / indicator in the centre (x 171); answers 136 apart; real TV cut-outs standing on one
+   floor line (y 118) on a soft peach glow; one readout under the slot; the tick ruler at the
+   bottom (ticks 2×14 / marks 2×16, 8px apart, bottoms on y 222; pink indicator 2×17 + dot). */
+.rs { position: relative; left: -14px; margin-top: 26px; width: 343px; height: 228px; touch-action: pan-y; cursor: grab;
+  user-select: none; -webkit-user-select: none; outline: none; -webkit-tap-highlight-color: transparent; }
+.rs.is-drag { cursor: grabbing; }
+.rs img { -webkit-user-drag: none; pointer-events: none; }
+.rs__sel { position: absolute; left: 61px; top: -6px; width: 220px; height: 150px; border-radius: 50%; will-change: transform;
+  background: radial-gradient(closest-side, rgba(255,255,255,.95), rgba(255,255,255,.55) 50%, rgba(255,255,255,0) 100%); }   /* a neutral pool of light, no tint */
+.rs:focus-visible .rs__sel { box-shadow: 0 0 0 2px rgba(29,37,57,.12); }
+.rsi { position: absolute; top: 0; width: 156px; height: 118px; display: flex; align-items: flex-end; justify-content: center;
+  transform-origin: 50% 100%; will-change: transform, opacity; cursor: pointer; }
+.rsi::after { content: ''; position: absolute; left: 14%; right: 14%; bottom: -5px; height: 10px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(29,37,57,.22), rgba(29,37,57,0)); }   /* floor shadow */
+.rsi__img { position: relative; z-index: 1; display: block; filter: drop-shadow(0 8px 10px rgba(29,37,57,.12)); }
+/* picture type: one still TV, its picture wiping between screen types (app.js paintScreen) */
+.scr { position: relative; z-index: 1; display: block; }
+.scr .rsi__img { position: relative; z-index: 0; }
+.scr__screen { position: absolute; z-index: 1; overflow: hidden; border-radius: 1px; background: #000; }
+.scr__l { position: absolute; inset: 0; overflow: hidden; }
+.scr__l b { position: absolute; top: 0; bottom: 0; left: -14%; right: -14%; background-size: cover; background-position: 50% 50%; will-change: transform; }
+/* the incoming picture: a 3W-wide mask whose soft edge (0.2W, centred at W) is slid by app.js (mask-position) —
+   3W so the opaque side always reaches past the screen's right edge, wherever the edge is */
+.scr__l.is-wipe { -webkit-mask-image: linear-gradient(90deg, transparent 30%, #000 36.667%); mask-image: linear-gradient(90deg, transparent 30%, #000 36.667%);
+  -webkit-mask-size: 300% 100%; mask-size: 300% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.scr__seam { position: absolute; left: 0; top: 0; bottom: 0; width: 44px; opacity: 0; will-change: transform, opacity; pointer-events: none;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.28) 50%, rgba(255,255,255,0)); }
+.scr__glare { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(118deg, rgba(255,255,255,.16), rgba(255,255,255,0) 38%); }
+/* ambient light behind the set: one glow per screen type, crossfading with the wipe */
+.rs__amb { position: absolute; left: 36px; top: -22px; width: 270px; height: 180px; pointer-events: none; }
+.rs__amb i { position: absolute; inset: 0; border-radius: 50%; opacity: 0; background: radial-gradient(closest-side, var(--c), rgba(255,255,255,0)); will-change: opacity, transform; }
+/* screen size: one TV (196px at 75"+) scaled about its feet; the glow scales with it (app.js render) */
+.rsi--single { height: 124px; top: -6px; }
+.rsi--single::after { bottom: -4px; }
+.is-android .rsi__img { filter: none; }
+/* readout under the slot: one line per answer riding the rail at half speed, crossfading by distance (app.js paintRead) */
+.rs__read { position: absolute; left: 0; top: 136px; width: 343px; height: 46px; pointer-events: none; }
+.rs__line { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: 0; will-change: transform, opacity; }
+.rs__line b { font-weight: 700; font-size: 20px; line-height: 26px; letter-spacing: -0.5px; color: #1d2539; white-space: nowrap; font-feature-settings: "case" 1; }
+.rs__line span { font-weight: 400; font-size: 13px; line-height: 18px; letter-spacing: -0.1px; color: #8a91a8; white-space: nowrap; }
+/* ruler: a strip of ticks riding the row, masked soft at both panel edges */
+.rs__ruler { position: absolute; left: 0; top: 198px; width: 343px; height: 30px; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.3) 16px, rgba(0,0,0,.75) 40px, #000 72px, #000 calc(100% - 72px), rgba(0,0,0,.75) calc(100% - 40px), rgba(0,0,0,.3) calc(100% - 16px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, rgba(0,0,0,.3) 16px, rgba(0,0,0,.75) 40px, #000 72px, #000 calc(100% - 72px), rgba(0,0,0,.75) calc(100% - 40px), rgba(0,0,0,.3) calc(100% - 16px), transparent 100%); }
+.rs__ticks { position: absolute; left: 0; top: 0; width: 0; height: 24px; will-change: transform; }
+.rs__tick { position: absolute; bottom: 0; width: 2px; height: 14px; border-radius: 41px; background: rgba(34,34,34,.1); transform-origin: 50% 100%; }
+.rs__tick--mark { height: 16px; background: rgba(34,34,34,.3); }
+.rs__tick::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(to top, rgb(230,163,193), rgb(236,194,185)); opacity: var(--tint, 0); }
+.rs__ind { position: absolute; left: 170px; top: 205px; width: 2px; height: 17px; border-radius: 41px;
+  background: linear-gradient(to top, rgba(193,24,100,.4), rgba(207,103,81,.4)), #fff; transform-origin: 50% 100%; will-change: transform; }
+.rs__dot { position: absolute; left: 169px; top: 198px; width: 4px; height: 4px; }
+/* footer: Skip / Back on the left, Next on the right */
+.qz__foot { position: absolute; left: 14px; top: 398px; width: 315px; height: 38px; display: flex; align-items: center; justify-content: space-between; }
+.qz__left { position: relative; width: 90px; height: 38px; }
+.qz__back, .qz__skip {
+  position: absolute; left: -6px; top: 1px; height: 36px; display: flex; align-items: center; gap: 2px; border: 0; border-radius: 10px; background: transparent; cursor: pointer;
+  font: inherit; font-weight: 600; font-size: 13px; line-height: 18px; letter-spacing: -0.1px; -webkit-tap-highlight-color: transparent;
+  transition: background-color .15s, transform .18s cubic-bezier(.32,.72,0,1);
+}
+.qz__back { padding: 0 12px 0 6px; color: #1d2539; opacity: 0; }
+.qz__back img { transform: rotate(180deg); }
+.qz__skip { padding: 0 12px; color: #666d85; }
+.qz__back:disabled, .qz__skip:disabled { pointer-events: none; }
+.qz__back:active, .qz__skip:active { background: #eceef3; transform: scale(.97); }
+.qz__next {
+  height: 38px; padding: 0 20px; border: 0; border-radius: 19px; background: #1d2539; color: #fff; cursor: pointer;
+  font: inherit; font-weight: 600; font-size: 14px; line-height: 18px; letter-spacing: -0.1px; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  transition: transform .18s cubic-bezier(.32,.72,0,1), background-color .15s;
+}
+.qz__next:active { transform: scale(.96); background: #2b3550; }
+
+/* "Personalizing for you" — full panel, centred column: the TV from the answers (floor at y 196),
+   title (y 222), the answers line, one status line (y 296), a thin progress line (y 330). Neutral only. */
+.pz { position: absolute; left: 0; top: 0; width: 343px; height: 450px; text-align: center; }
+.pz__stagearea { position: absolute; left: 0; top: 0; width: 343px; height: 196px; display: flex; align-items: flex-end; justify-content: center; }
+.pz__tv { position: relative; opacity: 0; transform-origin: 50% 100%; filter: drop-shadow(0 10px 14px rgba(29,37,57,.14)); }
+.is-android .pz__tv { filter: none; }
+.pz__tv::after { content: ''; position: absolute; left: 10%; right: 10%; bottom: -7px; height: 12px; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(29,37,57,.2), rgba(29,37,57,0)); }   /* floor shadow */
+.pz__tv img { position: relative; display: block; }
+.pz__scr { position: absolute; overflow: hidden; border-radius: 1px; background: #000; }
+.pz__scr b { position: absolute; inset: 0; background-size: cover; background-position: 50% 50%; animation: pzDrift 3.2s cubic-bezier(.4,0,.6,1) both; }
+.pz__sweep { position: absolute; top: -20%; bottom: -20%; left: 0; width: 38%; transform: translateX(-120%) skewX(-16deg);
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.22) 50%, rgba(255,255,255,0)); animation: pzSweep 1.6s cubic-bezier(.45,0,.25,1) .5s 2 both; }
+@keyframes pzDrift { from { transform: scale(1.02); } to { transform: scale(1.1) translateX(-2%); } }
+@keyframes pzSweep { from { transform: translateX(-120%) skewX(-16deg); } to { transform: translateX(300%) skewX(-16deg); } }
+.pz__title { position: absolute; left: 0; right: 0; top: 222px; font-weight: 700; font-size: 22px; line-height: 28px; letter-spacing: -0.5px; color: #1d2539; opacity: 0; }
+.pz__sum { position: absolute; left: 0; right: 0; top: 254px; display: flex; justify-content: center; align-items: center; gap: 7px;
+  font-weight: 500; font-size: 13px; line-height: 18px; color: #666d85; white-space: nowrap; opacity: 0; font-feature-settings: "case" 1; }
+.pz__sum i { font-style: normal; color: #b5bacb; }
+.pz__status { position: absolute; left: 0; right: 0; top: 300px; height: 20px; opacity: 0; }
+.pz__msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-weight: 500; font-size: 13px; line-height: 18px; color: #1d2539; white-space: nowrap; }
+.pz__msg.is-found { font-weight: 600; }
+.pz__msg svg { display: block; flex: none; }
+.pz__bar { position: absolute; left: 111px; top: 332px; width: 120px; height: 3px; border-radius: 1.5px; background: #e4e7ee; overflow: hidden; opacity: 0; }
+.pz__bar i { position: absolute; inset: 0; border-radius: inherit; background: #1d2539; transform: scaleX(0); transform-origin: 0 50%; }
+@media (prefers-reduced-motion: reduce) { .pz__scr b, .pz__sweep { animation: none; } }
+
+
+/* ══ Iteration 6 — the storyboard picker (Figma XzSbnjrYFbhNg6Rc5lKmGJ 419:66149) ═══════════
+   Inline on the page, no panel: the title (y 22), the roster (y 70: sets on y 70–188, readout
+   y 206, ruler y 262–292), then the size pills (y 316, 44 tall) once a type is chosen. */
+.brw.is-story .brw__bar { background: transparent; border-radius: 0; overflow: visible; }
+.brw.is-story .brw__head, .brw.is-story .brw__rail, .brw.is-story .brw__sel { visibility: hidden; }
+.st { position: absolute; left: 0; top: 0; width: 343px; height: 382px; display: none; }
+.brw.is-story .st { display: block; }
+.st__title { position: absolute; left: 0; right: 0; top: 22px; height: 32px; }
+.st__title span { position: absolute; inset: 0; text-align: center; white-space: nowrap;
+  font-weight: 500; font-size: 26px; line-height: 32px; letter-spacing: -0.7px; color: #2b2b2b; }
+.st__roster { position: absolute; left: 0; top: 70px; width: 343px; height: 222px; }
+.st .rs { left: 0; margin-top: 0; }
+.st .rs.is-preview { pointer-events: none; }
+.st .rsi__img { transform-origin: 50% 50%; will-change: transform; }   /* grows about its centre; app.js moves the centre down into the space */
+.st__sizes { position: absolute; left: 0; top: 316px; width: 343px; height: 44px; opacity: 0; transform: translateY(-8px); pointer-events: none;
+  border: 1.5px solid #f6f3f3; border-radius: 22px; background: #fff; box-sizing: border-box; overflow: hidden; }   /* the stroke is the row, not the selection: pink as the row appears, settling to this grey (app.js storySizes) */
+.st__sizes.is-on { pointer-events: auto; }
+.st__track { position: relative; display: flex; align-items: center; gap: 2px; height: 100%; padding: 0 3px; }   /* all five sizes fit the row */
+.st__pill { flex: 1 1 0; min-width: 0; height: 34px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 4px; border: 0; border-radius: 17px; background: transparent; cursor: pointer;
+  font: inherit; font-weight: 400; font-size: 13px; line-height: 18px; letter-spacing: -0.1px; color: #666d85; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  transition: color .2s ease, box-shadow .25s ease, transform .18s cubic-bezier(.32,.72,0,1); }
+.st__pill:active { transform: scale(.96); }
+.st__pill.is-sel { font-weight: 700; font-size: 14px; color: #111; }
+/* the selection: one white pill with a soft pink outline and a light shadow (Figma) that glides from size to size; it fades in on the first pick */
+.st__thumb { position: absolute; left: 0; top: calc(50% - 17px); height: 34px; border-radius: 17px; background: #fff; box-sizing: border-box; border: 1.5px solid #f4d4d4;
+  box-shadow: 0 1px 2px rgba(29,37,57,.05), 0 3px 8px rgba(29,37,57,.06); opacity: 0; pointer-events: none;
+  transition: transform .42s cubic-bezier(.32,.72,0,1), width .42s cubic-bezier(.32,.72,0,1), opacity .2s ease; }
+.st__thumb.is-on { opacity: 1; }
+.st__pill { position: relative; z-index: 1; }
+/* the ruler sits 6px closer to the readout (label + price line) than in iteration 4 (ruler y 192, indicator 199, dot 192) */
+.st .rs { height: 222px; }
+.st .rs__ruler { top: 192px; }
+.st .rs__ind { top: 199px; }
+.st .rs__dot { top: 192px; }
+
+/* ══ Iteration 7 — the size row starts shut as one "Select your TV size" pill (Figma 432:76848) ═══
+   Shut: 222 × 36, centred under the ruler (y 320), a pink outline and a soft shadow. Open: the full
+   343 × 44 row (y 316). One transition on the outline's box; the sizes sit at full width inside it
+   all along, so widening it reveals them. */
+.st__sizes { opacity: 1; transform: none; pointer-events: auto;
+  transition: left .52s cubic-bezier(.32,.72,0,1), width .52s cubic-bezier(.32,.72,0,1), top .52s cubic-bezier(.32,.72,0,1), height .52s cubic-bezier(.32,.72,0,1),
+    border-radius .52s cubic-bezier(.32,.72,0,1), box-shadow .4s ease, border-color .9s cubic-bezier(.4,0,.2,1) .35s; }
+.st__sizes.is-shut { left: 60.5px; width: 222px; top: 320px; height: 36px; border-radius: 18px; border-color: #f4d4d4;
+  box-shadow: 0 1px 2px rgba(29,37,57,.04), 0 3px 10px rgba(29,37,57,.05); }
+.st__track { position: absolute; left: 50%; top: 0; bottom: 0; width: 340px; box-sizing: border-box; transform: translateX(-50%); }
+.st__sizes.is-shut .st__pill { opacity: 0; pointer-events: none; }
+.st__cta { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: inherit; background: transparent; cursor: pointer;
+  font: inherit; font-weight: 500; font-size: 14px; line-height: 18px; letter-spacing: -0.1px; color: #1d2539; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  transition: opacity .2s ease, transform .3s cubic-bezier(.32,.72,0,1); }
+.st__cta:active { transform: scale(.97); }
+.st__sizes:not(.is-shut) .st__cta { opacity: 0; transform: scale(.94); pointer-events: none; }
+
+/* ══ Iteration 8 — no bottom nav on the results (Home keeps its own); the results scroll to the bottom edge ═══ */
+.bnav--plp { display: none; }
+/* the year row: under the sizes (y 370 open / 374 shut), the same pill that opens into one of four year UIs */
+.st { height: 436px; }
+.st__sizes.st__year { top: 370px; }
+.st__sizes.st__year.is-shut { top: 374px; }
+/* …and stays away until the shopper moves the type slider or picks a size; then it slides in (app.js showBudget) */
+.st__sizes.st__year { transition: left .52s cubic-bezier(.32,.72,0,1), width .52s cubic-bezier(.32,.72,0,1), top .52s cubic-bezier(.32,.72,0,1), height .52s cubic-bezier(.32,.72,0,1),
+  border-radius .52s cubic-bezier(.32,.72,0,1), box-shadow .4s ease, border-color .9s cubic-bezier(.4,0,.2,1) .35s,
+  opacity .32s cubic-bezier(.4,0,.2,1) .08s, transform .48s cubic-bezier(.32,.72,0,1) .08s; }
+.st__sizes.st__year.is-away { opacity: 0; transform: translateY(-10px); pointer-events: none; visibility: hidden; transition: none; }
+
+/* ══ Iteration 8 — the model-year row's four UIs (app.js buildYear) — each fits the 340 × 41 inside of the row ═══ */
+.st__year.is-shut .st__track > * { opacity: 0; pointer-events: none; }
+.st__year .st__track > :not(.st__thumb):not(.st__pill) { transition: opacity .3s ease .16s; }
+/* pills: the 2026 pill carries a small "new" dot */
+.yr-new { display: inline-block; width: 5px; height: 5px; margin-left: 4px; border-radius: 50%; background: #e33c4d; vertical-align: 6px; }
+/* stepper: newer ‹ [ value window ] › older */
+.yr-step { display: flex; align-items: center; justify-content: space-between; padding: 0 4px; }
+.yr-step__b { flex: none; width: 34px; height: 34px; border: 0; border-radius: 17px; background: #f6f3f3; color: #1d2539; display: grid; place-items: center; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: opacity .2s ease, transform .18s cubic-bezier(.32,.72,0,1), background-color .15s; }
+.yr-step__b:active { transform: scale(.9); background: #efe9e9; }
+.yr-step__b:disabled { opacity: .3; pointer-events: none; }
+.yr-step__win { position: relative; flex: 1; height: 34px; margin: 0 8px; overflow: hidden; touch-action: pan-y;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+.yr-step__rail { display: flex; height: 100%; transition: transform .46s cubic-bezier(.32,.72,0,1); }
+.yr-step__rail span { flex: 0 0 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; font-size: 15px; color: #111; opacity: .25; transition: opacity .3s ease; }
+.yr-step__rail span.is-cur { opacity: 1; }
+.yr-step__rail span.is-any { font-weight: 500; color: #666d85; }
+.yr-step__rail em { font-style: normal; font-weight: 600; font-size: 10px; line-height: 16px; padding: 0 6px; border-radius: 8px; background: #fbe9e9; color: #c1185f; }
+/* slider: "this new or newer" — ends labelled, a pink fill to the knob, the knob carries the value */
+.yr-sl { display: flex; align-items: center; gap: 10px; padding: 0 14px; }
+.yr-sl__end { flex: none; font-size: 11px; font-weight: 500; color: #8a91a8; }
+.yr-sl__track { position: relative; flex: 1; height: 41px; cursor: pointer; touch-action: none; outline: none; }
+.yr-sl__rail { position: absolute; left: 0; right: 0; top: 19px; height: 3px; border-radius: 2px; background: #eeeaea; }
+.yr-sl__fill { position: absolute; left: 0; top: 19px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, rgba(236,194,185,.9), rgba(230,163,193,.95)); width: 0; }
+.yr-sl__stop { position: absolute; top: 17px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1.5px #e9e3e3; }
+.yr-sl__knob { position: absolute; top: 6px; left: 0; height: 29px; min-width: 50px; padding: 0 10px; transform: translateX(-50%); box-sizing: border-box;
+  display: grid; place-items: center; border-radius: 15px; background: #fff; border: 1.5px solid #f4d4d4; font-weight: 700; font-size: 13px; color: #111; white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(29,37,57,.05), 0 3px 8px rgba(29,37,57,.08); }
+.yr-sl__track.is-anim .yr-sl__knob { transition: left .38s cubic-bezier(.32,.72,0,1); }
+.yr-sl__track.is-anim .yr-sl__fill { transition: width .38s cubic-bezier(.32,.72,0,1); }
+.yr-sl__track:focus-visible .yr-sl__knob { box-shadow: 0 0 0 3px rgba(227,60,77,.18); }
+/* toggle: one line of copy and an iOS-style switch */
+.yr-tg { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 18px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.yr-tg__t { display: flex; align-items: baseline; gap: 6px; }
+.yr-tg__t b { font-weight: 600; font-size: 14px; color: #1d2539; }
+.yr-tg__t small { font-size: 12px; color: #8a91a8; }
+.yr-tg__sw { position: relative; width: 50px; height: 30px; padding: 0; border: 0; border-radius: 15px; background: #e9e6e6; cursor: pointer; transition: background-color .25s ease; }
+.yr-tg__sw i { position: absolute; left: 2px; top: 2px; width: 26px; height: 26px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.15), 0 0 1px rgba(0,0,0,.1);
+  transition: transform .34s cubic-bezier(.32,.72,0,1); }
+.yr-tg__sw[aria-checked="true"] { background: #e33c4d; }
+.yr-tg__sw[aria-checked="true"] i { transform: translateX(20px); }
+/* the "Year UI" chooser beside the phone (right side, mirroring the iteration switcher) */
+.yswitch { position: fixed; top: 50%; left: calc(50% + 187.5px + 28px); transform: translateY(-50%); z-index: 1000;
+  display: flex; flex-direction: column; gap: 6px; padding: 10px 8px; background: #fff; border-radius: 20px;
+  box-shadow: 0 4px 18px rgba(20, 24, 40, .08), 0 1px 3px rgba(20, 24, 40, .06); }
+.yswitch__h { padding: 2px 6px 4px; font-size: 11px; font-weight: 600; letter-spacing: .4px; text-transform: uppercase; color: #8a91a8; }
+.yswitch__b { height: 34px; padding: 0 14px; border: 0; border-radius: 17px; background: #ededed; color: #0c0c0c; font: inherit; font-weight: 600; font-size: 13px; cursor: pointer;
+  text-align: left; transition: background-color .2s ease, color .2s ease, transform .18s cubic-bezier(.2,.9,.3,1.3); }
+.yswitch__b:hover { background: #e3e3e3; }
+.yswitch__b:active { transform: scale(.95); }
+.yswitch__b[aria-pressed="true"] { background: #e33c4d; color: #fff; }
+@media (max-width: 760px) { .yswitch { display: none; } }
+
+/* ══ Iteration 11 — the Garmin lineup (app.js startGarmin) ═════════════════════════════════════════
+   The TV slider with watches on it: noon's listing photos on white, multiplied into the page so they sit on
+   it like cut-outs; the models row under the ruler stays away until a series is tapped or swiped to. */
+.rsi--watch { align-items: center; }
+.rsi__img--watch { width: 112px; height: 112px; object-fit: cover; mix-blend-mode: multiply; filter: brightness(1.06) contrast(1.08) !important; border-radius: 12px; }   /* lifts the photos' off-white to white, so nothing boxes the watch */
+.st--garmin .st__models { opacity: 0; transform: translateY(-8px); pointer-events: none; visibility: hidden;
+  transition: opacity .32s ease .06s, transform .48s cubic-bezier(.32,.72,0,1) .06s; border-color: #f6f3f3; }
+.st--garmin .st__models.is-in { opacity: 1; transform: none; pointer-events: auto; visibility: visible; }
+.st--garmin .st__models .st__track { position: relative; left: 0; width: auto; height: 100%; transform: none; padding: 0 3px;
+  overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-behavior: smooth; }
+.st--garmin .st__models .st__track::-webkit-scrollbar { display: none; }
+.st--garmin .st__models .st__pill { flex: none; min-width: 54px; padding: 0 14px; }
+
 /* the iteration switcher, compact now that there are 18: smaller buttons, and it scrolls on short windows */
 .vswitch { gap: 5px; padding: 7px 5px; max-height: calc(100vh - 24px); overflow-y: auto; scrollbar-width: none; } /* vswitch compact (18 iterations) */
 .vswitch::-webkit-scrollbar { display: none; }
 .vswitch__b { width: 34px; height: 34px; font-size: 15px; flex: none; }
+
+/* iteration 11: the models as a vertical stack — photo, name, case size + rating, price — one row each;
+   the pick gets the white card with the soft pink outline the size pills use */
+.st--garmin .st__models { height: auto; border-radius: 18px; overflow: hidden; transition: opacity .32s ease .06s, transform .48s cubic-bezier(.32,.72,0,1) .06s, height .45s cubic-bezier(.32,.72,0,1); }
+.st--garmin .st__models .st__track { position: relative; left: 0; width: auto; height: 100%; transform: none; display: flex; flex-direction: column; align-items: stretch; gap: 0; padding: 6px; overflow: visible; }
+.gm { display: flex; align-items: center; gap: 12px; height: 60px; flex: none; padding: 0 12px 0 6px; border: 1.5px solid transparent; border-radius: 14px; background: transparent;
+  font: inherit; text-align: left; color: #1d2539; cursor: pointer; -webkit-tap-highlight-color: transparent; box-sizing: border-box;
+  transition: background-color .2s ease, border-color .25s ease, box-shadow .25s ease, transform .18s cubic-bezier(.32,.72,0,1); }
+.gm + .gm { box-shadow: 0 -1px 0 #f4f2f2; }
+.gm:active { transform: scale(.985); }
+.gm__img { flex: none; width: 44px; height: 44px; object-fit: cover; mix-blend-mode: multiply; filter: brightness(1.06) contrast(1.08); }
+.gm__t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gm__t b { font-size: 14px; line-height: 18px; font-weight: 600; letter-spacing: -0.1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gm__t small { font-size: 12px; line-height: 15px; color: #8a91a8; }
+.gm__p { flex: none; font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+.gm.is-sel { background: #fff; border-color: #f4d4d4; box-shadow: 0 1px 2px rgba(29,37,57,.05), 0 3px 8px rgba(29,37,57,.06); }
+.gm.is-sel + .gm { box-shadow: none; }
+
+/* ══ Iteration 19 — Garmin in two layers on one slider ══════════════════════════════════════════
+   The pill under the ruler goes down a layer ("See the 9 Forerunner models ›") or back up ("‹ All series"):
+   white, the soft pink outline of the size pill, centred where the models row sat. */
+.gl__go { position: absolute; left: 50%; top: 318px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 16px;
+  border: 1.5px solid #f4d4d4; border-radius: 19px; background: #fff; box-sizing: border-box; color: #1d2539; font: inherit; font-size: 13px; font-weight: 600; letter-spacing: -0.1px;
+  white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; box-shadow: 0 1px 2px rgba(29,37,57,.04), 0 3px 10px rgba(29,37,57,.05);
+  transition: transform .18s cubic-bezier(.32,.72,0,1); }
+.gl__go:active { transform: translateX(-50%) scale(.96); }
+.gl__go--up { padding: 0 16px 0 12px; border-color: #ececf0; color: #5b6175; }
+
+/* the Year UI chooser beside the phone is retired — the year row is always the stepper */
+.yswitch { display: none !important; }
+
+/* ══ Iteration 26 — the models on show under the series slider ═══════════════════════════════════
+   A row of chips in place of the "See the N models" pill: "All · N models", then each model as a small
+   photo, its name and price; the picked chip takes the size pill's pink outline. Scrolls sideways, edges fade. */
+.gc { position: absolute; left: -16px; right: -16px; top: 310px; height: 70px; display: flex; gap: 8px; padding: 4px 16px; box-sizing: border-box;
+  overflow-x: auto; scrollbar-width: none; -webkit-mask: linear-gradient(90deg, transparent, #000 16px, #000 calc(100% - 16px), transparent); }
+.gc::-webkit-scrollbar { display: none; }
+.gc__c { flex: none; display: grid; grid-template-columns: 48px auto; grid-template-rows: auto auto; column-gap: 8px; align-content: center; align-items: center;
+  height: 62px; padding: 0 14px 0 6px; border: 1.5px solid #ececf0; border-radius: 16px; background: #fff; box-sizing: border-box; font: inherit; color: #1d2539;
+  text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: border-color .2s ease, box-shadow .2s ease, transform .18s cubic-bezier(.32,.72,0,1); }
+.gc__c:active { transform: scale(.96); }
+/* the listing photos carry a wide white margin: zoom past it so the watch fills its tile */
+.gc__c .gc__img { grid-row: 1 / 3; width: 48px; height: 48px; border-radius: 12px; background-color: #f5f5f7; background-size: 150%; background-position: 50% 50%; background-repeat: no-repeat; background-blend-mode: multiply; }
+.gc__c b { font-size: 12.5px; font-weight: 700; letter-spacing: -0.1px; white-space: nowrap; line-height: 16px; }
+.gc__c span { font-size: 11px; font-weight: 500; color: #8a91a8; white-space: nowrap; line-height: 14px; }
+.gc__c--all { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 0 14px; }
+.gc__c.is-on { border-color: #f4b8b8; box-shadow: 0 1px 2px rgba(29,37,57,.05), 0 3px 10px rgba(29,37,57,.07); }
+
+/* the newest models say so in a third line under the price, in the card's purple */
+.gc__c { grid-template-rows: auto auto auto; }
+.gc__c img, .gc__c .gc__img { grid-row: 1 / 4; }
+.gc__tag { grid-column: 2; font-size: 10.5px; font-style: normal; font-weight: 600; line-height: 13px; color: #7a3cf0; }
+
+/* the "Latest: …" card under the chips (Figma 569:16616): the release, then two points on what's new, each after a sparkle */
+.gn { position: absolute; left: 0; right: 0; top: 388px; height: 153px; padding: 11px 16px 0; box-sizing: border-box; border-radius: 14px;
+  /* a very light wash of the sparkle's colours: violet glowing from the top-right corner, a breath of pink at the bottom-left */
+  background: radial-gradient(120% 95% at 100% 0%, rgba(124,72,245,.075), rgba(124,72,245,0) 62%),
+    radial-gradient(90% 80% at 0% 100%, rgba(212,92,214,.055), rgba(212,92,214,0) 60%), #fdfcfe;
+  box-shadow: inset 0 0 0 1px #efebf6; }
+.gn__t { margin: 0 0 18px; font-size: 14px; line-height: 18px; font-weight: 700; color: #1d2539; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gn__t b { font-weight: 600; }
+.gn__t span { font-weight: 400; letter-spacing: -0.1px; color: #4a5168; }   /* the release: plain, lighter and thinner than "Latest:" */
+.gn__p { display: flex; gap: 10px; margin: 0 0 10px; font-size: 13px; line-height: 20px; color: #5b6175; }
+.gn__star { flex: none; width: 12px; height: 12px; margin-top: 4px; }
+.gn__p > span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* the card's reveal: the card rises in, then each word settles out of a blur */
+.gn.is-in { animation: gn-in .45s cubic-bezier(.22,1,.36,1) both; }
+.gn__w { font-style: normal; display: inline-block; }
+.gn.is-in .gn__star { animation: gn-w .42s cubic-bezier(.22,1,.36,1) .25s both; }
+.gn.is-in .gn__p + .gn__p .gn__star { animation-delay: .55s; }
+.gn.is-in .gn__w { animation: gn-w .42s cubic-bezier(.22,1,.36,1) var(--d) both; }
+@keyframes gn-in { from { opacity: 0; transform: translateY(8px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes gn-w { from { opacity: 0; filter: blur(5px); transform: translateY(3px); } to { opacity: 1; filter: none; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .gn.is-in, .gn.is-in .gn__w, .gn.is-in .gn__star { animation: none; } }
+
+/* ══ Iteration 37 — models on request: slider + "Latest", then a lookbook ═════════════════════════
+   Intro: no model row; the "Latest" card sits under the ruler with "See all 9 Forerunner models ›".
+   Lookbook: ‹ and the series pills along the top, then a two-row carousel of big model cards. */
+.st--garmin .gc { display: none; }
+.st--garmin .gn { top: 304px; height: auto; padding-bottom: 12px; }
+.gn__go { display: inline-flex; align-items: center; gap: 4px; margin: 2px 0 0 22px; padding: 0; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 700; color: #1d2539; cursor: pointer; }
+.gn__go svg { color: #8a91a8; }
+.lk { position: absolute; left: 0; right: 0; top: 0; }
+.lk__top { display: flex; align-items: center; gap: 6px; height: 48px; margin-top: 8px; }
+.lk__back { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: #f2f3f6; color: #1d2539; cursor: pointer; }
+.lk__back:active { transform: scale(.94); }
+.lk__pills { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; -webkit-mask: linear-gradient(90deg, transparent, #000 8px, #000 calc(100% - 16px), transparent); padding: 0 6px; }
+.lk__pills::-webkit-scrollbar { display: none; }
+.lk__p { flex: none; height: 36px; padding: 0 15px; border: 1.5px solid #ececf0; border-radius: 18px; background: #fff; color: #5b6175; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: background-color .25s ease, color .25s ease, border-color .25s ease; }
+.lk__p.is-on { background: #1d2539; border-color: #1d2539; color: #fff; }
+.lk__car { margin: 12px -16px 0; padding: 0 16px; display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; grid-auto-columns: 150px; gap: 14px 10px;
+  overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px; scrollbar-width: none; }
+.lk__car::-webkit-scrollbar { display: none; }
+.lk__c { scroll-snap-align: start; display: flex; flex-direction: column; align-items: flex-start; padding: 0; border: 0; background: none; font: inherit; text-align: left; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.lk__ph { position: relative; width: 150px; height: 136px; border-radius: 18px; background-color: #f5f5f7; background-size: 112%; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply;
+  box-shadow: inset 0 0 0 2px transparent; transition: box-shadow .2s ease, transform .2s cubic-bezier(.32,.72,0,1); }
+.lk__c:active .lk__ph { transform: scale(.96); }
+.lk__c.is-on .lk__ph { box-shadow: inset 0 0 0 2px #1d2539; }
+.lk__ph em { position: absolute; left: 8px; top: 8px; height: 20px; padding: 0 7px; border-radius: 10px; background: #fff; color: #7a3cf0; font-style: normal; font-size: 10.5px; font-weight: 700; line-height: 20px; box-shadow: 0 1px 3px rgba(29,37,57,.1); }
+.lk__c b { margin: 8px 2px 0; font-size: 13.5px; font-weight: 700; color: #1d2539; white-space: nowrap; }
+.lk__pr { margin: 2px 2px 0; font-size: 12.5px; font-weight: 600; color: #1d2539; }
+.lk__pr i { font-style: normal; font-weight: 400; color: #8a91a8; }
+.lk__foot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 12px; color: #8a91a8; }
+.lk__count { font-weight: 600; color: #5b6175; }
+
+/* ══ Iteration 39 — the line-up, in place (Figma 625:57651) ═════════════════════════════════════
+   1: under the ruler, one pink-outlined line "Know about the Garmin line-up ›" (the size pill's style).
+   2: the series as pill cards along the top; the watch in the middle with "getting all variants".
+   3: the variants in a row (photo, model, "Starting …"), then the AI card. */
+.st--garmin .gn:has(.kb) { background: none; box-shadow: none; padding: 0; text-align: center; top: 318px; }
+.kb { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px 0 16px; border: 1.5px solid #f4c4c8; border-radius: 17px; background: #fff;
+  color: #e33c4d; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 1px 2px rgba(29,37,57,.04), 0 3px 10px rgba(227,60,77,.08); }
+.kb:active { transform: scale(.96); }
+.m9 { position: absolute; left: 0; right: 0; top: 0; }
+.m9__pills { margin: 8px -16px 0; padding: 0 16px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.m9__pills::-webkit-scrollbar { display: none; }
+.m9__p { flex: none; display: flex; align-items: center; gap: 8px; height: 54px; padding: 0 14px 0 6px; border: 1.5px solid #ececf0; border-radius: 14px; background: #fff; font: inherit; color: #1d2539; cursor: pointer; text-align: left;
+  transition: border-color .25s ease, box-shadow .25s ease; }
+.m9__p i { flex: none; width: 40px; height: 40px; padding: 3px; box-sizing: border-box; border-radius: 10px; background-color: #f5f5f7; background-size: contain; background-origin: content-box; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
+.m9__p span { display: flex; flex-direction: column; line-height: 1.2; }
+.m9__p b { font-size: 13.5px; font-weight: 700; white-space: nowrap; }
+.m9__p small { font-size: 11px; color: #8a91a8; white-space: nowrap; }
+.m9__p.is-on { border-color: #1d2539; box-shadow: 0 2px 10px rgba(29,37,57,.1); }
+.m9__stage { margin-top: 18px; display: flex; flex-direction: column; align-items: center; }
+.m9__hero { width: 108px; height: 108px; background-size: contain; background-repeat: no-repeat; background-position: center; background-color: #fff; background-blend-mode: multiply; will-change: transform; }
+.m9__name { margin-top: 8px; font-size: 17px; font-weight: 700; color: #1d2539; }
+.m9__sub { margin-top: 3px; font-size: 12.5px; color: #8a91a8; background: linear-gradient(90deg, #8a91a8 0%, #d4d7e0 40%, #8a91a8 80%); background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: m9-shim 1.1s linear infinite; }
+@keyframes m9-shim { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.m9__vars { margin: 16px -16px 0; padding: 0 16px; display: flex; gap: 10px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; scroll-padding: 0 16px; }
+.m9__vars::-webkit-scrollbar { display: none; }
+.m9__v { flex: none; width: 104px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; padding: 0; border: 0; background: none; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.m9__ph { position: relative; width: 104px; height: 104px; padding: 2px; box-sizing: border-box; border-radius: 18px; background-color: #fff; background-size: contain; background-origin: content-box;   /* a safe area: the whole watch, never cropped */
+  background-position: center; background-repeat: no-repeat; background-blend-mode: multiply;
+  box-shadow: inset 0 0 0 2px transparent; transition: box-shadow .2s ease, transform .2s cubic-bezier(.32,.72,0,1); }
+.m9__v:active .m9__ph { transform: scale(.95); }
+.m9__v.is-on .m9__ph { box-shadow: inset 0 0 0 2px #1d2539; }
+.m9__ph em { position: absolute; left: 6px; top: 6px; height: 18px; padding: 0 6px; border-radius: 9px; background: #fff; color: #7a3cf0; font-style: normal; font-size: 10px; font-weight: 700; line-height: 18px; box-shadow: 0 1px 3px rgba(29,37,57,.1); }
+.m9__v b { margin-top: 6px; font-size: 13.5px; font-weight: 600; color: #1d2539; white-space: nowrap; }
+.m9__v small { margin-top: 2px; font-size: 11.5px; color: #8a91a8; white-space: nowrap; }
+.st--garmin .m9 .gn { position: relative; top: auto; left: auto; right: auto; height: auto; margin-top: 16px; padding-bottom: 12px; }
+.gn__t--ai { display: flex; gap: 8px; align-items: flex-start; white-space: normal; }
+.gn__t--ai .gn__star { flex: none; width: 14px; height: 14px; margin-top: 2px; }
+.gn__t--ai span { font-weight: 700; color: #1d2539; }
+.m9 .gn__p { margin-top: 8px; }
+
+.m9 [hidden] { display: none !important; }
+
+/* the AI card as one clean line: a plain title and one sentence, no sparkles */
+.m9 .gn { padding: 12px 16px 13px; }
+.m9a__t { margin: 0; font-size: 14px; line-height: 19px; font-weight: 700; color: #1d2539; }
+.m9a__d { margin: 4px 0 0; font-size: 13px; line-height: 19px; color: #5b6175; }
+/* the capsule: the series pills riding under the filters once the line-up's own row has scrolled away */
+.m9c { position: absolute; left: 10px; right: 10px; top: 228px; z-index: 30; display: flex; gap: 6px; height: 56px; align-items: center; padding: 0 6px; border-radius: 28px; overflow-x: auto; scrollbar-width: none;
+  background: rgba(255,255,255,.97); -webkit-backdrop-filter: blur(20px) saturate(180%); backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: inset 0 0 0 .5px rgba(29,37,57,.08), 0 8px 26px rgba(29,37,57,.16), 0 1px 3px rgba(29,37,57,.08);
+  opacity: 0; transform: translateY(-14px) scale(.96); pointer-events: none; transition: opacity .25s ease, transform .5s cubic-bezier(.22,1.2,.36,1); }
+.m9c::-webkit-scrollbar { display: none; }
+.m9c.is-on { opacity: 1; transform: none; pointer-events: auto; }
+.m9c__p { flex: none; display: flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px 0 4px; border: 0; border-radius: 22px; background: transparent; font: inherit; font-size: 13.5px; font-weight: 600; color: #5b6175; cursor: pointer;
+  transition: background-color .25s ease, color .25s ease; }
+.m9c__p i { flex: none; width: 36px; height: 36px; padding: 3px; box-sizing: border-box; border-radius: 50%; background-color: #fff; background-size: contain; background-origin: content-box; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
+.m9c__p.is-on { background: #1d2539; color: #fff; }
+
+/* ══ Iteration 36 — the series story sheet ════════════════════════════════════════════════════════
+   A tall bottom sheet over a dim: the six series as a row of names at the top (the one in view dark),
+   then one card per series side by side (swipe; the neighbours peek in): the watch large on a soft glow,
+   the idea, the name, what it is, four facts in a 2×2, its models as little photos, the count and price,
+   and "See the N <series> watches" pinned at the bottom. */
+.gs2__dim { position: absolute; inset: 0; z-index: 60; background: rgba(12,14,22,.42); opacity: 0; transition: opacity .35s ease; }
+.gs2__dim.is-on { opacity: 1; }
+.gs2 { position: absolute; left: 0; right: 0; top: 96px; bottom: 0; z-index: 61; display: flex; flex-direction: column; border-radius: 28px 28px 0 0; background: #fff;
+  box-shadow: 0 -10px 40px rgba(12,14,22,.18); transform: translateY(100%); transition: transform .52s cubic-bezier(.32,.72,0,1); overflow: hidden; }
+.gs2.is-on { transform: none; }
+.gs2__grab { flex: none; height: 22px; display: grid; place-items: center; cursor: grab; touch-action: none; } .gs2__grab i { width: 36px; height: 5px; border-radius: 3px; background: #dcdde3; }
+.gs2__tabs { flex: none; display: flex; gap: 4px; padding: 2px 16px 8px; overflow-x: auto; scrollbar-width: none; touch-action: pan-x; }
+.gs2__tabs::-webkit-scrollbar { display: none; }
+.gs2__tab { flex: none; height: 32px; padding: 0 13px; border: 0; border-radius: 16px; background: transparent; color: #8a91a8; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: background-color .25s ease, color .25s ease; }
+.gs2__tab.is-on { background: #1d2539; color: #fff; }
+.gs2__track { flex: 1; min-height: 0; display: flex; gap: 12px; padding: 4px 28px 0; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; overscroll-behavior-x: contain; }
+.gs2__track::-webkit-scrollbar { display: none; }
+.gs2__card { flex: 0 0 calc(100% - 56px); scroll-snap-align: center; overflow-y: auto; scrollbar-width: none; padding-bottom: 16px; }
+.gs2__card::-webkit-scrollbar { display: none; }
+.gs2__hero { position: relative; height: 196px; border-radius: 24px; overflow: hidden;
+  background: radial-gradient(90% 80% at 50% 70%, rgba(var(--glow), .22), rgba(var(--glow), 0) 70%), #f7f7f9; }
+.gs2__glow { position: absolute; left: 50%; bottom: 18px; width: 150px; height: 22px; margin-left: -75px; border-radius: 50%; background: radial-gradient(closest-side, rgba(29,29,31,.18), rgba(29,29,31,0)); }
+.gs2__w { position: absolute; left: 50%; top: 14px; width: 170px; height: 170px; margin-left: -85px; background-size: cover; background-position: center; background-color: transparent;
+  mix-blend-mode: multiply; will-change: transform; }
+.gs2__eye { margin: 16px 2px 0; font-size: 12.5px; font-weight: 600; color: rgb(var(--glow)); filter: saturate(1.3) brightness(.8); }
+.gs2__n { margin: 2px 2px 0; font-size: 28px; font-weight: 800; letter-spacing: -0.6px; color: #1d2539; }
+.gs2__d { margin: 8px 2px 0; font-size: 14px; line-height: 21px; color: #5b6175; }
+.gs2__facts { margin: 14px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.gs2__facts div { padding: 10px 12px; border-radius: 14px; background: #f5f6f8; }
+.gs2__facts dt { font-size: 11px; font-weight: 500; color: #8a91a8; }
+.gs2__facts dd { margin: 2px 0 0; font-size: 13.5px; font-weight: 700; color: #1d2539; }
+.gs2__ms { margin-top: 14px; display: flex; align-items: center; gap: 6px; }
+.gs2__ms i { width: 40px; height: 40px; border-radius: 12px; background-color: #f5f5f7; background-size: 130%; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
+.gs2__ms em { font-style: normal; font-size: 12px; font-weight: 700; color: #5b6175; padding-left: 4px; }
+.gs2__from { margin: 8px 2px 0; font-size: 12.5px; color: #8a91a8; }
+.gs2__foot { flex: none; padding: 10px 20px 24px; box-shadow: 0 -1px 0 #f0f1f4; }
+.gs2__cta { width: 100%; display: flex; align-items: center; justify-content: center; height: 50px; border: 0; border-radius: 25px; background: #1d2539; color: #fff; font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; }
+.gs2__cta:active { transform: scale(.98); }
+
+/* the selection, as Figma 625:56513: a soft blush fill, no dark outline (pills, capsule, picked variant) */
+.m9__p.is-on { background: #fdf0f2; border-color: #fdf0f2; box-shadow: none; }
+.m9c__p.is-on { background: #fdf0f2; color: #1d2539; }
+.m9__v.is-on .m9__ph { background-color: #fdf0f2; box-shadow: none; }
+.m9__v.is-on b { color: #1d2539; }
+/* bigger variant photos: more of the row for the watches */
+.m9__v { width: 136px; }
+.m9__ph { width: 136px; height: 136px; }
+.m9__ph em { left: 8px; top: 8px; }
+
+/* the line-up pill sits under "Select your Garmin" — on the slider and in the line-up alike — and the slider
+   (or the series pills) start under it */
+.st--garmin .gn:has(.kb) { top: 62px; }
+.st--garmin .st__roster { top: 108px; }
+.m9__kb { position: absolute; left: 0; right: 0; top: 62px; text-align: center; }
+.m9__pills { margin-top: 112px; }
+.m9 .st__title { position: absolute; }
+
+/* one selection shade everywhere: the soft blush the capsule had, on the series pills in the widget too */
+.m9__p.is-on { background: #fdeef1; border-color: #fdeef1; }
+.m9__v.is-on .m9__ph { background-color: #fdeef1; }
+
+/* the line-up link as plain text under the title, no container */
+.kb { height: 24px; padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none; gap: 4px; font-size: 13.5px; }
+.st--garmin .gn:has(.kb) { top: 60px; }
+.m9__kb { top: 60px; }
+
+/* the picked watch, as Figma 625:53767: a soft round blush glow behind it (white at the heart, peach at the
+   rim) — the photo multiplies onto it, so the glow shows through the photo's white */
+.m9__v { position: relative; isolation: isolate; }
+.m9__v .m9__ph, .m9__v.is-on .m9__ph { background-color: transparent; mix-blend-mode: multiply; box-shadow: none; }
+.m9__v::before { content: ''; position: absolute; left: 50%; top: 68px; width: 132px; height: 132px; margin: -66px 0 0 -66px; border-radius: 50%; z-index: -1;
+  background: radial-gradient(circle, #fffdfc 0%, #fff6f2 45%, #fdebe5 100%); opacity: 0; transform: scale(.82);
+  transition: opacity .3s ease, transform .45s cubic-bezier(.22,1.2,.36,1); }
+.m9__v.is-on::before { opacity: 1; transform: none; }
+.m9__ph em { mix-blend-mode: normal; }
+
+/* the series as plain pills: photo + name, no price */
+.m9__p { height: 44px; padding: 0 16px 0 4px; border-radius: 22px; gap: 6px; }
+.m9__p i { width: 36px; height: 36px; border-radius: 50%; }
+.m9__pills { margin-top: 106px; }
+
+/* the selected series pill: no fill, just a stroke (the pink of the size pill) */
+.m9__p.is-on { background: #fff; border-color: #f0b4bb; box-shadow: none; }
+
+/* the question in the secondary grey, the way in in the app's accent blue */
+.kb { color: var(--blue-gray-600); gap: 0; }
+.kb__q { font-weight: 500; }
+.kb__a { display: inline-flex; align-items: center; gap: 3px; margin-left: 4px; color: var(--blue-600); font-weight: 600; }
+
+/* the variants + AI card kept under the slider once you've been in the line-up */
+.m9.m9b { top: 344px; }
+.m9.m9b .m9__vars { margin-top: 0; }
+
+/* "Latest" in the price line: "Latest · Starting 2,239" */
+.m9__new { font-style: normal; font-weight: 700; color: #7a3cf0; }
+
+/* selection in shades of the accent blue (--blue-600 #0076ff) instead of pink */
+.m9__p.is-on { background: #fff; border-color: #8fc2ff; box-shadow: 0 0 0 3px rgba(0,118,255,.08); }
+.m9c__p.is-on { background: #eaf3ff; color: #1d2539; }
+.m9__v::before { background: radial-gradient(circle, #fbfdff 0%, #f1f7ff 45%, #e1edff 100%); }
+
+/* the AI card in the same blue family: a faint wash of the accent blue, a blue-tinted edge */
+.st--garmin .m9 .gn { background: radial-gradient(120% 95% at 100% 0%, rgba(0,118,255,.08), rgba(0,118,255,0) 62%),
+    radial-gradient(90% 80% at 0% 100%, rgba(90,160,255,.06), rgba(90,160,255,0) 60%), #fbfdff;
+  box-shadow: inset 0 0 0 1px #e3eefc; }
+
+/* the selected pill: just the blue stroke, no halo */
+.m9__p.is-on { box-shadow: none; }
+
+/* phones: fill the screen edge to edge on every phone width (the 375px frame on a grey page used to show on
+   430px-wide phones), and stay light even when the browser forces a dark theme on web pages */
+:root { color-scheme: light only; }
+@media (max-width: 520px) {
+  body { display: block; background: #fff; }
+  .screen { width: 100%; height: 100vh; height: 100dvh; }
+}
+
+/* noon's CDN sends Safari AVIF, which iPhones render with grey-ish whites — every photo URL now asks for JPEG
+   (?format=jpg), so the photos' white is the page's white again; no extra filters needed */
+
+/* the slider's watches: no blending and no filter any more. With JPEG photos the white is already the page's
+   white, and on iPhone a blended + filtered image inside a moving (GPU) layer is drawn with a faint box on
+   screen that screenshots don't capture */
+.st--garmin .rsi__img--watch { mix-blend-mode: normal !important; filter: none !important; }
+
+/* the white "pool" behind the slot is white on white here, but as a GPU layer on iPhone it can show as a faint disc */
+.st--garmin .rs__sel { background: none; }
+
+/* iteration 41 — the way into the line-up: a pill under the ruler that names the series you're on */
+.sa { position: absolute; left: 50%; top: 344px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 18px;
+  border: 1.5px solid #cfe3ff; border-radius: 19px; background: #fff; color: var(--blue-600); font: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; transition: transform .18s cubic-bezier(.32,.72,0,1); }
+.sa:active { transform: translateX(-50%) scale(.96); }
+
+/* ══ Iteration 42 — cleaner: no "Not sure what to buy? See Garmin's line-up" line ═══════════════
+   The title, the slider (or the series pills) and "See all … models" close up into the space it took. */
+.kb, .m9__kb { display: none !important; }
+.st--garmin .gn:has(.kb) { display: none; }
+.st--garmin .st__roster { top: 70px; }
+.sa { top: 306px; }
+.m9__pills { margin-top: 68px; }
+.m9.m9b { top: 306px; }
+
+/* "All": the first pill, back to the slider */
+.m9__p--all { padding: 0 16px 0 6px; }
+.m9__allic { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #f2f3f6; color: #5b6175; }
+
+/* less air above "Select your Garmin": everything moves up 16px */
+.st--garmin .st__title { top: 6px; }
+.st--garmin .st__roster { top: 54px; }
+.sa { top: 290px; }
+.m9__pills { margin-top: 52px; }
+.m9.m9b { top: 290px; }
+
+/* ══ Iteration 43 — what the series is, then "See all" ════════════════════════════════════════════ */
+.wh { position: absolute; left: 12px; right: 12px; top: 288px; margin: 0; text-align: center; font-size: 13.5px; line-height: 20px; color: #4a5168; }
+.sa { top: 342px; }
+.m9.m9b { top: 342px; }
+
+/* the "What's Venu?" card: a soft blue wash like the AI card, a bold question, the answer under it */
+.wh { left: 0; right: 0; top: 286px; display: flex; flex-direction: column; gap: 4px; padding: 12px 16px 13px; border-radius: 16px; text-align: left;
+  background: radial-gradient(120% 95% at 100% 0%, rgba(0,118,255,.08), rgba(0,118,255,0) 62%), radial-gradient(90% 80% at 0% 100%, rgba(90,160,255,.06), rgba(90,160,255,0) 60%), #fbfdff;
+  box-shadow: inset 0 0 0 1px #e3eefc; }
+.wh b { font-size: 14px; line-height: 19px; font-weight: 700; color: #1d2539; }
+.wh span { font-size: 13px; line-height: 19px; color: #4a5168; }
+.sa { top: 388px; }
+.m9.m9b { top: 388px; }
+
+/* "See all …" inside the card, as its last line */
+.sa[hidden] { display: none !important; }
+.wh { padding-bottom: 6px; }
+.wh__go { display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; height: 34px; margin-top: 2px; padding: 0; border: 0; background: none;
+  font: inherit; font-size: 13.5px; font-weight: 700; color: var(--blue-600); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.wh__go:active { opacity: .6; }
+
+/* ══ PLP pulled from the brand widget project (product-upscale/ iteration 1, its "noon App GitFlow" PLP) ══
+   Header, marketplace tabs, chips, product card and glass tab bar, copied as they are there. Its brand-widget
+   panel rules are left out: this page's Garmin line-up keeps its own. The glass tab bar is shown again (this
+   iteration had hidden the results' bottom nav). */
+.bnav--plp.gftab { display: block; }
+/* ── PLP = the "noon App GitFlow" listing (its ListingScreen, 1:1 at this 375 frame) ──────────────────
+   A grey page (#f2f3f7) under a white header with a soft shadow: the shared search bar (y 52), marketplace
+   tabs (y 112: 8 + 55, five 106px tabs 12 apart — logo 24 + name 12/17 #000, a black 3px indicator, radius 2),
+   chips (y 175: 12 15, 30px, 1px #eaecf0, radius 20, 13/16 500 #475067, icons 16 + 10px chevron, a 1×24
+   divider after Sort). Then "N results for “q”" (12/16 #666d85, 700 query), the brand widget (white panel)
+   and the grid (12 in, 12 apart): white 12-radius cards — a 231px photo with the heart (24, white 70%) and
+   the "+" (36, white, 1px #f2f3f7, radius 8), dots pill; title 14/18 500 #212121 ×2, rating pill (#f7f8fa,
+   radius 6: ★ + 12/14 600 #101628 + (count) #666d85), price 16/20 700 #0e0e0e (+ was / % OFF), a coupon
+   chip, the express badge. The glass tab bar floats 20px off the bottom (white 64%, blur 14, radius 99). */
+.plp { background: #f2f3f7; }
+.plp::before { content: ''; position: absolute; left: 0; top: 0; width: 375px; height: 229px; background: #fff; z-index: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+.plp__mps.gfmp { top: 112px; height: 63px; background: #fff; z-index: 2; }
+.gfmp .mps__row { top: 8px; height: 55px; gap: 12px; padding: 0 16px; align-items: flex-start; }
+.gfmp .mp { width: 106px; height: 43px; gap: 2px; }
+.gfmp .mp__logo { width: 106px; height: 24px; }
+.gfmp .mp__logo > img { display: block; }
+.gfmp__pill { display: flex; align-items: center; justify-content: center; gap: 0; width: 67px; height: 20px; border-radius: 9999px; }
+.gfmp__pill img { display: block; }
+.gfmp__pill--sm { background: #2122b8; }
+.gfmp__pill--global { background: #f0ddff; }
+.gfmp__pill--min { background: #d12b28; }
+.mp__name { font-family: var(--noon); font-weight: 400; font-size: 12px; line-height: 17px; color: #000; white-space: nowrap; }
+.gfmp .mps__tab { left: 16px; top: 52px; width: 106px; height: 3px; background: #000; border-radius: 2px; }
+.plp__tags { left: 0; top: 175px; width: 375px; height: 54px; background: #fff; z-index: 2; }
+.tags__row { top: 12px; height: 30px; gap: 8px; padding: 0 15px; align-items: center; }
+.chip { height: 30px; padding: 0 11px; gap: 6px; border-radius: 20px; background: #fff; box-shadow: inset 0 0 0 1px #eaecf0;
+  font-family: var(--noon); font-weight: 500; font-size: 13px; line-height: 16px; color: #475067; }
+.chip:first-child { padding: 0 11px; }
+.chip--plain { padding: 0 10px; }
+.chip__ico { width: 16px; height: 16px; }
+.chip__chev { width: 10px; height: 10px; }
+.chip__t { padding: 0; }
+.chip__mask { display: block; flex: none; width: 16px; height: 16px; background: #475067; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.chip__div { position: relative; flex: none; width: 1px; height: 24px; margin: 0 4px; background: #eaecf0; }
+.tags__row .skel--chip { height: 30px; border-radius: 20px; }
+.plp__scroll { top: 229px; height: 583px; background: #f2f3f7; }
+.plp__meta { position: relative; margin: 0; padding: 2px 16px 8px; font-family: var(--noon); font-weight: 400; font-size: 12px; line-height: 16px; color: #666d85; min-height: 26px; }
+.plp__meta b { font-weight: 700; }
+.plp__grid { background: #f2f3f7; grid-template-columns: 169.5px 169.5px; column-gap: 12px; row-gap: 12px; padding: 2px 12px 0; }
+.pslot { width: 169.5px; height: 373px; }
+.skel { border-radius: 12px; }
+/* the card */
+.pcard { position: absolute; inset: 0; overflow: hidden; background: #fff; border-radius: 12px; opacity: 0; }
+.pcard::after { display: none; }
+.pcard__media { position: relative; width: 169.5px; height: 231px; overflow: hidden; background: #fff; border-radius: 12px 12px 0 0; }
+.pcard__photo { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
+.pcard__ov { position: absolute; inset: 0; background: rgba(0,0,0,.02); pointer-events: none; }
+.pcard__wish { position: absolute; left: auto; right: 4px; top: 4px; width: 24px; height: 24px; padding: 0; display: grid; place-items: center; border-radius: 50%; background: rgba(255,255,255,.7); }
+.pcard__wish svg { display: block; }
+.pcard__add { position: absolute; left: auto; right: 4px; top: auto; bottom: 4px; width: 36px; height: 36px; padding: 0; display: grid; place-items: center;
+  border-radius: 8px; background: #fff; box-shadow: inset 0 0 0 1px #f2f3f7, 0 1px 4px rgba(0,0,0,.06); }
+.pcard__add svg { display: block; }
+.pcard__dots { position: absolute; left: 50%; top: auto; bottom: 7px; width: auto; height: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border-radius: 20px; background: rgba(255,255,255,.7); }
+.pcard__dots i { flex: none; border-radius: 20px; background: rgba(14,14,14,.25); }
+.pcard__dots i:nth-child(1) { width: 6px; height: 6px; background: #0e0e0e; }
+.pcard__dots i:nth-child(2) { width: 5px; height: 5px; }
+.pcard__dots i:nth-child(3) { width: 4px; height: 4px; }
+.pcard__dots i:nth-child(4) { display: none; }
+.pcard__info { position: relative; left: auto; top: auto; width: auto; padding: 6px 8px 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.pcard__title { position: relative; left: auto; top: auto; width: 100%; height: 36px; overflow: hidden;
+  font-family: var(--noon); font-weight: 500; font-size: 14px; line-height: 18px; letter-spacing: 0; color: #212121; }
+.pcard__rate { position: relative; left: auto; top: auto; height: 18px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px; border-radius: 6px; background: #f7f8fa;
+  font-size: 12px; line-height: 14px; letter-spacing: 0; }
+.pcard__rate b { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; color: #101628; }
+.pcard__rate span { font-weight: 400; color: #666d85; }
+.pcard__rate svg { display: block; }
+.pcard__price { position: relative; left: auto; top: auto; height: 20px; display: flex; align-items: baseline; gap: 4px; margin-top: 2px; white-space: nowrap; }
+.pcard__sale { font-weight: 700; font-size: 16px; line-height: 20px; color: #0e0e0e; font-feature-settings: "case" 1; }
+.pcard__was { font-weight: 400; font-size: 12px; line-height: 14px; color: #7e859b; text-decoration: line-through; }
+.pcard__off { font-weight: 600; font-size: 12px; line-height: 14px; color: #05af25; }
+.pcard__coupon { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border-radius: 4px; background: #e9fbf9; box-shadow: inset 0 0 0 .5px #bbe0de;
+  font-weight: 600; font-size: 11px; line-height: 14px; color: #0a4f4a; white-space: nowrap; }
+.pcard__flag { position: absolute; left: 8px; bottom: 10px; height: 18px; }
+.pcard__flag img { display: block; height: 18px; width: auto; }
+/* the glass tab bar */
+.bnav--plp.gftab { left: 20px; right: auto; top: auto; bottom: 20px; width: 335px; height: 60px; z-index: 4; background: none; box-shadow: none; }
+.gftab__bar { position: absolute; inset: 0; display: flex; align-items: center; padding: 0 5px; border-radius: 9999px;
+  background: rgba(255,255,255,.64); -webkit-backdrop-filter: blur(14px) saturate(1.8); backdrop-filter: blur(14px) saturate(1.8);
+  box-shadow: 0 8px 28px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.06), inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 1px rgba(255,255,255,.4); }
+.is-android .gftab__bar { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(255,255,255,.94); }
+.gftab__lens { position: absolute; left: 5px; top: 5px; width: 65px; height: 50px; border-radius: 9999px; background: rgba(0,0,0,.06); }
+.gftab__it { position: relative; flex: 1 0 0; height: 50px; display: grid; place-items: center; -webkit-tap-highlight-color: transparent; }
+.gftab__it i { display: block; width: 27px; height: 27px; background: #1d2539; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+.gftab__badge { position: absolute; left: 50%; top: 5px; margin-left: 4px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9999px; background: #1d2539; color: #fff;
+  box-shadow: 0 0 0 1.5px #fff; font-weight: 700; font-size: 10px; line-height: 17px; text-align: center; }
+.plp__scroll::after { height: 96px; }
+
+.srch__bar { z-index: 3; }   /* the shared search bar stays above the PLP header backing */
+/* the search bar is the original 343×44 at y 49 again (bottom 93): the GitFlow header sits 12 under it */
+.plp::before { height: 222px; }
+.plp__mps.gfmp { top: 105px; }
+.plp__tags { top: 168px; }
+.plp__scroll { top: 222px; height: 590px; }
+/* white page: the PLP, its scroll and the grid are white; each card keeps its edge with a 1px #f2f3f7 border */
+.plp, .plp__scroll, .plp__grid { background: #fff; }
+.pcard::after { display: block; content: ''; position: absolute; inset: 0; border: 1px solid #f2f3f7; border-radius: 12px; pointer-events: none; z-index: 3; }
+
+/* ══ Garmin widget type + spacing, as the brand widget project's picker (product-upscale/v10, "Select your TV type") ══
+   The panel spans the product grid (x 12 → 363, 351 wide) and sits 8px under the chips; the slider's centre line
+   moves to x 175 with it (RS.IND in app.js). Title 28/500, −1.4 tracking, #262626, 21px into the panel; the slot
+   22px under the title; the series name 22.3/29 bold. */
+.plp__scroll > .brw { margin-top: 8px; }
+.brw__bar { left: 12px; width: 351px; }
+.st, .st__roster, .rs, .rs__read, .rs__ruler { width: 351px; }
+.rs__sel { left: 65px; }
+.rs__amb { left: 40px; }
+.rs__ind { left: 174px; }
+.rs__dot { left: 173px; }
+.st--garmin .st__title { top: 21px; height: 24px; }
+.st--garmin .st__title span { font-size: 28px; font-weight: 500; line-height: 24.08px; letter-spacing: -1.4px; color: #262626; }
+.st--garmin .st__roster { top: 67px; }
+.st--garmin .rs__read { height: 49px; }
+.st--garmin .rs__line b { font-size: 22.308px; line-height: 29px; letter-spacing: -0.5577px; }
+.st--garmin .wh { top: 299px; }
+
+/* Garmin photos are the framed copies in assets/garmin/ (each watch centred at one size on white), so the
+   thumbnails that zoomed into noon's loosely framed originals show the whole photo now */
+.gc__c .gc__img, .gs2__ms i { background-size: 92%; }
+.lk__ph { background-size: auto 92%; }
+
+/* ══ Scroll: the brand widget project's collapsed state (product-upscale/v10, iteration 8+) ══════════════
+   The search bar block (0 → 105) is white with GitFlow's searchContainer shadow and sits above the
+   marketplace tabs + chips, which slide up under it by their height (117) on --plp-hide 0 → 1 (app.js
+   hidable). The list starts under the search block with a 117px spacer, so the products pass under the
+   header. The folded Garmin widget is the brand widget's 64px bar (app.js gFold): sticky 8px under the chips
+   on a white band the cards slide under, riding up with the header. */
+.plp::before { height: 105px; z-index: 2; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+.plp__mps.gfmp, .plp__tags { z-index: 1; translate: 0 calc(var(--plp-hide, 0) * -117px); }
+.plp__scroll { top: 105px; height: 707px; z-index: 0; }
+.plp__scroll::before { content: ''; display: block; height: 117px; }
+@property --plp-hide { syntax: '<number>'; inherits: false; initial-value: 0; }
+
+.brw.is-done { position: sticky; top: 125px; z-index: 2; translate: 0 calc(var(--plp-hide, 0) * -117px); }
+.brw.is-done::before { content: ''; position: absolute; left: 0; right: 0; top: -8px; bottom: 0; background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0); transition: box-shadow .2s cubic-bezier(.33,1,.68,1); }
+.brw.is-done.is-over::before { box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+/* the panel's grey arrives late (from 240ms, as it nears 64px) so no tall grey box flashes mid-spring;
+   opening again it leaves first and fast */
+.brw.is-story .brw__bar { transition: background-color .14s cubic-bezier(.65,0,.35,1), border-radius .14s; }
+.brw.is-story.is-done .brw__bar { background: #f7f8fa; border-radius: 16px; overflow: hidden;
+  transition: background-color .26s cubic-bezier(.33,1,.68,1) .24s, border-radius .26s .24s; }
+.brw.is-done .st, .brw.is-done .st * { pointer-events: none !important; }   /* the faded widget takes no taps over the cards */
+.qd { position: absolute; left: 14px; right: 14px; top: 0; height: 64px; display: flex; align-items: center; gap: 10px; opacity: 0; pointer-events: none; z-index: 3; }
+.brw.is-done .qd { pointer-events: auto; }
+.qd__ic { flex: none; width: 36px; height: 36px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 1px #eceef3; }
+.qd__txt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.qd__t { font-weight: 600; font-size: 14px; line-height: 18px; color: #1d2539; }
+.qd__s { margin-top: 1px; font-weight: 400; font-size: 12px; line-height: 16px; color: #666d85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-feature-settings: "case" 1; }
+.qd__edit { flex: none; height: 30px; padding: 0 14px; border: 0; border-radius: 15px; background: #fff; box-shadow: 0 0 0 1px #e6e8ee; color: #1d2539; cursor: pointer;
+  font: inherit; font-weight: 600; font-size: 13px; -webkit-tap-highlight-color: transparent; transition: scale .18s cubic-bezier(.32,.72,0,1), background-color .15s; }
+.qd__edit:active { scale: .95; background: #f3f4f7; }
+
+/* no floor shadow under the watches (user request): the framed photos sit straight on the white */
+.st--garmin .rsi::after { display: none; }
+
+/* "What's …" card, styled as the brand widget project's brand card (product-upscale, State 16 · Hierarchy
+   1232:9469): white, radius 20, a 1px #eceef3 edge, 12px body — the question in its name style (14/18 600 −0.2
+   #1d2539), the copy, and its full-width button (36 tall, radius 10, #f3f4f7, 13/18 600 ink). */
+.st--garmin .wh { display: flex; flex-direction: column; gap: 3px; padding: 12px; border-radius: 20px; background: #fff;
+  box-shadow: inset 0 0 0 1px #eceef3; text-align: left; letter-spacing: -0.1px; color: #1d2539; }
+.st--garmin .wh__q { margin: 0; font-weight: 600; font-size: 14px; line-height: 18px; letter-spacing: -0.2px; color: #1d2539; }
+.st--garmin .wh__d { margin: 0; font-weight: 400; font-size: 12px; line-height: 16px; letter-spacing: 0; color: #666d85; }
+.st--garmin .wh__go { display: flex; align-items: center; justify-content: center; gap: 2px; align-self: stretch; width: 100%; height: 36px; margin-top: 10px; padding: 0 8px 0 12px;
+  border: 0; border-radius: 10px; background: #f3f4f7; color: #1d2539; font: inherit; font-weight: 600; font-size: 13px; line-height: 18px; letter-spacing: -0.1px; white-space: nowrap;
+  cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .2s, transform .2s cubic-bezier(.32,.72,0,1); }
+.st--garmin .wh__go svg { display: block; flex: none; }
+.st--garmin .wh__go:active { background: #e9ebf0; transform: scale(.97); opacity: 1; }
+
+/* the watch sits closer to its name: 112 → 136px (+21%), anchored to the slot's floor and let 14px past it,
+   so it grows down toward the readout instead of up toward the title */
+.st--garmin .rsi--watch { align-items: flex-end; }
+.st--garmin .rsi__img--watch { width: 136px; height: 136px; margin-bottom: -14px; }
+/* …and none under the series sheet's big watch either */
+.gs2__glow { display: none; }

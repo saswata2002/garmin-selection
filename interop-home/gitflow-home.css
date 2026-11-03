@@ -1,0 +1,346 @@
+/* ══════════════════════════════════════════════════════════════════════
+   noon App GitFlow — home feed
+   ══════════════════════════════════════════════════════════════════════
+   The scrolling body of the home screen, ported from @noon/flow-kit
+   (src/flows/home: ClassicHomeScreen.tsx + home.module.css + data.ts).
+   Every box size, gap and padding below is the kit's own number; the
+   type and colour are its resolved tokens:
+
+     type/section        16 / 22 / 700      type/productTitle  14 / 18 / 500
+     type/text14BoldLh1  14 / 1  / 700      type/text16Bold    16 / 20 / 700
+     textStrong  #101628    textProduct #212121    link    #0076FF
+     primary     #0F61FF    lightGray   #f1f1f1    surface #FFFFFF
+     dealCard gradient  #FFF7A6 → #FFFDE8
+
+   Scope: the feed only. The brand rail, address, search, tab bar and the
+   touchpoint tile are still the prototype's, because the takeover is
+   tuned against their geometry — .stage, .nudge, .hp-shell and .tabbar
+   carry 220 references across the five touchpoint iterations, and the
+   feed carries none.                                                    */
+
+.gf-feed { display: flex; flex-direction: column; gap: 20px; padding-top: 12px; }
+.gf-module { display: flex; flex-direction: column; gap: 12px; }
+.gf-section {
+  margin: 0; padding: 0 16px;
+  font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 16px; line-height: 22px; font-weight: 700; color: #101628;
+}
+
+/* Horizontal rails. The kit's .nk-hscroll: overflow-x auto, no bar. */
+.gf-hscroll {
+  display: flex; overflow-x: auto; overflow-y: hidden;
+  padding: 0 16px; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.gf-hscroll::-webkit-scrollbar { display: none; }
+.gf-hscroll-y { overflow-x: auto; scrollbar-width: none; }
+.gf-hscroll-y::-webkit-scrollbar { display: none; }
+
+/* ── Hero: 244 × 366 portrait cards, 12 apart, centred so the
+      neighbours peek. The kit auto-advances every 4s. ───────────────── */
+.gf-heroWrap { position: relative; }
+/* The kit centres the first slide — padding-inline (100% − 244) / 2 —
+   which leaves 65.5 of empty ground down the left at rest, against the
+   16 every other section in the feed starts at. Aligned to that 16
+   instead, so the column is straight and the next card peeks on the
+   right rather than white showing on the left. Snap moves to `start`
+   to match, and the 4s advance still steps by one card + gap. */
+.gf-hero {
+  gap: 12px; padding-inline: 16px;
+  scroll-snap-type: x mandatory; scroll-padding-left: 16px;
+}
+.gf-heroCard {
+  flex: 0 0 auto; width: 244px; height: 366px;
+  border-radius: 20px; overflow: hidden; scroll-snap-align: start;
+}
+.gf-heroCard img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Promo strip: 363 : 91, inset 16, r16 ─────────────────────────── */
+.gf-strip { margin: 0 16px; aspect-ratio: 363 / 91; border-radius: 16px; overflow: hidden; }
+.gf-strip img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Category tiles: two rows of 87 × 121, 14 apart ───────────────── */
+.gf-tileRows { display: flex; flex-direction: column; gap: 14px; padding: 0 16px; }
+.gf-tileRow { display: flex; gap: 14px; }
+.gf-tile { flex: 0 0 auto; width: 87px; height: 121px; }
+.gf-tile img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+/* ── Creative cards: offers 147 × 192, spotlight 147 × 205,
+      savings 102 × 193, banners 357 × 147 ──────────────────────────── */
+.gf-card { flex: 0 0 auto; border-radius: 12px; overflow: hidden; }
+.gf-card img { display: block; width: 100%; height: 100%; object-fit: contain; }
+
+/* ── Deals of the day ─────────────────────────────────────────────── */
+.gf-dealCard {
+  margin: 0 12px; border-radius: 12px; overflow: hidden;
+  background: linear-gradient(180deg, #FFF7A6 0%, #FFFDE8 100%);
+}
+.gf-moduleHeader { display: flex; align-items: flex-end; justify-content: space-between; padding: 12px; }
+.gf-dealTitle {
+  margin: 0; font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 16px; line-height: 20px; font-weight: 700; color: #101628;
+}
+.gf-link { color: #0076FF; }
+.gf-dealTimer {
+  margin: 4px 0 0; font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 12px; line-height: 16px; font-weight: 500; color: #404553;
+}
+.gf-viewAll {
+  font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 14px; line-height: 1; font-weight: 700; color: #0F61FF;
+}
+
+/* ── Recommended grid: two columns, 12 apart, inset 12 ────────────── */
+.gf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px; }
+
+/* ── Product card. The kit's: r12, a 0.5 hairline, info inset 8 with a
+      4 gap, 10 of breathing room at the foot. The carousel variant
+      drops the border to r8 and insets the info by 4. ──────────────── */
+.gf-pc {
+  position: relative; display: flex; flex-direction: column; min-width: 0;
+  background: #fff; border: 0.5px solid #f1f1f1; border-radius: 12px;
+  overflow: hidden; padding-bottom: 10px;
+}
+.gf-pc--carousel { border: 0; border-radius: 8px; }
+.gf-pcMedia { position: relative; aspect-ratio: 1 / 1; background: #F2F3F7; }
+.gf-pcMedia img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.gf-pcInfo { display: flex; flex-direction: column; gap: 4px; padding: 6px 8px 0; }
+.gf-pc--carousel .gf-pcInfo { padding: 4px 4px 0; margin-bottom: 2px; }
+.gf-pcTitle {
+  margin: 0; font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 14px; line-height: 18px; font-weight: 500; color: #212121;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.gf-pcRate {
+  display: inline-flex; align-items: center; gap: 3px; align-self: flex-start;
+  padding: 1px 5px; border-radius: 4px; background: #f1f1f1;
+  font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 11px; line-height: 15px; font-weight: 700; color: #212121;
+}
+.gf-pcCount { font-weight: 400; color: #7E859B; }
+.gf-pcPrice {
+  margin: 2px 0 0; font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 16px; line-height: 20px; font-weight: 700; color: #212121;
+}
+/* U+E001 is the dirham, and it only exists in Noontree. */
+.gf-dh { font-family: Noontree, sans-serif; margin-inline-end: 2px; }
+.gf-pcDelivery { display: flex; align-items: center; gap: 4px; padding: 0 8px; margin-top: 6px; min-height: 20px; }
+.gf-pc--carousel .gf-pcDelivery { padding: 0 4px; margin-top: 4px; min-height: 18px; }
+.gf-pcEta {
+  padding: 1px 6px; border-radius: 4px; background: #FEEE00;
+  font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 10px; line-height: 14px; font-weight: 700; color: #212121;
+}
+
+/* ══ Bottom tabs — the Flow Kit's Liquid Glass dock, 1:1 ═════════════
+   components/TabBar's default `glass` variant. Every number is the kit's
+   tabBar.glass* token:
+     height 62 · inset-x 21 · bottom max(8, inset − 13) → 8 · radius full
+     lens-inset 4 (the platter's padding AND the lens track's inset)
+     bg whiteAlpha64 over blur(14px) saturate(180%), whiteAlpha95 without
+     rim whiteAlpha70 1px · sheen whiteAlpha50 at 160deg, out by 45%
+     shadow 0 8 28 blackAlpha12 + 0 0 0 .5 blackAlpha6
+     highlight inset 0 1 0 whiteAlpha90 + inset 0 −1 1 whiteAlpha40
+     lens blackAlpha6, a slot 1/5 wide · icon #1D2539 · scale 0.875
+     badge #1D2539 at top −4 / 50% + 4, 18 high, 1.5 white ring
+     fade whiteAlpha0 → whiteAlpha60 at 45% → whiteAlpha90
+
+   .tabbar itself is untouched — the five touchpoint iterations transform
+   it through the dip and the takeover, and those 25 rules still apply. */
+.tabbar { padding: 0; display: block; }
+
+/* The fade the platter sits on: the kit stacks four progressively
+   blurred layers under this gradient. Only the gradient is here — four
+   more blurred layers over a scrolling feed is the exact cost this build
+   spent two passes removing, and the gradient carries the read. */
+.gf-tabFade {
+  position: absolute; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 0;
+  height: 131px;                        /* 62 platter + 21 bottom + 48 extend */
+  background: linear-gradient(to bottom,
+              rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 45%, rgba(255,255,255,0.9) 100%);
+}
+
+/* The platter's bottom is the kit's formula, not a guess:
+       max(glassBottomMin 8, inset-bottom − glassLift 13)
+   A div has no safe area, so reading it off the frame gave 0 → 8, and the
+   dock sat 13 low. This frame is an iPhone X-class 375 x 812, whose home
+   indicator is 34 — the same as the 390 x 844 the reference was shot on
+   (780px of content at exactly 2.0/CSS, 1688/2 = 844) — so the inset is
+   34 and the platter sits at max(8, 34 − 13) = 21. */
+.gf-tabs {
+  --inset-bottom: 34px;                 /* home indicator, as on the device */
+  position: absolute; left: 21px; right: 21px; height: 62px;
+  bottom: max(8px, calc(var(--inset-bottom) - 13px));
+  box-sizing: border-box; padding: 4px;        /* glassLensInset */
+  display: flex; align-items: stretch;
+  border-radius: 9999px; isolation: isolate;
+  border: 1px solid rgba(255,255,255,0.7);
+  background: rgba(255,255,255,0.95);          /* no backdrop-filter */
+  box-shadow: 0 8px 28px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.06),
+              inset 0 1px 0 rgba(255,255,255,0.9),
+              inset 0 -1px 1px rgba(255,255,255,0.4);
+}
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .gf-tabs {
+    background: rgba(255,255,255,0.64);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    backdrop-filter: blur(14px) saturate(180%);
+  }
+}
+/* The one blur on this screen, on the one element that moves through
+   every beat — dip, pull, takeover, morph. Same rule as everywhere else
+   here: off for the length of a move, back when it lands. The kit's own
+   95% fallback holds the platter opaque meanwhile, so nothing flickers. */
+.screen.is-xmp-dip .gf-tabs,
+.screen.is-pulling .gf-tabs,
+.screen.is-tk      .gf-tabs,
+.screen.is-tk-out  .gf-tabs,
+.screen.is-morphing .gf-tabs {
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+  background: rgba(255,255,255,0.95);
+}
+/* specular sheen, light catching the top-left */
+.gf-tabs::before {
+  content: ''; position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit; pointer-events: none;
+  background: linear-gradient(160deg, rgba(255,255,255,0.5), rgba(255,255,255,0) 45%);
+}
+
+/* The lens rides its own track, a fifth of the width, rather than being
+   drawn on the selected tab — which is how the kit slides it. */
+.gf-tabTrack {
+  position: absolute; inset: 4px; overflow: hidden;
+  border-radius: 9999px; pointer-events: none;
+}
+.gf-tabLensSlot { position: absolute; top: 0; bottom: 0; left: 0; display: block; }
+.gf-tabLens { position: absolute; inset: 0; border-radius: 9999px; background: rgba(0,0,0,0.06); }
+
+.gf-tab {
+  position: relative; flex: 1; min-width: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0; border: 0; background: none; cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.gf-tabIcon { position: relative; display: flex; align-items: center; justify-content: center; }
+/* MaskIcon: the tab artwork is a mask, painted in one colour for both
+   states — the filled shape is what marks the selection, not a tint. */
+.gf-tabGlyph {
+  display: block; background: #1D2539;
+  -webkit-mask: var(--glyph) center / contain no-repeat;
+          mask: var(--glyph) center / contain no-repeat;
+}
+.gf-tabBadge {
+  position: absolute; top: -4px; left: calc(50% + 4px);
+  box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+  min-width: 18px; height: 18px; padding: 0 4px;
+  border: 0; border-radius: 9999px; line-height: 1;
+  background: #1D2539; color: #fff;
+  box-shadow: 0 0 0 1.5px #fff;
+  font: 400 13px/1 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+/* ══ The home's scroll collapse — noon App GitFlow ══════════════════════
+   ClassicHomeScreen: `const onScroll = (y) => setCollapsed(y >= 100)`.
+   Past 100px of feed the experience switcher compacts and the address row
+   folds away; the search bar stays, and everything under it comes up by
+   what the two of them gave back.
+
+   The kit's numbers, not re-derived: switcherMetrics puts the collapsed
+   tile at itemHeight / 2.2 and its radius at 20 → 12, and both the fold
+   and the switcher run motionDuration.medium (0.276s) on easing.out —
+   the kit's fast-start curve, which overshoots to 1.066 and settles.
+   The tile is the prototype's 76 rather than the kit's 390/5, so the
+   ratio is applied to 76: 76 / 2.2 = 34.545, giving back 41.455.
+
+   How much the address row gives back was measured off the kit running
+   at localhost:5192 rather than counted off this markup, and the two do
+   not agree. Expanded, both leave 72 between the switcher and the search
+   bar — but the kit spends it as 8 + a 64 row, and this header spends it
+   as 14 + a 44 row + 14. Folding only the row's own 44 therefore left 28
+   where the kit leaves its bottomMargin of 8. So the address block gives
+   back the whole 64 it occupies, not the 44 it measures: 105.455 in all,
+   which puts the collapsed search bar 8 under the tiles, where the kit
+   puts it.
+
+   Only the switcher's own box changes size. The search bar and the feed
+   are moved by transform, so a threshold crossing costs no layout below
+   the header — the feed is ~120 images and it must not be re-flowed to
+   slide 85px. .stage clips, so .scroll is cut to its collapsed height
+   and simply overhangs the frame while the header is open. */
+:root {
+  --gf-fold-dur: 276ms;                               /* motionDuration.medium */
+  --gf-fold-ease: cubic-bezier(0, 0.204, 0.316, 1.066);  /* easing.out */
+  --gf-tile: 76px;
+  --gf-tile-sm: 34.545px;                             /* itemHeight / 2.2 */
+  --gf-rise: 105.455px;                               /* (76 − 34.545) + 64 */
+}
+
+/* The tiles shrink from their top edge; while they are full height,
+   flex-start and center are the same place. */
+.brands__track { align-items: flex-start; }
+.btile { transition: height var(--gf-fold-dur) var(--gf-fold-ease); }
+.btile--core::before,
+.btile--soft::before,
+.btile--white::before { transition: border-radius var(--gf-fold-dur) var(--gf-fold-ease); }
+.screen.is-gf-collapsed .btile { height: var(--gf-tile-sm); }
+.screen.is-gf-collapsed .btile--core::before,
+.screen.is-gf-collapsed .btile--soft::before,
+.screen.is-gf-collapsed .btile--white::before { border-radius: 12px; }
+
+/* The full logo scales out of the middle; the wordmark rises into it.
+   The kit animates marginTop 48 → 0 on the compact mark, which inside a
+   tile that clips reads as a rise — here it is the same 48 as a
+   translate, so nothing in the row is laid out again. */
+.btile > :not(.btile__cmp) {
+  transform-origin: 50% 50%;
+  transition: transform var(--gf-fold-dur) var(--gf-fold-ease),
+              opacity   var(--gf-fold-dur) var(--gf-fold-ease);
+}
+.screen.is-gf-collapsed .btile > :not(.btile__cmp) { transform: scale(0); opacity: 0; }
+
+.btile__cmp {
+  position: absolute; left: 50%; top: 50%;
+  width: 64px; height: 22.545px;        /* itemWidth − 12, collapsedItemHeight − 12 */
+  object-fit: contain;                  /* the mark keeps its own ratio in that box */
+  opacity: 0; pointer-events: none;
+  transform: translate(-50%, calc(-50% + 48px));
+  transition: transform var(--gf-fold-dur) var(--gf-fold-ease),
+              opacity   var(--gf-fold-dur) var(--gf-fold-ease);
+}
+.screen.is-gf-collapsed .btile__cmp { opacity: 1; transform: translate(-50%, -50%); }
+/* Namshi is the one tile the kit has no experience for — it carries
+   Services in that slot — so its compact state is set rather than imported. */
+.btile__cmp--word {
+  margin: 0; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-primary), Noontree, sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: -0.2px; color: #101628;
+}
+
+/* The address row folds. Height and opacity, as the kit's collapse does. */
+.addr { overflow: hidden; transition: height var(--gf-fold-dur) var(--gf-fold-ease),
+                                      opacity var(--gf-fold-dur) var(--gf-fold-ease); }
+.screen.is-gf-collapsed .addr { height: 0; opacity: 0; }
+
+/* The search bar stays, and comes up with the feed behind it. */
+.search { transition: transform var(--gf-fold-dur) var(--gf-fold-ease); }
+.screen.is-gf-collapsed .search { transform: translateY(calc(-1 * var(--gf-rise))); }
+
+/* .chrome is the opaque band the header sits on — 273 tall, z-index 3, with
+   the wash painted on it — and the feed is flush under its bottom edge. It
+   has to give back the same 85.455, or the feed rises underneath it and the
+   top of the hero is simply hidden behind the wash. Its children are
+   absolutely positioned, so the height costs nothing to animate, and
+   .chrome__wash keeps its origin and size and is only clipped shorter, so
+   the gradient over the header is the same gradient it always was. */
+.chrome { transition: height var(--gf-fold-dur) var(--gf-fold-ease); }
+.screen.is-gf-collapsed .chrome { height: calc(273px - var(--gf-rise)); }
+
+/* .scroll is sized for the collapsed header all the time and overhangs the
+   frame while it is open, so the rise is a transform and the feed is never
+   laid out again. .stage clips the overhang. */
+.scroll { height: calc(var(--frame-h) - 273px + var(--gf-rise)); bottom: auto;
+          transition: transform var(--gf-fold-dur) var(--gf-fold-ease); }
+.screen.is-gf-collapsed .scroll { transform: translateY(calc(-1 * var(--gf-rise))); }
+
+@media (prefers-reduced-motion: reduce) {
+  .chrome, .btile, .btile > *, .btile__cmp, .addr, .search, .scroll { transition: none; }
+}

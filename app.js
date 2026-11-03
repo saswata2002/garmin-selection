@@ -1,4 +1,4 @@
-/* Brand Widget PLP — iteration 1 (/) */
+/* Brand Widget PLP — iteration 8 (/v8/) — iteration 7 with no bottom nav on the results and a third filter on the face: a "Select model year" row under the sizes (shown once the shopper touches type or size), in four switchable UIs — pills, stepper, slider, toggle. From iteration 7: iteration 6 with one constant "Select your TV" header: the size row starts as a single "Select your TV size" pill (Figma XzSbnjrYFbhNg6Rc5lKmGJ 432:76848) that expands into the size pills on its own 1.2s later (or when tapped); any type (No preference too) can take a size; asset paths point to assets/ */
 /* Android: phone GPUs pay heavily for animated blur filters and backdrop blurs, so on Android the
    motion keeps its timing and curves but drops the blur (transform + opacity only); html.is-android
    switches the CSS backdrop blurs off. Nothing changes on iPhone or desktop. */
@@ -109,6 +109,7 @@ if (IS_ANDROID) document.documentElement.classList.add('is-android');
 
   /* ── Recommended tabs ────────────────────────────────────────────── */
   const tabs = document.getElementById('tabs');
+  if (!tabs) return;               // Home is the framed interop page now (interop-home/)
   tabs.addEventListener('click', (e) => {
     const t = e.target.closest('.tab');
     if (!t) return;
@@ -347,9 +348,16 @@ const PP = (() => {
       { q: 'fitness tracker for women',       img: 'ZA29379A5062B5830F005Z/45/_/1779873383/f4b57d7f-e63d-4fcf-9370-d601a1cdf48e' },   // Fitbit Inspire HR Lilac
       { q: 'fitness tracker with heart rate', img: 'Z863C04E5C086CC7C08BBZ/45/_/1790146470/ab4c994e-792d-45db-8c1a-8a3b9d448321' },   // ORYX band
     ],
+    tv: [   // noon.com/uae-en TV listing photos (2026-10-22)
+      { q: 'tv',          img: 'Z331F6F9B84F5374FD435Z/45/_/1772180320/0d31b0ea-3e9d-4769-9bb2-dbd7e1bad196' },   // Samsung Q6F 55"
+      { q: 'tv 55 inch',  img: 'ZC940392BDA2BDEB43C6EZ/45/_/1787835053/901b60ff-b678-4170-8339-667ede58846b' },   // Hisense 55E7Q
+      { q: 'tv 65 inch',  img: 'ZE88D74FAB795619572BFZ/45/_/1779345237/d847e07e-fb7b-4c15-9624-31f0d4c3f799' },   // TCL 65" QLED
+      { q: 'tv 4k',       img: 'ZF48A39BAF575C70368C0Z/45/_/1780467020/88e01da1-ae7f-499b-bedf-dfb2685513d4' },   // Xiaomi TV S Mini LED 55"
+      { q: 'tv oled',     img: 'Z161B06F43A57C1103952Z/45/_/1780306903/835f1735-f869-4e58-b4d3-66857add83b4' },   // LG OLED 55"
+    ],
   };
   // warm the fitness photos once the search page is up, so they're decoded before they reveal
-  const warmSet = (key) => SETS[key].forEach((it) => { if (!it.img) return; const im = new Image(); im.src = `${NOON}${it.img}.jpg?width=120`; });
+  const warmSet = (key) => SETS[key].forEach((it) => { if (!it.img) return; const im = new Image(); im.src = `${NOON}${it.img}.jpg?format=jpg&width=120`; });
 
   /* Suggestions as you type, letter by letter: every query that STARTS WITH what is typed — the design
      sets above first, then NOON_SUGGEST (assets/suggest-data.js: popular noon queries for every letter,
@@ -360,7 +368,13 @@ const PP = (() => {
   const CDN = 'https://f.nooncdn.com/p/';
   const DATA = [];
   const seen = new Set();
-  [...SETS.phone, ...SETS['fitness tracker'].map((it) => ({ q: it.q, img: 'pzsku/' + it.img })), ...(window.NOON_SUGGEST || []).map(([q, img]) => ({ q, img }))]
+  // iteration 6: the storyboard's query ("Samsung tv") and its neighbours, ahead of noon's own "samsung…" rows
+  const SAMSUNG_TV = [['samsung tv', 'Z331F6F9B84F5374FD435Z/45/_/1772180320/0d31b0ea-3e9d-4769-9bb2-dbd7e1bad196'], ['samsung tv 55 inch', 'ZA90641EE2CE2A68FB6ECZ/45/_/1772180549/acac0b3d-bd94-45c0-943f-bf50dc178dda'],
+    ['samsung tv 75 inch', 'ZF06D353044F9AD57D2A5Z/45/_/1772180544/75fd4a05-6393-4411-895e-102e4b9f6547']].map(([q, img]) => ({ q, img: 'pzsku/' + img }));
+  // iteration 11: Garmin asks, ahead of noon's own "garmin…" rows
+  const GARMIN_SUG = [['garmin watch', 'Z32827C0D0C211ED01BBCZ/45/_/1779873599/f2d96849-ae6c-4598-948b-3b39e40ba895'], ['garmin forerunner', 'ZD984E467BF2FAEA698C3Z/45/_/1779873428/d63dad78-a40b-49c2-a6c0-8822ba483dd9'],
+    ['garmin fenix', 'Z1F6345FAADD626AC46AFZ/45/_/1779873478/974a0da2-ed73-464b-869d-252962e4bce2'], ['garmin venu', 'Z59F04ADB8AE50CCA5857Z/45/_/1779873572/ba8f31ad-4f91-4c0b-9dd2-4407007705ed']].map(([q, img]) => ({ q, img: 'pzsku/' + img }));
+  [...SETS.phone, ...SETS['fitness tracker'].map((it) => ({ q: it.q, img: 'pzsku/' + it.img })), ...SETS.tv.map((it) => ({ q: it.q, img: 'pzsku/' + it.img })), ...SAMSUNG_TV, ...GARMIN_SUG, ...(window.NOON_SUGGEST || []).map(([q, img]) => ({ q, img }))]
     .forEach((s) => { if (!seen.has(s.q)) { seen.add(s.q); DATA.push(s); } });
   function matches(q) {
     if (!q) return [];
@@ -372,7 +386,7 @@ const PP = (() => {
     return out;
   }
   const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-  const thumbOf = (s) => s.html || `<span class="sug__img sug__img--photo"><img src="${CDN}${s.img}.jpg?width=120" alt="" decoding="async" /></span>`;
+  const thumbOf = (s) => s.html || `<span class="sug__img sug__img--photo"><img src="${CDN}${s.img}.jpg?format=jpg&width=120" alt="" decoding="async" /></span>`;
   let shownKey = '';                               // what the rows hold now ("q|a|b|…")
   /* While typing, a row whose suggestion changes CROSSFADES rather than swapping: the old label and photo
      lift 5px, soften (blur 2px) and fade out on the S-curve, while the new ones rise 5px into place on the
@@ -441,7 +455,7 @@ const PP = (() => {
     });
   }
   const warmed = new Set();
-  const warm = (list) => list.forEach((s) => { if (!s.img || warmed.has(s.img)) return; warmed.add(s.img); const im = new Image(); im.decoding = 'async'; im.src = `${CDN}${s.img}.jpg?width=120`; });
+  const warm = (list) => list.forEach((s) => { if (!s.img || warmed.has(s.img)) return; warmed.add(s.img); const im = new Image(); im.decoding = 'async'; im.src = `${CDN}${s.img}.jpg?format=jpg&width=120`; });
 
   function revealRow(el, delay) {
     const c = PP.stop(el), fresh = c.op < 0.02;
@@ -513,7 +527,7 @@ const PP = (() => {
   input.addEventListener('input', update);
 
   // The push brings the trending block in on its own beat
-  search.addEventListener('search:push', () => warmSet('fitness tracker'));
+  search.addEventListener('search:push', () => { warmSet('fitness tracker'); warmSet('tv'); });
   search.addEventListener('search:push', () => {
     if (input.value.trim()) return;
     PP.stop(art); art.style.opacity = 0; art.style.transform = `translateY(${TRAVEL}px)`;
@@ -597,6 +611,44 @@ const PP = (() => {
   const tags   = document.getElementById('plpTags');
   const chips  = [...plp.querySelectorAll('.chip')];
   const A = 'assets/';
+
+  /* the PLP header on scroll — the "noon App GitFlow" PLP's slide (noon-app-skill src/flows/plp/scrollStates.ts =
+     bappzaar HidableView): the search bar block never moves; the marketplace tabs + chips (117) slide by their
+     own height under it on RN's Animated.timing default — 300ms, inOut(ease) with ease = bezier(.42, 0, 1, 1).
+     From the brand widget project (iteration 8+): it triggers on a slight scroll, on the same frame the Garmin
+     widget folds and the nav leaves: down 6px past where the downward run began (and past y 10) hides it; up 24px (GitFlow's
+     tab-bar show distance) or back within 10 of the top shows it. The products scroll under the header (a spacer of h opens
+     the list) and the pinned Garmin bar rides up with it (styles.css --plp-hide). */
+  const hidable = (() => {
+    const mps = plp.querySelector('.plp__mps'), els = [mps, plp.querySelector('.plp__tags'), document.getElementById('brandWidget')];
+    const bez = (x1, y1, x2, y2) => {
+      const cx = 3 * x1, bx = 3 * (x2 - x1) - cx, ax = 1 - cx - bx, cy = 3 * y1, by = 3 * (y2 - y1) - cy, ay = 1 - cy - by;
+      const X = (t) => ((ax * t + bx) * t + cx) * t, Y = (t) => ((ay * t + by) * t + cy) * t;
+      return (x) => { let lo = 0, hi = 1, t = x; for (let i = 0; i < 24; i++) { if (X(t) < x) lo = t; else hi = t; t = (lo + hi) / 2; } return Y(t); };
+    };
+    const easeIn = bez(0.42, 0, 1, 1), ease = (t) => (t < 0.5 ? easeIn(t * 2) / 2 : 1 - easeIn((1 - t) * 2) / 2);
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+    let v = 0, raf = 0, hidden = false, prevY = 0, prevDir = 'up', downStart = 0, upStart = 0;
+    const set = (x) => { v = x; els.forEach((e) => e.style.setProperty('--plp-hide', x.toFixed(4))); };
+    const to = (target) => {
+      cancelAnimationFrame(raf);
+      if (reduce.matches) { set(target); return; }
+      const from = v, t0 = performance.now();
+      const f = (now) => { const t = Math.min(1, (now - t0) / 300); set(from + (target - from) * ease(t)); if (t < 1) raf = requestAnimationFrame(f); };
+      raf = requestAnimationFrame(f);
+    };
+    scroll.addEventListener('scroll', () => {
+      if (!plp.classList.contains('is-open')) return;
+      const y = scroll.scrollTop, dir = y > prevY ? 'down' : y < prevY ? 'up' : prevDir;
+      els[2].classList.toggle('is-over', y > 2);   // the pinned Garmin bar's band shadows the products passing under it
+      if (dir === 'down' && prevDir === 'up') downStart = prevY;
+      if (dir === 'up' && prevDir === 'down') upStart = prevY;
+      if (!hidden && dir === 'down' && y - downStart > 6 && y > 10) { to(1); hidden = true; }
+      if (hidden && dir === 'up' && (y - upStart < -24 || y <= 10)) { to(0); hidden = false; }
+      prevY = y; prevDir = dir;
+    }, { passive: true });
+    return { reset() { cancelAnimationFrame(raf); els[2].classList.remove('is-over'); hidden = false; prevY = 0; prevDir = 'up'; downStart = upStart = 0; set(0); } };
+  })();
 
   // times are from the end of the suggestions' exit (nothing overlaps it); SKEL_MS is the layer fade
   const T = { SKEL_AT: 0, SKEL_MS: 300, NAV_AT: 224, CHIPS_AT: 480, CARDS_AT: 680, CHIP_DROP: 20, CARD_RISE: 16, SKEL_OUT_AFTER: 353 };
@@ -850,30 +902,136 @@ const PP = (() => {
   ];
   const F_ALL = [F_FITBIT[0], F_WHOOP[0], F_XIAOMI[0], F_HUAWEI[0], F_GARMIN[0], F_PORODO[1], F_FITBIT[2], F_AMAZFIT[1]];
   const FIT_LISTS = { all: F_ALL, Fitbit: F_FITBIT, WHOOP: F_WHOOP, Xiaomi: F_XIAOMI, HUAWEI: F_HUAWEI, porodo: F_PORODO, Garmin: F_GARMIN, Amazfit: F_AMAZFIT };
+  /* TVs — "tv" searches open the PLP on these (iteration 3 only): six brands from
+     noon.com/uae-en search pages (2026-10-22; name, sale price, rating, review count,
+     "Lowest price" nudge), TVs only — mounts, remotes and soundbars left out. */
+  const T_SAMSUNG = [
+    { sku: '', best: false, img: 'ZA90641EE2CE2A68FB6ECZ/45/_/1772180549/acac0b3d-bd94-45c0-943f-bf50dc178dda', title: "Samsung 55 Inch QLED TV, Q8F, 4K, Q4 AI Processor, 100% Color Volume with Quantum Dot, AirSlim, Endless Free Content, Vision AI Smart TV, QA55Q8FAAUXZ", rating: 4.4, reviews: 31, price: '1779', offers: 1 },
+    { sku: '', best: false, img: 'Z331F6F9B84F5374FD435Z/45/_/1772180320/0d31b0ea-3e9d-4769-9bb2-dbd7e1bad196', title: "Samsung 55 Inch QLED TV, Q6F, 4K, Q4 Lite Processor, 100% Color Volume with Quantum Dot, Samsung Knox Security, Endless Free Content, Smart TV, QA55Q6", rating: 4.1, reviews: 308, price: '1303', low: 'Lowest price in 30 days', offers: 1 },
+    { sku: '', best: false, img: 'ZF06D353044F9AD57D2A5Z/45/_/1772180544/75fd4a05-6393-4411-895e-102e4b9f6547', title: "Samsung 75 Inch Neo QLED TV, QN70F, 4K, Mini LED, NQ4 AI Gen2 Processor, Quantum Matrix Technology Slim, Motion Xcelerator 144Hz, Vision AI Smart TV", rating: 4.5, reviews: 73, price: '4399', offers: 1 },
+    { sku: '', best: false, img: 'ZD4B1C528BA443F8D46A3Z/45/_/1772180565/78fe030d-fb50-4944-b291-b0676f9c391e', title: "Samsung 55 Inch QLED TV, Q7F, 4K, Q4 AI Processor, 100% Color Volume with Quantum Dot, Knox Security, Endless Free Content, Vision AI Smart TV, QA55Q7", rating: 4.1, reviews: 308, price: '1629', low: 'Lowest price in 7 days', offers: 1 },
+    { sku: '', best: false, img: 'Z1D4F6BD5CA84EAD94F2FZ/45/_/1772180687/f1b3ea95-eebd-41bb-a0d7-c60f7b2d21d6', title: "Samsung 55 Inch Crystal UHD TV, U8000F, 4K, Crystal Processor 4K, MetalStream Design, Knox Security, Endless Free Content, Smart TV, UA55U8000FUXZN", rating: 4.3, reviews: 119, price: '1225', offers: 1 },
+    { sku: '', best: false, img: 'ZCA5443442D0A10000355Z/45/_/1772180547/46fb76dc-f93c-48d8-8d2a-664cefd0dc2a', title: "Samsung 65 Inch QLED TV, Q7F, 4K, Q4 AI Processor, 100% Color Volume with Quantum Dot, Knox Security, Endless Free Content, Vision AI Smart TV, QA65Q7", rating: 4.1, reviews: 308, price: '2529', offers: 1 },
+    { sku: '', best: false, img: 'Z7D0DAC6D4C0CCE82E302Z/45/_/1782393432/5f0da2be-3412-4111-8cea-6689685d4cff', title: "Samsung 65 Inch Mini LED TV, M1EH, 4K, HDR 10+, Motion Xcelerator, Dynamic Sound Pack, Pure Spectrum Color, Mini LED Processor 4K, Smart TV, UA65M1EHA", rating: 3.7, reviews: 3, price: '1849', low: 'Lowest price in a year', offers: 1 },
+    { sku: '', best: false, img: 'Z0A75698DA500CF9F5CAAZ/45/_/1772180704/95f37b80-e11d-4bc6-9576-a0b3869812b7', title: "Samsung 75 Inch QLED TV, Q7F, 4K, Q4 AI Processor, 100% Color Volume with Quantum Dot, Knox Security, Endless Free Content, Vision AI Smart TV, QA75Q7", rating: 4.1, reviews: 308, price: '3398', low: 'Lowest price in 7 days', offers: 1 },
+  ];
+  const T_LG = [
+    { sku: '', best: false, img: 'Z161B06F43A57C1103952Z/45/_/1780306903/835f1735-f869-4e58-b4d3-66857add83b4', title: "LG 55 Inch 4K OLED WebOS 24 Dolby ATMOS HDR 10 Smart TV, 120HZ, Dolby Vision, HLG, α9 AI Sound Pro (Virtual 9.1.2 Up-mix)", rating: 4.4, reviews: 1700, price: '2634', offers: 1 },
+    { sku: '', best: false, img: 'ZD73ABACBD90B3ADD1B22Z/45/_/1780307090/9a105dd6-c28d-46b9-85fa-7df31c99aa09', title: "LG 55 inch QNED 4K Smart TV 55QNED86A6A black", rating: 4.4, reviews: 240, price: '2949', offers: 1 },
+    { sku: '', best: false, img: 'ZFF4CC132D6AAB316A8B4Z/45/_/1780306636/820b7e5a-5893-4d35-ab38-ebe63e368349', title: "LG 55 inch QNED 4K Smart TV AI 60Hz 55QNED70A6A black", rating: 3.8, reviews: 559, price: '1729', offers: 1 },
+    { sku: '', best: false, img: 'ZB294A2A3C095485CC486Z/45/_/1780306668/7649e4e2-a81b-4441-ae82-730520065986', title: "LG 65 Inch QNED MiniLED QNED90T 4K 65QNED90T Black", rating: 4.2, reviews: 75, price: '3699', offers: 1 },
+    { sku: '', best: false, img: 'ZA3E5C6A6BCF30AAB91A8Z/45/_/1780467334/ba2221d0-bf3c-4788-8653-7999e2cf8d47', title: "LG 55 inch LG NANO 4K UHD AI NU84B Smart TV 2026 - 55NU840B6LA black", rating: 4.3, reviews: 31, price: '1469', offers: 1 },
+    { sku: '', best: false, img: 'Z0BED3103305B39EE638DZ/45/_/1780306297/e547a1f1-7a81-45d8-b694-4c71d868bc6e', title: "LG 55-inch 4K Mini LED Motion Booster 288Hz Dynamic QNED Color Pro α8 Processor 4K Gen3 α8 Super Upscaling 4K Magic Remote", rating: 4.1, reviews: 37, price: '2499', offers: 1 },
+    { sku: '', best: false, img: 'Z10B886B026CE1526BE34Z/45/_/1784790333/279b3a14-dcbb-42d5-a46e-a7cd447ec590', title: "LG 65 inch LG OLED evo AI C6 4K Smart TV 2026 OLED65C66LA-AMAG black", rating: 5, reviews: 1, price: '6912', offers: 1 },
+    { sku: '', best: false, img: 'ZE420AF503D500893F812Z/45/_/1780306805/808116f7-b812-4936-ab20-b44a5644d712', title: "LG 55\" NANO 4K UHD AI Smart TV 2026 – NanoCell | α7 AI Processor Gen9 | HDR10 Pro | webOS | AI Hub | VRR | GeForce NOW", rating: 4, reviews: 4, price: '1649', offers: 1 },
+  ];
+  const T_SONY = [
+    { sku: '', best: false, img: 'Z4B1A7375D083E7A27F8FZ/45/_/1780466900/f8d30b6d-cb62-4cdf-bac3-5d0924b9e1bf', title: "Sony 75 Inch LED TV 4K HDR Google TV X90L / X91BL | BRAVIA XR | Full Array LED | 4K Ultra HD | High Dynamic Range (HDR)", rating: 4.6, reviews: 300, price: '6171', low: 'Lowest price in 7 days', offers: 1 },
+    { sku: '', best: false, img: 'Z582AA98755939C15A552Z/45/_/1780467156/d3e5a7ae-ea16-4735-bcd1-c1d382ae2499', title: "Sony 65 Inch LED TV 4K HDR Google TV X90L / X91BL | BRAVIA XR | Full Array LED | 4K Ultra HD | High Dynamic Range (HDR)", rating: 4.5, reviews: 128, price: '4589', low: 'Lowest price in 7 days', offers: 1 },
+    { sku: '', best: false, img: 'Z671CF235AB73E3DB536FZ/45/_/1780467504/e2f1fb1b-40dc-4190-806a-9b309bc2c4bd', title: "Sony BRAVIA 3 55 Inch 4k Smart TV HDR 50 Hz K-55S30 Black", rating: 4.4, reviews: 183, price: '2519', offers: 1 },
+    { sku: '', best: false, img: 'ZF920829110EF65EEAE13Z/45/_/1780466874/169d3c51-f16b-44c2-9c65-9f6629ef0048', title: "Sony 65 Inch Ultra HD (4K) Smart Android TV, X75K Series KD-65X75K Black", rating: 4.3, reviews: 69, price: '1999', offers: 1 },
+    { sku: '', best: false, img: 'ZC773AF690359A13C9752Z/45/_/1780467168/7712a6ab-14d8-4973-9f95-2752a0992591', title: "Sony 85 Inch LED 4K Google TV XR-85X90L Black", rating: 4.7, reviews: 222, price: '9999', offers: 1 },
+    { sku: '', best: false, img: 'Z71D13988732EE089F767Z/45/_/1780466847/13c79123-dfd1-4470-825a-8d75d4247e98', title: "Sony 50 Inch 4K HDR KD-50X75K Google TV In 4K With A Billion Colors And Dolby Audio-2022 Model KD-50X75K Black", rating: 4.5, reviews: 22, price: '1572', low: 'Lowest price in 30 days', offers: 1 },
+    { sku: '', best: false, img: 'Z01CFE09EFA81B2A9148FZ/45/_/1780466792/e3db00bd-6d8c-40b3-a90a-65f913b40822', title: "Sony 32-Inch HDR Smart Google LED TV KD-32W830K Black", rating: 4.4, reviews: 192, price: '1089', low: 'Lowest price in 30 days', offers: 1 },
+    { sku: '', best: false, img: 'Z3FE0DCDC57AC38CA6CCBZ/45/_/1780467336/136e021a-a716-4141-8045-ec65e540ab03', title: "Sony BRAVIA 2 – 55 inch 4K Smart Google TV (2025 Model) with XR Processor 60Hz K-55S20M2 black", rating: 5, reviews: 5, price: '1999', low: 'Lowest price in a year', offers: 1 },
+  ];
+  const T_TCL = [
+    { sku: '', best: false, img: 'ZE88D74FAB795619572BFZ/45/_/1779345237/d847e07e-fb7b-4c15-9624-31f0d4c3f799', title: "TCL Television 65 Inch Smart TV 4K QLED Colorful Quantum Crystal HDR 10+ Gaming Google TV, 144Hz Native Refresh Rate, ONKYO 2.1 Hi-Fi", rating: 4.5, reviews: 305, price: '2099', offers: 1 },
+    { sku: '', best: false, img: 'Z84D654192AC3E05A7EF6Z/45/_/1779344536/3c1a1c35-3403-487a-a8b8-36c941159ff1', title: "TCL Television 55 Inch 4K QD-Mini LED Dimming Google Smart TV, 144Hz Refresh Rate, 93% DCI-P3, AiPQ Pro, Slim & Uni-body", rating: 4.5, reviews: 202, price: '2049', offers: 1 },
+    { sku: '', best: false, img: 'Z26656D048813762EC0DDZ/45/_/1779345554/03dd74c7-0aef-4e42-ba5f-0302a036f96b', title: "TCL 50 Inch Smart TV QLED HDR 10 Google TV, FHD, 60Hz, Dolby Audio, Game Mode, Multiple Eye Care with Slim Design, Google Cast, (2025 Model), 50S5K", rating: 4.3, reviews: 755, price: '935', offers: 1 },
+    { sku: '', best: false, img: 'Z45F8C3BDB0668F93663BZ/45/_/1782998245/16687cbb-ebfc-4611-91ef-340fe87b7f18', title: "TCL 55 Inch 4K UHD smart TV, 60Hz, QLED, HDR, AIPQ processor, Google TV, Metallic Bezel-Less, Slim & Uni-body, HVA Panel, TCL AI, Dolby Vision · Atmos", rating: 4.5, reviews: 322, price: '2269', offers: 1 },
+    { sku: '', best: false, img: 'Z6267311CF38466CA90A3Z/45/_/1779344525/f29b2845-2879-4d3b-956c-03c0c4b44843', title: "TCL Television 85 Inch Smart TV 4K QLED Colorful Quantum Crystal HDR 10+ Gaming Google TV, ONKYO 2.1 Hi-Fi, Dolby Atmos", rating: 4.5, reviews: 305, price: '3849', offers: 1 },
+    { sku: '', best: false, img: 'Z454C1CBA105BAF954270Z/45/_/1786684771/e4eb1a8d-70ea-4f5b-b139-31c2dc8828dd', title: "TCL 55-inch P61L 4K HDR Smart TV (2026 Model Google TV - UAE Version), 55 Inch UHD Smart TV With 2GB RAM 16GB ROM, AiPQ", rating: 4.3, reviews: 67, price: '1103', offers: 1 },
+    { sku: '', best: false, img: 'Z42744D9BE4011A2A382BZ/45/_/1782482835/165e2463-8a93-4358-ae89-088333d72915', title: "TCL 65-inch T69D Premium QLED 4K Smart TV (2026 UAE Version) TCL 65\" 65T69D Google TV, AiPQ Processor, HVA Panel, Dolby", rating: 4.3, reviews: 67, price: '1899', offers: 1 },
+    { sku: '', best: false, img: 'ZF84DDD580A286F5F49B1Z/45/_/1779345123/075bffbc-1c45-4478-b792-572ce4f8e116', title: "TCL Television 98 Inch Smart TV 4K QD-Mini LED Gaming Google TV, 144Hz Native Refresh Rate, Precise Dimming Series", rating: 4.5, reviews: 157, price: '8299', low: 'Lowest price in 30 days', offers: 1 },
+  ];
+  const T_HISENSE = [
+    { sku: '', best: false, img: 'ZC940392BDA2BDEB43C6EZ/45/_/1787835053/901b60ff-b678-4170-8339-667ede58846b', title: "Hisense 55 inch QLED 4K Smart TV 55E7Q, HSR 120Hz Quantum Dot Colour, Dolby Vision Atmos, Game Mode Plus, Voice control, AI Light Sensor", rating: 4.3, reviews: 293, price: '1254', offers: 1 },
+    { sku: '', best: false, img: 'Z83E1CC67FD0B1686F87FZ/45/_/1788522278/ff57542d-ebc2-4c47-8133-d7403f3b03f8', title: "Hisense 50 inch QLED Smart TV E7Q-Quantum Dot Colour, AI Picture, Dolby Vision, Dolby Atmos, Share to TV, Voice Control, Filmmaker Mode", rating: 4.3, reviews: 293, price: '999', offers: 1 },
+    { sku: '', best: false, img: 'ZB1E24E3C00EDC1E6A984Z/45/_/1779345481/39baeb27-9fa2-4d2e-b265-1a4ff12bb337', title: "Hisense 55 inch QLED Smart TV E7N-Quantum Dot Colour, AI Picture, Dolby Vision, Dolby Atmos, Share to TV, Voice Control, Filmmaker Mode", rating: 4.6, reviews: 77, price: '1299', offers: 1 },
+    { sku: '', best: false, img: 'ZB4384AE7E62D8045DD58Z/45/_/1787835493/d5f31ca1-7be4-49ff-9af9-9f85d5b6955a', title: "Hisense 55 Inch Mini LED 4K Smart TV, 55E8S, 8 Years OS Update, Hi-View AI Engine, 144Hz, HSR 240Hz, Built-in Subwoofer, Dolby Vision IQ", rating: 4.2, reviews: 29, price: '2549', offers: 1 },
+    { sku: '', best: false, img: 'Z36D8B1534EE4CA4FC5B9Z/45/_/1779344690/77a5da46-5987-4738-aa4a-0d0f1c6b05a9', title: "Hisense 50 inch UHD 4K Smart TV | 60Hz | AI 4K Upscaler | Dolby Vision | Model 2024 | 50A6N Black", rating: 4.1, reviews: 1800, price: '889', offers: 1 },
+    { sku: '', best: false, img: 'Z2D74B390052FF4771C22Z/45/_/1779345180/ad74b969-9c50-489b-aa65-d54c004a06f2', title: "Hisense 55-inch QLED 144Hz Game Pro Smart TV E8Q-Quantum Dot Colour, AI Picture, Dolby Vision, Dolby Atmos, Share to TV, Voice Control", rating: 4.3, reviews: 77, price: '1699', offers: 1 },
+    { sku: '', best: false, img: 'ZCA747ED29767ACA0C7AFZ/45/_/1787834944/e68ecba8-6a89-4729-87cf-e88478845e5e', title: "Hisense 85 Inch QLED 4K Smart TV 85E7Q, HSR 120Hz Quantum Dot Colour, Dolby Vision Atmos, Game Mode Plus, Voice control, AI Light Sensor", rating: 4.3, reviews: 293, price: '3819', offers: 1 },
+    { sku: '', best: false, img: 'Z6125B5DB12BBBE63CC96Z/45/_/1779345458/623e6352-327e-4e2e-9c38-0c10a6b4fc7a', title: "Hisense 98-inch QLED 144Hz Smart TV E7Q-Quantum Dot Colour, AI Picture, Dolby Vision, Dolby Atmos, Share to TV, Voice Control, Filmmaker Mode", rating: 4.3, reviews: 293, price: '4699', low: 'Lowest price in 7 days', offers: 1 },
+  ];
+  const T_XIAOMI = [
+    { sku: '', best: false, img: 'ZF48A39BAF575C70368C0Z/45/_/1780467020/88e01da1-ae7f-499b-bedf-dfb2685513d4', title: "Xiaomi TV S Mini LED 55\" 2025 | 4K QD-MiniLED | 144Hz refresh rate | Dolby Audio/Dolby Atmos/DTS-X | Powerful AI engine for image enhancement", rating: 4.3, reviews: 1100, price: '1399', offers: 1 },
+    { sku: '', best: false, img: 'Z7A8A133D812C64A2A6E0Z/45/_/1780467263/fe6cc2b2-88f0-4965-b428-fc7a3e9e3a03', title: "Xiaomi TV S Pro Mini LED 55\" 2026 | QD-Mini LED Display | 4K UHD | 144Hz refresh rate | Dolby Audio & Atmos, Google TV", rating: 4.3, reviews: 67, price: '1865', offers: 1 },
+    { sku: '', best: false, img: 'ZFD6186F1677FBEC80169Z/45/_/1780467097/14b47546-1a26-4995-957a-be9be4d5dfe7', title: "Xiaomi TV S Mini LED 65\" 2026, QLED Mini LED, 4K UHD, Smart TV with Google TV, HDR10+, Triple Tuner, DVB T2, 60Hz with 120Hz Game Boost Mode", rating: 4.3, reviews: 83, price: '2161', offers: 1 },
+    { sku: '', best: false, img: 'Z044C6117D33A83D64075Z/45/_/1780467338/986cf957-5762-492e-b023-f906a97db528', title: "Xiaomi TV A Pro 43\" 2026 | Google TV | 4K QLED Display | Dolby Audio, DTS-X, And DTS Virtual:X | Premium Metal Finish", rating: 4.3, reviews: 238, price: '799', low: 'Lowest price in 30 days', offers: 1 },
+    { sku: '', best: false, img: 'ZA7FAF712B201DED0A45EZ/45/_/1780466852/2a63b26f-3585-46e5-9a7f-61c0a4864200', title: "Xiaomi TV Max 100 2025 | Ultra-large 4K display | Quantum Dot display | 144Hz Refresh Rate | Dolby Vision, Dolby Atmos", rating: 4.3, reviews: 1100, price: '5905', offers: 1 },
+    { sku: '', best: false, img: 'ZF96905A5959BA59F458DZ/45/_/1792658538/536d1719-0da9-40ac-a002-6e483b83de4a', title: "Xiaomi TV A Pro 65\" 2026 | Google TV | 4K QLED Display | Dolby Audio, DTS-X, And DTS Virtual:X | Premium Metal Finish", rating: 4.3, reviews: 238, price: '1959', offers: 1 },
+    { sku: '', best: false, img: 'Z06B6CE0AB192B017A640Z/45/_/1780466919/7e6e77db-b9d2-4d76-8d27-f7da32e2e810', title: "Xiaomi TV S Mini LED 75\" 2026, QLED Mini LED, 4K UHD, Smart TV with Google TV, HDR10+, Triple Tuner, DVB T2, 60Hz with 120Hz Game Boost Mode", rating: 4.3, reviews: 83, price: '2799', offers: 1 },
+    { sku: '', best: false, img: 'Z73C62893398960C89D79Z/45/_/1792667462/89d7cb90-afb3-47d2-95d2-96941f893dbe', title: "Xiaomi TV A 50 2026 | 4K eye-care display with HDR picture quality | 120Hz refresh rate under Game Boost mode via HDMI", rating: 4, reviews: 19, price: '1133', offers: 1 },
+  ];
+  const T_ALL = [T_SAMSUNG[1], T_HISENSE[0], T_LG[0], T_XIAOMI[0], T_TCL[0], T_SONY[2], T_SAMSUNG[2], T_HISENSE[4]];
+  const TV_LISTS = { all: T_ALL, Samsung: T_SAMSUNG, LG: T_LG, Sony: T_SONY, TCL: T_TCL, Hisense: T_HISENSE, Xiaomi: T_XIAOMI };
+  /* Garmin (iteration 11) — noon.com/uae-en search pages for each series (2026-10-26): model, case size, sale price,
+     rating and the listing photo (noon's CDN); one listing per model. No review counts were taken, so cards show
+     no rating row. [series, model, mm, price, rating, title, photo, local] — prices, ratings, titles and photos
+     refreshed from noon.com on 2026-11-03; `local` names the framed copy of the hero photo in assets/garmin/
+     (<local>.jpg square for the widget, <local>-card.jpg portrait for the product cards) */
+  const GARMIN = [
+    ['Forerunner', '55', 42, 819, 4, "GARMIN Forerunner 55 - 42MM - Up To 14 Days Battery Life - 1.04\"inch Sunlight-Visible Display, Scratch Resistant, Chemically Strengthened Glass, Heart Rate Monitor, All Day Stress Monitor, Advanced GPS and Running Features, Built-in GNSS and Sports App, iOS and Android Compatible Black", 'Z2208F986965F97BBA79DZ/45/_/1779873476/0cca7980-1868-4dc0-8bcf-233d6f581fd2', 'forerunner-55'],
+    ['Forerunner', '70', 43, 1019, 4.4, "GARMIN Forerunner 70 - 43mm - Black - Up to 13 days of Battery Lie - 1.2” AMOLED Display, Chemically-strengthened glass, Heart Rate Monitor, All day stress monitor, Gps tracking, Smart notification, iOS and Android compatible black", 'Z89019F2C82BFCC63D9D0Z/45/_/1779873457/fa2ca308-800b-4a41-85d3-8c4aa8dfdd2a', 'forerunner-70'],
+    ['Forerunner', '165', 43, 1149, 4.6, "GARMIN Forerunner 165 - 43MM - Up To 11 Days Battery Life - 1.2\"inch Amoled Display, Scratch Resistant, Chemically Strengthened Glass, Heart Rate Monitor, Stress Tracking, Advanced GPS and Running Features, Built-in GNSS and Sports App, iOS and Android Compatible Black Slate Grey", 'ZD984E467BF2FAEA698C3Z/45/_/1779873428/d63dad78-a40b-49c2-a6c0-8822ba483dd9', 'forerunner-165'],
+    ['Forerunner', '170', 43, 1229, 4.4, "GARMIN Forerunner 170 - 43MM - Black/Amp Yellow - Up to 10 Days of Battery Life - 1.2” AMOLED Display , Chemically-strengthened glass, Heart Rate Monitor, All day stress monitor, Gps tracking, Tap to Pay, iOS and Android compatible Black/Amp Yellow", 'Z95299389515BBA24F60CZ/45/_/1779873611/c2320ff2-1528-4aa5-9044-7567dd28f4a2', 'forerunner-170'],
+    ['Forerunner', '265S', 42, 1839.01, 5, "GARMIN Forerunner 265S - 42MM - Up To 24 Hours Battery Life in GPS Mode - 1.1\"inch Amoled Display, Scratch Resistant, Corning® Gorilla® Glass 3, Heart Rate Monitor, Stress Tracking, Save Music On Device, Advanced GPS and Running Features, iOS and Android Compatible Whitestone/Neo Tropic", 'ZCA66AEA7E494EFEBC31CZ/45/_/1779873595/8debdfe0-f9fd-4572-9c1d-efff9b77cec3', 'forerunner-265s'],
+    ['Forerunner', '265', 46, 1839, 4.3, "GARMIN Forerunner 265 - 46MM - Up To 20 Hours Battery Life In GPS Mode - 1.3\"inch Amoled Display, Scratch Resistant, Corning® Gorilla® Glass 3, Heart Rate Monitor, Stress Tracking, Save Music On Device, Advanced GPS and Running Features, Advanced Training Metrics and Recovery Insights, iOS and Android Compatible Black", 'Z2521A3DDEA3C3F4704BFZ/45/_/1779873448/939740de-77f0-465b-957e-daffcbaebe38', 'forerunner-265'],
+    ['Forerunner', '570', 47, 2239, 4.6, "GARMIN Forerunner 570 - 47MM - Slate Gray Aluminium with Translucent Black/ Black Band - Up to 11 Days of Battery life - 1.4\" Amoled Display, Corning Gorilla Glass 3, Heart Rate Monitor, All day stress monitor, Advanced GPS features, Music on your Wrist, iOS and Android compatible Slate Grey", 'Z003CFAA6EF4B2EEBDB77Z/45/_/1779873229/377bfebd-6366-40ae-82b8-16c277dda7a3', 'forerunner-570'],
+    ['Forerunner', '965', 47, 2449, 3.7, "GARMIN Forerunner 965 - 47MM - Up To 31 Hours Battery Life in GPS Mode - 1.4\"inch Amoled Display, Scratch Resistant, Corning® Gorilla® Glass Dx, Heart Rate Monitor, Stress Tracking, Advanced GPS Features, Built-in GNSS and Sports App, iOS and Android Compatible Whitestone", 'Z7119A6C56C1832A8BFA9Z/45/_/1779873458/840467ef-c114-4733-9639-a01b82dbedf3', 'forerunner-965'],
+    ['Forerunner', '970', 47, 3059, 4.9, "GARMIN Forerunner 970 - 47MM - Carbon Gray DLC Titanium with Black Case and Black/Translucent Whitestone Band - Up to 15 Days of Battery life - 1.4\" Amoled Display, sapphire crystal, Heart Rate Monitor, All day stress monitor, Advanced GPS features, Super bright LED flashlight, iOS and Android compatible Carbon Grey", 'Z735FD6C754270DD08D2DZ/45/_/1779873432/9417cfc2-c28a-4704-82bd-3c336f792f64', 'forerunner-970'],
+    ['fēnix', 'E', 47, 3259, 5, "GARMIN Fenix E - 47MM - Up To 16 Days Battery Life - 1.3\"inch Amoled Display, Scratch Resistant, Corning® Gorilla® Glass, Heart Rate Monitor, All Day Stress Monitor, Advanced GPS Features, Built-in GNSS and Sports App, iOS and Android Compatible Steel", 'Z2A88DEDA82CC72620EB2Z/45/_/1779873413/fde3346d-f997-4b69-8828-b6cc054afe71', 'fenix-e'],
+    ['fēnix', '7 Pro', 47, 3150, 0, "GARMIN Fenix 7 Pro - 47MM - Sapphire Solar Edition - Up To 22 Days In Battery Life - 1.3\"inch Sunlight-Visible Display, Scratch Resistant, Power Sapphire™, Heart Rate Monitor, All Day Stress Monitor, Power Glass Solar Charging Lens, Super Bright LED Flashlight, iOS and Android Compatible Black / Carbon Gray", 'Z9AA53AC3BC399AE9F3E8Z/45/_/1779874033/38fb7234-6741-4477-84fb-d7e2e68cd8fc', 'fenix-7-pro'],
+    ['fēnix', '7X Solar', 51, 2915, 0, "GARMIN Fenix 7X - 51MM - Solar Edition - Up To 37 Days Battery Life with Solar Charging - 1.4\"inch Sunlight-Visible Display, Scratch Resistant, Power Glass™, Heart Rate Monitor, All Day Stress Monitor, Super Bright LED Flashlight, Advanced GPS Features, iOS and Android Compatible Slate Grey/Black", 'Z28B5B4B37BC727BAEB0CZ/45/_/1779873255/6a5ad392-05ca-481f-a958-e08d3ad55243', 'fenix-7x-solar'],
+    ['fēnix', '8', 47, 4479, 5, "GARMIN Fenix 8 - 47MM - Up To 16 Days Battery Life - 1.4\"inch Amoled Display, Scratch Resistant, Sapphire Crystal, Heart Rate Monitor, All Day Stress Monitor, Offline Voice Command, Calling Features, Super Bright Led Flashlight, iOS and Android Compatible Titanium", 'Z1F6345FAADD626AC46AFZ/45/_/1779873478/974a0da2-ed73-464b-869d-252962e4bce2', 'fenix-8'],
+    ['fēnix', '8 Pro', 51, 5289, 5, "GARMIN Fenix 8 Pro - 51MM - Titanium with Graphite/Black Silicone Band - Up to 15 Days of Battery Life - 1.4\"Amoled Display, sapphire crystal, Heart Rate Monitor, All day stress monitor, Gps tracking, Super bright LED flashlight, iOS and Android compatible Graphite", 'Z31C0459DBA9437128DE3Z/45/_/1779873408/b1622627-8eb0-43d9-896e-e9799317f30a', 'fenix-8-pro'],
+    ['fēnix', '9', 47, 4469, 0, "Garmin Fenix 9 - 47 mm - Gray Gray", 'Z416C503A3E0BC562B89BZ/45/_/1788869309/074aa097-fb25-49f8-9e1b-af9ac790a3c8', 'fenix-9'],
+    ['Venu', '2', 45, 1629, 4.3, "GARMIN Venu 2 Stainless Steel Bezel Smartwatch With Health Monitoring And Fitness Tracker Black", 'ZDDE9C7CB523B50453E5BZ/45/_/1779873605/cc631105-83eb-4b2c-a6ac-4b93ce6e927b', 'venu-2'],
+    ['Venu', '3', 45, 1919.01, 4.4, "GARMIN Venu 3 - 45 Mm - Up To 14 Days Of Battery Life - 1.4\" Inch Amoled Display, Scratch Resistant, Corning Gorilla Glass 3, Heart Rate Monitor, Stress Tracking, Built In Sports App, Built In Microphone, Ios And Android Compatible Silver", 'Z59F04ADB8AE50CCA5857Z/45/_/1779873572/ba8f31ad-4f91-4c0b-9dd2-4407007705ed', 'venu-3'],
+    ['Venu', '3S', 41, 1839, 5, "GARMIN Venu 3S - 41 Mm - Up To 10 Days Of Battery Life - 1.2\" Inch Amoled Display, Scratch Resistant, Corning® Gorilla® Glass 3, Heart Rate Monitor, Stress Tracking, Built In Sports App, Built In Microphone, Ios And Android Compatible Soft Gold", 'Z738714719332FC7E2AB1Z/45/_/1779873391/ad0cf8cd-450e-4e47-802c-4b99f150cbd8', 'venu-3s'],
+    ['Instinct', '2', 45, 1019, 4.2, 'GARMIN Instinct 2 - 45MM - Up To 28 Days Battery Life - Rugged GPS Outdoor Watch', 'Z3928B20D501D01C42E77Z/45/_/1779873460/beed99ad-9b49-4d49-95b7-e78da9e6a236', 'instinct-2'],
+    ['Instinct', '2 Solar', 45, 1509, 4.7, "GARMIN Instinct 2 Solar - 45MM - Tactical Edition - Up To 28 Days Battery Life - Scratch Resistant, Power Glass™, Heart Rate Monitor, All Day Stress Monitor, Tough Rugged GPS Enabled , Smart Notification, iOS and Android Compatible BLACK", 'Z6365BBC00805D4F5994BZ/45/_/1779873438/bd0f0f85-ea62-4494-a7af-944848afc9c5', 'instinct-2-solar'],
+    ['Instinct', '3 Solar', 50, 1839, 4.4, "GARMIN Instinct 3 Solar - 50MM - Black With Charcoal Silicone Band Black - Up to 40 Days of Battery life in Solar Charging - 1.1\" Sunlight-visible, transflective memory-in-pixel (MIP), Power Glass, Heart Rate Monitor, All day stress monitor, Solar charging, Super bright LED flashlight, iOS and Android compatible Black", 'Z27E54482DB7373FBA624Z/45/_/1779873578/761ea2aa-8bb0-4e66-9800-15b347c7e760', 'instinct-3-solar'],
+    ['Instinct', '2X Solar', 50, 2039, 4.6, "GARMIN Instinct 2X Solar - 50MM - Tactical Edition - Unlimited Battery Life in Smartwatch Mode With Solar Charging1 - Military Standard Toughness, Scratch Resistant, Power Glass™, Heart Rate Monitor, All Day Stress Monitor, Tactical-Specific Features Include Night Vision Compatibility and More For Field Ops , Super Bright LED Flashlight, iOS and Android Compatible BLACK", 'ZF6A5C91DA55B3E59F3C1Z/45/_/1779873469/126dc03b-fddb-4fc9-aa3e-fbdc5c123234', 'instinct-2x-solar'],
+    ['Instinct', 'Crossover', 45, 2239, 0, "GARMIN Instinct Crossover - Standard Edition - 45 Mm - Up To 28 Days Of Battery Life - 0.9\" Inch Monochrome Display, Scratch Resistant, Chemically Strengthened Glass, Heart Rate Monitor, Stress Tracking, Smart Notification, Tap To Pay, Ios And Android Compatible Black", 'Z4C76F08F10C2CC207067Z/45/_/1779873362/f72bde32-63d1-41bd-85fc-f68cd39491b0', 'instinct-crossover'],
+    ['vívoactive', '5', 42, 1099.01, 4.3, "GARMIN Vivoactive 5 - 42MM - Up To 11 Days Battery Life - 1.2\"inch Amoled Display, Scratch Resistant, Corning® Gorilla® Glass 3, Heart Rate Monitor, Stress Tracking, Advanced GPS Features, Built-in GNSS and Sports App, iOS and Android Compatible Black", 'ZBB0C2E23E52833037AA0Z/45/_/1779873439/d600ae69-9fe5-46b8-ad8b-217bf77c1fc3', 'vivoactive-5'],
+    ['Lily', '2', 35, 1149, 4, "GARMIN Lily 2 - 35.4 Mm - Up To 5 Days Of Battery Life - Lcd Display , Scratch Resistant, Corning Gorilla Glass 3, Heart Rate Monitor, Stress Tracking, Smart Notification, Built In Sports App, Ios And Android Compatible Metallic Lilac", 'ZD8444C6970A00C1B8573Z/45/_/1779873232/575466a8-f041-41d1-81b3-37daef78921b', 'lily-2'],
+    ['Lily', '2 Classic', 35, 1429, 4.1, "GARMIN Lily 2 Classic - 35.4Mm - Up To 5 Days Of Battery Life - 0.84\" Inch Lcd Display , Corning Gorilla Glass 3, Heart Rate Monitor, Stress Tracking, Smart Notification, Tap To Pay, Ios And Android Compatible Cream Gold", 'Z5EAA5207DE11EB9F527BZ/45/_/1779873329/65401275-05d2-4f3c-8937-e63fcc32475d', 'lily-2-classic'],
+  ];
+  const gp = ([, , , price, rating, title, img, local]) => ({ sku: '', best: false, img, photo: `assets/garmin/${local}-card.jpg`, title, rating, reviews: 0, price: price.toLocaleString('en-US'), offers: 1, low: 'Lowest price in 30 days' });
+  const GARMIN_LISTS = { all: ['Forerunner|165', 'fēnix|8', 'Venu|3', 'Instinct|2 Solar', 'Forerunner|265', 'vívoactive|5', 'Lily|2', 'Forerunner|965']
+    .map((k) => GARMIN.find((g) => `${g[0]}|${g[1]}` === k)).map(gp) };
+  GARMIN.forEach((g) => { (GARMIN_LISTS[`s:${g[0]}`] = GARMIN_LISTS[`s:${g[0]}`] || []).push(gp(g)); GARMIN_LISTS[`m:${g[0]} ${g[1]}`] = [gp(g)]; });
+  window.NOON_GARMIN = GARMIN;   // the lineup picker reads the same data
   // the page's category follows the query that opened it; LISTS is the current one
-  const CATS = { phone: PHONE_LISTS, fitness: FIT_LISTS };
-  const catOf = (q) => (/^fitness/i.test(q || '') ? 'fitness' : 'phone');
+  const CATS = { phone: PHONE_LISTS, fitness: FIT_LISTS, tv: TV_LISTS, garmin: GARMIN_LISTS };
+  const catOf = (q) => (/\bgarmin\b/i.test(q || '') ? 'garmin' : /^fitness/i.test(q || '') ? 'fitness' : /\b(tvs?|televisions?)\b|^(oled|qled)\b/i.test(q || '') ? 'tv' : 'phone');
   let cat = 'phone', LISTS = PHONE_LISTS;
   // noon's review counts: 995 → "995", 2857 → "2.9K", 33767 → "33.8K"
   const count = (n) => n < 1000 ? String(n) : `${(n / 1000).toFixed(1).replace(/\.0$/, '')}K`;
+  // the GitFlow listing card (its SkuCard)
+  const GF_HEART = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d2539" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>';
+  const GF_PLUS = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1d2539" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+  const GF_STAR = '<svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path fill="#ffb400" d="M12 2.5l2.9 6.2 6.6.7-4.9 4.6 1.4 6.6L12 17.3l-5.9 3.3 1.4-6.6-4.9-4.6 6.6-.7z"/></svg>';
+  const money = (v) => Number(String(v).replace(/,/g, '')).toLocaleString('en-US', { maximumFractionDigits: 2 });
   const card = (p) => `
-    <article class="pcard stroke" data-sku="${p.sku}">
+    <article class="pcard" data-sku="${p.sku}">
       <div class="pcard__media">
-        <div class="pcard__clip">
-          <img class="pcard__photo" src="${CDN}${p.img}.jpg?width=400" alt="" decoding="async" />
-          <button class="pcard__wish" aria-label="Add to wishlist"><img src="${A}94524.svg" alt="" /></button>
-          <button class="pcard__add sk" aria-label="Add to cart"><img src="${A}1d902.svg" alt="" /></button>
-          <span class="pcard__dots"><i></i><i></i><i></i><i></i></span>
-        </div>
+        <img class="pcard__photo" src="${p.photo || `${CDN}${p.img}.jpg?format=jpg&width=400`}" alt="" decoding="async" />
+        <i class="pcard__ov"></i>
+        <button class="pcard__wish" aria-label="Add to wishlist">${GF_HEART}</button>
+        <button class="pcard__add" aria-label="Add to cart">${GF_PLUS}</button>
+        <span class="pcard__dots"><i></i><i></i><i></i><i></i></span>
       </div>
       <div class="pcard__info">
         <p class="pcard__title" data-full="${p.title}">${p.title}</p>
-        <p class="pcard__rate"${p.reviews ? '' : ' style="visibility:hidden"'}><span class="star"><img src="${A}9d075.svg" alt="" /></span><b>${p.rating.toFixed(1)}&nbsp;</b><span>(${count(p.reviews)})</span></p>
-        <p class="pcard__price">&#xE001;${p.price}</p>
-        <p class="pcard__low"${p.low ? '' : ' style="visibility:hidden"'}><img src="${A}aaca9.svg" alt="" />${(p.low || 'Lowest price').replace('Lowest price', 'Lowest Price')}</p>
-        <div class="pcard__offers"${p.offers ? '' : ' style="visibility:hidden"'}><span class="offer">Extra 10%  Off </span><span class="offer">+${p.offers || 1}</span></div>
-        <img class="pcard__badge" src="${A}04813.svg" alt="express Today" />
+        <p class="pcard__rate"${p.reviews ? '' : ' style="visibility:hidden"'}><b>${GF_STAR}${p.rating.toFixed(1)}</b><span>(${count(p.reviews)})</span></p>
+        <p class="pcard__price"><span class="pcard__sale">&#xE001; ${money(p.price)}</span>${p.was ? `<span class="pcard__was">${money(p.was)}</span><span class="pcard__off">${Math.round((1 - Number(String(p.price).replace(/,/g, '')) / Number(String(p.was).replace(/,/g, ''))) * 100)}% OFF</span>` : ''}</p>
+        ${p.offers ? '<span class="pcard__coupon">Extra 10% off with coupon</span>' : ''}
       </div>
+      <div class="pcard__flag"><img src="${A}gf/express-today.svg" alt="express Today" /></div>
     </article>`;
   const slots = [];
   for (let r = 0; r < 4; r++) for (let c = 0; c < 2; c++) {
@@ -926,7 +1084,7 @@ const PP = (() => {
     plp.classList.remove('is-open', 'is-loading');
     plp.style.opacity = 0;
     plp.inert = true; plp.setAttribute('aria-hidden', 'true');
-    scroll.scrollTop = 0;
+    scroll.scrollTop = 0; hidable.reset();
     open = false;
   }
 
@@ -974,7 +1132,7 @@ const PP = (() => {
      fading 353ms behind each card). A new filter mid-way restarts it.      */
   const R = { OUT_MS: 180, REVEAL_AT: 820 };
   let rTimers = [], listKey = 'all';
-  function swapTo(key) {
+  function swapTo(key, at = R.REVEAL_AT) {
     if (!open || !LISTS[key] || key === listKey) return;
     listKey = key;
     rTimers.forEach(clearTimeout); rTimers = [];
@@ -1006,9 +1164,79 @@ const PP = (() => {
         return [m, f, sk];
       });
       Promise.all(anims.map((a) => a.finished)).then(() => plp.classList.remove('is-reloading')).catch(() => {});
-    }, R.REVEAL_AT));
+    }, at));
   }
-  plp.addEventListener('plp:filter', (e) => swapTo((e.detail && e.detail.brand) || 'all'));
+  // Clear goes back to the personalised list when the TV chat made one, otherwise to the brand mix
+  plp.addEventListener('plp:filter', (e) => swapTo((e.detail && e.detail.brand) || (LISTS.picks ? 'picks' : 'all')));
+
+  /* The widget's TV chat finished (plp:personal {answers, at}): score every TV against the answers,
+     hand the widget each brand's best match (detail.best, best first) and re-sort the grid to the
+     eight best fits; the swap's cards rise at detail.at, just after the widget's matched cards. */
+  /* iteration 8: the model year. A title that names one ("…Smart TV 2026", "(2025 Model)") is taken at its
+     word; otherwise the year is read from the model code (Samsung's F series = 2025, LG's …A6A = 2025,
+     Sony X90L = 2023 …). Prototype data — close to each line's launch year, not checked SKU by SKU. */
+  const YEAR_BY_MODEL = [[/\bQ[678]F\b|U8000F|QN70F|M1EH/i, 2025], [/A6A\b|Motion Booster 288Hz/i, 2025], [/QNED90T|webos 24/i, 2024],
+    [/X90L/i, 2023], [/X75K|W830K/i, 2022], [/K-55S30|BRAVIA 3/i, 2024], [/E7Q|E8Q|E8S/i, 2025], [/E7N|A6N/i, 2024],
+    [/98 Inch Smart TV 4K QD-Mini LED/i, 2024], [/^TCL/i, 2025]];
+  const yearOf = (t) => { const m = t.match(/\b(202\d)\b/); if (m) return +m[1]; const r = YEAR_BY_MODEL.find(([re]) => re.test(t)); return r ? r[1] : 2024; };
+  const tvSpec = (p) => {
+    // the size is usually '55 inch' / '55"'; a few titles only say 'TV Max 100' / 'TV A 50 2026' — then the first 2–3 digit number
+    const t = p.title, m = t.match(/(\d{2,3})\s*(?:-\s*)?(?:inch|in\b|"|''|”)/i) || t.match(/\b(\d{2,3})\b(?!\s*(?:hz|gb|%|nits|w\b))/i);
+    const tech = /\boled\b/i.test(t) ? 'OLED' : /mini\s*-?led/i.test(t) ? 'Mini LED' : /qled|qned|quantum dot/i.test(t) ? 'QLED' : 'LED';
+    return { size: m ? +m[1] : 0, tech, price: +p.price, year: yearOf(t) };
+  };
+  const MAX_FIT = 4 + 3 + 3 + 0.5 + 0.45;
+  function fit(p, a) {
+    const s = tvSpec(p), [lo, hi] = a.budget, [s0, s1] = a.size;
+    let k = s.price >= lo && s.price <= hi ? 4 : (s.price > hi && s.price <= hi * 1.2) || (s.price < lo && s.price >= lo * 0.8) ? 1.5 : 0;
+    k += s.size >= s0 && s.size <= s1 ? 3 : Math.min(Math.abs(s.size - s0), Math.abs(s.size - s1)) <= 10 ? 1 : 0;
+    k += !a.tech ? 1.5 : s.tech === a.tech ? 3 : 0;
+    if (a.year) k += s.year >= a.year[0] && s.year <= a.year[1] ? 3 : 0;   // iteration 8's model-year filter
+    k += (p.rating || 4) / 10 + Math.log10((p.reviews || 0) + 1) / 10;   // ties go to the better-rated, better-reviewed set
+    return { p, spec: s, k, pct: Math.min(99, Math.round(52 + 47 * (k / MAX_FIT))) };
+  }
+  plp.addEventListener('plp:personal', (e) => {
+    const d = e.detail, brands = Object.keys(TV_LISTS).filter((b) => b !== 'all' && b !== 'picks');
+    const scored = brands.map((b) => ({ brand: b, list: TV_LISTS[b].map((p) => fit(p, d.answers)).sort((x, y) => y.k - x.k) }));
+    d.total = scored.reduce((n, b) => n + b.list.length, 0);
+    d.best = scored.map((b) => ({ brand: b.brand, ...b.list[0] })).sort((x, y) => y.k - x.k);
+    TV_LISTS.picks = scored.flatMap((b) => b.list).sort((x, y) => y.k - x.k).slice(0, 8).map((f) => f.p);
+    swapTo('picks', d.at);
+  });
+  /* Iteration 6: the storyboard picker answered (plp:story {tech, size}) — re-sort the grid to the
+     eight best fits for that type and size (any budget); no answer is the brand mix. Two keys
+     alternate so every answer swaps, even when the last list was also a story list. */
+  let storyKey = 'storyB';
+  // iteration 11: the Garmin lineup answered (plp:garmin {series, model}) — the series' watches, or that one model
+  // the cards dissolve into the shimmering skeleton and the new ones rise in after it, as the brand widget project's filter does
+  plp.addEventListener('plp:garmin', (e) => { const { series, model } = e.detail; swapTo(model ? `m:${series} ${model}` : series ? `s:${series}` : 'all'); });
+  plp.addEventListener('plp:story', (e) => {
+    const { tech, size, year } = e.detail;
+    if (!tech && !size && !year) return swapTo('all', 0);
+    const a = { budget: [0, 1e9], size: size ? [size - 3, size + 3] : [0, 200], tech, year };
+    storyKey = storyKey === 'storyA' ? 'storyB' : 'storyA';
+    TV_LISTS[storyKey] = Object.keys(TV_LISTS).filter((b) => !/^(all|picks|story[AB])$/.test(b))
+      .flatMap((b) => TV_LISTS[b]).map((p) => fit(p, a)).sort((x, y) => y.k - x.k).slice(0, 8).map((f) => f.p);
+    swapTo(storyKey, 0);
+  });
+  /* The picker's readout asks what a type (and size) starts at (plp:price {tech, size} → detail.from):
+     the cheapest TV of that type within 3" of the size; no 83" sets are listed, so when nothing is
+     that close the nearest within 5" (85") stand in. A type with nothing near the size at all (OLEDs
+     stop at 65") answers for the closest size it does come in (detail.at). */
+  // iteration 8: a model year narrows the lookup to those years first (detail.none when nothing of the type is from them)
+  plp.addEventListener('plp:price', (e) => {
+    const { tech, size, year } = e.detail;
+    const all = Object.keys(TV_LISTS).filter((b) => !/^(all|picks|story[AB])$/.test(b)).flatMap((b) => TV_LISTS[b]).map(tvSpec)
+      .filter((t) => (!tech || t.tech === tech) && (!year || (t.year >= year[0] && t.year <= year[1])));
+    if (!all.length) { e.detail.none = true; return; }
+    const near = (d) => all.filter((t) => !size || Math.abs(t.size - size) <= d);
+    let hit = near(3).length ? near(3) : near(5);
+    if (!hit.length && all.length) {
+      const at = all.reduce((x, t) => (Math.abs(t.size - size) < Math.abs(x - size) ? t.size : x), all[0].size);
+      hit = all.filter((t) => t.size === at); e.detail.at = at;
+    }
+    e.detail.from = hit.length ? Math.min(...hit.map((t) => t.price)) : null;
+  });
   /* Pre-warm the swap lists once the page is idle: measure every list's title cuts
      off-screen (one list per idle slot), so the swap does no layout reads in the
      middle of the widget's morph. Photos are decoded per brand on demand
@@ -1031,7 +1259,7 @@ const PP = (() => {
   const decoded = new Set();
   function warmPhotos(key) {
     if (!LISTS[key] || decoded.has(key)) return; decoded.add(key);
-    LISTS[key].forEach((p) => { const im = new Image(); im.decoding = 'async'; im.src = `${CDN}${p.img}.jpg?width=400`; if (im.decode) im.decode().catch(() => {}); });
+    LISTS[key].forEach((p) => { const im = new Image(); im.decoding = 'async'; im.src = `${CDN}${p.img}.jpg?format=jpg&width=400`; if (im.decode) im.decode().catch(() => {}); });
   }
   plp.addEventListener('plp:warm', (e) => e.detail && warmPhotos(e.detail.brand));
   plp.addEventListener('plp:landed', prewarm);
@@ -1044,13 +1272,20 @@ const PP = (() => {
       const n = t.firstElementChild; n.style.opacity = s.card.style.opacity; s.card.replaceWith(n); s.card = n;
     });
   }
+  // the GitFlow chip row ends in six plain chips that name the category's brands (Garmin: its series)
+  const CHIP_BRANDS = { phone: ['Apple', 'Samsung', 'HUAWEI', 'Smartphones', 'Google', 'Xiaomi'], fitness: ['Fitbit', 'WHOOP', 'Xiaomi', 'HUAWEI', 'Garmin', 'Amazfit'],
+    tv: ['Samsung', 'LG', 'Sony', 'TCL', 'Hisense', 'Xiaomi'], garmin: ['Forerunner', 'fēnix', 'Venu', 'Instinct', 'vívoactive', 'Lily'] };
+  const plainT = [...plp.querySelectorAll('.chip--plain .chip__t')];
+  const setChipBrands = (c) => plainT.forEach((t, i) => { t.textContent = (CHIP_BRANDS[c] || CHIP_BRANDS.phone)[i] || ''; });
   function setCategory(c) {   // called while the page is hidden, before it opens
     if (c === cat) return;
     cat = c; LISTS = CATS[c]; listKey = 'all';
+    setChipBrands(c);
     rTimers.forEach(clearTimeout); rTimers = []; plp.classList.remove('is-reloading');
     fill(LISTS.all);
   }
   function restoreAll() {   // back to the brand mix without animation (the page is hidden)
+    delete TV_LISTS.picks; delete TV_LISTS.storyA; delete TV_LISTS.storyB;   // the next TV search asks again
     rTimers.forEach(clearTimeout); rTimers = []; plp.classList.remove('is-reloading');
     if (listKey === 'all') return;
     listKey = 'all';
@@ -1155,24 +1390,45 @@ const PP = (() => {
   const NOON = 'https://f.nooncdn.com/p/pzsku/';
   const FBOX = [52.85, 2.5, 98.3, 134];
   const FIT_CARDS = [
-    { brand: 'Fitbit', tint: '#eef5f6', src: `${NOON}Z17C80A3602A5846BAD1FZ/45/_/1779344354/c435a5b4-5bd0-43e5-abf8-40f2da8c981e.jpg?width=400`, box: FBOX, best: true, logo: { letter: 'F', label: 'Fitbit' },
+    { brand: 'Fitbit', tint: '#eef5f6', src: `${NOON}Z17C80A3602A5846BAD1FZ/45/_/1779344354/c435a5b4-5bd0-43e5-abf8-40f2da8c981e.jpg?format=jpg&width=400`, box: FBOX, best: true, logo: { letter: 'F', label: 'Fitbit' },
       name: 'Fitbit Air', now: '447', was: '689', off: '35% off', specs: ['AI coaching', 'Up to 7 days', 'Screenless', '4.6'] },
-    { brand: 'WHOOP', tint: '#f3f3f5', src: `${NOON}Z3EA377BB738DA226426DZ/45/_/1776947042/61e63567-26e4-45dc-b942-0e16030b9b65.jpg?width=400`, box: FBOX, best: true, logo: { letter: 'W', label: 'WHOOP' },
+    { brand: 'WHOOP', tint: '#f3f3f5', src: `${NOON}Z3EA377BB738DA226426DZ/45/_/1776947042/61e63567-26e4-45dc-b942-0e16030b9b65.jpg?format=jpg&width=400`, box: FBOX, best: true, logo: { letter: 'W', label: 'WHOOP' },
       name: 'WHOOP Life', now: '1,379', note: '1-yr membership', specs: ['Health insights', '14+ days', 'Medical-grade ECG', '4.6'] },
-    { brand: 'Xiaomi', tint: '#f8f1ee', src: `${NOON}Z2BE4EBAB991E892FE143Z/45/_/1780467043/189d9427-62b7-4040-a70f-cc4f342fedd0.jpg?width=400`, box: FBOX, logo: { mark: 'xiaomi', w: 11, h: 11, label: 'Xiaomi' },
+    { brand: 'Xiaomi', tint: '#f8f1ee', src: `${NOON}Z2BE4EBAB991E892FE143Z/45/_/1780467043/189d9427-62b7-4040-a70f-cc4f342fedd0.jpg?format=jpg&width=400`, box: FBOX, logo: { mark: 'xiaomi', w: 11, h: 11, label: 'Xiaomi' },
       name: 'Smart Band 10', now: '190', specs: ['Multisport', 'Up to 21 days', '1.72" AMOLED', '4.7'] },
-    { brand: 'HUAWEI', tint: '#fff4ec', src: `${NOON}Z918342DFB2063A5E0A23Z/45/_/1780572409/aa1e9a0c-ea7b-43a4-aebf-2e6a5eff758b.jpg?width=400`, box: FBOX, logo: { mark: 'huawei', w: 14.602, h: 11, label: 'HUAWEI' },
+    { brand: 'HUAWEI', tint: '#fff4ec', src: `${NOON}Z918342DFB2063A5E0A23Z/45/_/1780572409/aa1e9a0c-ea7b-43a4-aebf-2e6a5eff758b.jpg?format=jpg&width=400`, box: FBOX, logo: { mark: 'huawei', w: 14.602, h: 11, label: 'HUAWEI' },
       name: 'Band 11 Pro', now: '279', was: '299', off: '7% off', specs: ['Sleep tracking', 'Up to 14 days', 'Built-in GNSS', '4.7'] },
-    { brand: 'porodo', tint: '#f3f4f6', src: `${NOON}Z9258833AE7A53AF5324FZ/45/_/1786949921/45f844ea-94c7-4313-a8fd-8b71ca73bcb8.jpg?width=400`, box: FBOX, logo: { letter: 'p', label: 'porodo' },
+    { brand: 'porodo', tint: '#f3f4f6', src: `${NOON}Z9258833AE7A53AF5324FZ/45/_/1786949921/45f844ea-94c7-4313-a8fd-8b71ca73bcb8.jpg?format=jpg&width=400`, box: FBOX, logo: { letter: 'p', label: 'porodo' },
       name: 'Track Fit', now: '85', was: '199', off: '57% off', specs: ['Heart & SpO2', 'Up to 30 days', 'IP68', '4.4'] },
-    { brand: 'Garmin', tint: '#eef2f8', src: `${NOON}Z31B986DCC01E44033D3DZ/45/_/1779873456/314e0dbc-778f-460a-9dea-40b1e1d328d4.jpg?width=400`, box: FBOX, logo: { letter: 'G', label: 'Garmin' },
+    { brand: 'Garmin', tint: '#eef2f8', src: `${NOON}Z31B986DCC01E44033D3DZ/45/_/1779873456/314e0dbc-778f-460a-9dea-40b1e1d328d4.jpg?format=jpg&width=400`, box: FBOX, logo: { letter: 'G', label: 'Garmin' },
       name: 'Forerunner 165', now: '1,149', specs: ['Running', 'Up to 11 days', '1.2" AMOLED', '4.5'] },
-    { brand: 'Amazfit', tint: '#f1f4f9', src: `${NOON}ZA83CFEDB87246582268BZ/45/_/1777376410/28fdb971-b062-48d9-adb1-116b2cbb08a1.jpg?width=400`, box: FBOX, logo: { letter: 'A', label: 'Amazfit' },
+    { brand: 'Amazfit', tint: '#f1f4f9', src: `${NOON}ZA83CFEDB87246582268BZ/45/_/1777376410/28fdb971-b062-48d9-adb1-116b2cbb08a1.jpg?format=jpg&width=400`, box: FBOX, logo: { letter: 'A', label: 'Amazfit' },
       name: 'Bip 6', now: '315.81', note: 'Lowest in 30 days', specs: ['GPS & maps', 'Up to 14 days', '1.97" AMOLED', '4.5'] },
+  ];
+  /* TV brands (shown when a "tv" search opened the PLP): each brand's pick on
+     noon.com/uae-en (2026-10-22). noon's TV photos are 400×545 with the set across
+     the middle third, so the box is wider than FBOX and crops the white above and
+     below; letter badges where there's no mark. Specs are read from the titles. */
+  const TBOX = [22, -38, 160, 218];   // set ≈ 7–175 × 25–115, clear of the heart at x 177
+  const TV_CARDS = [
+    { brand: 'Samsung', tint: '#eef2f8', src: `${NOON}ZA90641EE2CE2A68FB6ECZ/45/_/1772180549/acac0b3d-bd94-45c0-943f-bf50dc178dda.jpg?format=jpg&width=400`, box: TBOX, logo: { mark: 'samsung', w: 52.56, h: 7.92 },
+      name: 'QLED Q8F', now: '1,779', was: '3,299', off: '46% off', specs: ['Vision AI', '55"', '4K QLED', '4.4'] },
+    { brand: 'LG', tint: '#f7eff2', src: `${NOON}Z161B06F43A57C1103952Z/45/_/1780306903/835f1735-f869-4e58-b4d3-66857add83b4.jpg?format=jpg&width=400`, box: TBOX, logo: { letter: 'L', label: 'LG' },
+      name: 'OLED webOS 120Hz', now: '2,634', note: '1.7K ratings', specs: ['Movie nights', '55"', '4K OLED', '4.4'] },
+    { brand: 'Sony', tint: '#f3f3f5', src: `${NOON}Z4B1A7375D083E7A27F8FZ/45/_/1780466900/f8d30b6d-cb62-4cdf-bac3-5d0924b9e1bf.jpg?format=jpg&width=400`, box: TBOX, logo: { letter: 'S', label: 'Sony' },
+      name: 'BRAVIA XR X90L', now: '6,171', note: 'Lowest in 7 days', specs: ['Sports & films', '75"', 'Full Array LED', '4.6'] },
+    { brand: 'TCL', tint: '#eef4f9', src: `${NOON}ZE88D74FAB795619572BFZ/45/_/1779345237/d847e07e-fb7b-4c15-9624-31f0d4c3f799.jpg?format=jpg&width=400`, box: TBOX, logo: { letter: 'T', label: 'TCL' },
+      name: 'QLED Google TV', now: '2,099', was: '2,799', off: '25% off', specs: ['Gaming 144Hz', '65"', '4K QLED', '4.5'] },
+    { brand: 'Hisense', tint: '#edf6f4', src: `${NOON}ZC940392BDA2BDEB43C6EZ/45/_/1787835053/901b60ff-b678-4170-8339-667ede58846b.jpg?format=jpg&width=400`, box: TBOX, logo: { letter: 'H', label: 'Hisense' },
+      name: 'QLED E7Q', now: '1,254', was: '1,449', off: '13% off', specs: ['Everyday value', '55"', '4K QLED', '4.3'] },
+    { brand: 'Xiaomi', tint: '#f8f1ee', src: `${NOON}ZF48A39BAF575C70368C0Z/45/_/1780467020/88e01da1-ae7f-499b-bedf-dfb2685513d4.jpg?format=jpg&width=400`, box: TBOX, logo: { mark: 'xiaomi', w: 11, h: 11, label: 'Xiaomi' },
+      name: 'TV S Mini LED', now: '1,399', was: '2,399', off: '42% off', specs: ['Bright rooms', '55"', 'QD-Mini LED', '4.3'] },
   ];
   const CAT = {
     phone:   { cards: PHONE_CARDS, title: 'Shop phones by brand',           noun: 'phones',           spec: ['Best for', 'Storage', 'Colour', 'Rating'] },
     fitness: { cards: FIT_CARDS,   title: 'Shop fitness trackers by brand', noun: 'fitness trackers', spec: ['Best for', 'Battery', 'Feature', 'Rating'] },
+    tv:      { cards: TV_CARDS,    title: 'Shop TVs by brand',              noun: 'TVs',              spec: ['Best for', 'Screen', 'Display', 'Rating'] },
+    garmin:  { cards: FIT_CARDS,   title: 'Shop Garmin',                    noun: 'Garmin watches',   spec: ['Best for', 'Battery', 'Feature', 'Rating'] },   // the lineup picker shows instead
   };
   let catKey = 'phone', CARDS = PHONE_CARDS;
   const LIST_BRANDS = { has: (b) => CARDS.some((c) => c.brand === b) };   // the PLP has a product list for every card's brand
@@ -1195,7 +1451,7 @@ const PP = (() => {
   track.innerHTML = CARDS.map((c) => {
     const [l, t, w, h] = c.box, g = c.logo;
     const mark = g.letter ? `<span class="brw__letter">${g.letter}</span>` : `<img src="${B}mark-${g.mark}.svg" width="${g.w}" height="${g.h}" alt="${g.label || c.img}" />`;
-    const price = c.was ? `<span class="brw__was">${c.was}</span><span class="brw__off">${c.off}</span>` : c.note ? `<span class="brw__note">${c.note}</span>` : '';
+    const price = c.was ? `<span class="brw__was">${c.was}</span><span class="brw__off">${c.off}</span>` : c.note ? `<span class="brw__note${c.match ? ' brw__note--match' : ''}">${c.note}</span>` : '';
     return `<div class="brw__slot"><article class="brw__card"${c.id ? ` data-node-id="${c.id}"` : ''}>
       <div class="brw__media" style="background:${c.tint}">
         <img class="brw__img" src="${c.src || `${B}${c.img}.png`}" style="left:${l}px;top:${t}px;width:${w}px;height:${h}px" alt="" decoding="async" />
@@ -1228,7 +1484,7 @@ const PP = (() => {
      · trackpad / wheel swipes move 1:1, then page once the gesture pauses
      · each new page plays a selection haptic; the counter follows the page */
   const pager = (() => {
-    const STEP = 214, VIEW = 343;
+    const STEP = 214, VIEW = 351;   // the rail is the panel's width (aligned to the product grid)
     const max = () => Math.max(0, track.scrollWidth - VIEW);
     const pages = () => { const m = max(), out = []; for (let x = 0; x < m - 24; x += STEP) out.push(x); out.push(m); return out; };
     const SPR = { w: (2 * Math.PI) / 0.34, z: 0.74 };
@@ -1366,9 +1622,1541 @@ const PP = (() => {
   }
   let timers = [], running = false;
   const later = (ms, fn) => timers.push(setTimeout(fn, ms));
+
+  /* ── TV searches ask before they show (iteration 4) ─────────────────────────
+     The panel opens on a three-step picker instead of the rail: a segmented
+     progress bar, then one question at a time (budget → screen size →
+     picture), each answered on the Product Upscale ROSTER SLIDER (noon-home's
+     "Meet the iPhone lineup"): the four answers stand in a row as TVs with a
+     label and hint; the selection (pink circle, pink indicator line + dot,
+     over a tick ruler) stays fixed in the centre and the row and ruler slide
+     under it. Drag follows 1:1 (rubber band past either end); release snaps
+     ONE answer in the flick direction on a soft spring carrying the release
+     velocity; tap an answer to bring it in. Unselected answers sit at 90%,
+     easing to full size in the slot; while it moves the ruler swells in a
+     wave around the indicator with a pink spill, the dot drops out and the
+     circle eases to 94%; each ruler tick crossing the line clicks (haptic +
+     a soft click), a new answer landing snaps. Next fills the step's progress
+     segment and the next question slides in from the right; Back mirrors it,
+     keeping the answer. "Show my picks" → "Personalizing for you" (text over
+     soft drifting glows) while the grid shimmers, then the rail rises in with
+     each brand's best match. Skip (first step) shows the brand rail as in 3. */
+  // opts: [label, value, hint, [photo, size]] — each answer is a real noon TV, cut out (assets/tv/*.webp), at a relative size
+  const QUESTIONS = [
+    { key: 'budget', label: 'Budget',  q: 'What’s your budget?', sub: 'Swipe to set a price range', def: 1,
+      opts: [['Under  1,500', [0, 1500], 'Great value', ['crystal', 0.86]], [' 1,500 – 3,000', [1500, 3000], 'Most popular', ['q8f', 0.9]],
+             [' 3,000 – 5,000', [3000, 5000], 'Premium', ['bravia', 0.95]], [' 5,000+', [5000, 1e9], 'Top of the range', ['neoqled', 1]]] },
+    // one TV that morphs to size as the ruler moves (single), instead of a row of answers
+    { key: 'size',   label: 'Screen',  q: 'Which screen size?', sub: 'Measured diagonally', def: 1, single: 'qled65',
+      opts: [['Up to 50"', [0, 50], 'Bedrooms & kitchens', 0.56], ['55"', [51, 60], 'Most popular', 0.68], ['65"', [61, 70], 'Living rooms', 0.84], ['75" & up', [71, 200], 'Home cinema', 1]] },
+    // one TV whose picture wipes from one screen type to the next as the ruler moves (single + screen):
+    // [screen image (assets/tv/screen-*.webp), ambient glow colour, the signature pulse when it lands]
+    { key: 'tech',   label: 'Picture', q: 'Any picture preference?', sub: 'Swipe through the screen types', def: 0, single: 'qled65', screen: true,
+      opts: [['No preference', null, 'Show me everything', ['any', 'rgba(242,176,64,.58)', '']], ['QLED', 'QLED', 'Bright, vivid colour', ['qled', 'rgba(118,88,255,.55)', 'saturate(1.28)']],
+             ['Mini LED', 'Mini LED', 'Brightest HDR', ['mini', 'rgba(40,200,205,.55)', 'brightness(1.14)']], ['OLED', 'OLED', 'Perfect blacks', ['oled', 'rgba(255,90,140,.5)', 'contrast(1.18) saturate(1.06)']]] },
+  ];
+  const PAGE_DX = 44;
+  const PAGE = spr(0.5, 1), SNAP = spr(0.3, 0.86);
+  const EASE_OUT = 'cubic-bezier(.22,1,.36,1)';
+  const SL_W = 315, THUMB = 28, TRAVEL = SL_W - THUMB;   // the thumb's centre runs 14 → 301
+  const ask = document.createElement('div');
+  ask.className = 'brw__ask';
+  /* the picker's own top (the widget's header is hidden while it asks): an eyebrow, the step count and
+     three step pills — done = dark dot, current = a wider dark pill, to come = grey dot (morphing on change) */
+  ask.innerHTML = `<div class="qz__top"><span class="qz__eyebrow">Find your TV</span>
+      <span class="qz__prog"><span class="qz__count">1 of ${QUESTIONS.length}</span><span class="qz__steps" aria-hidden="true">${QUESTIONS.map(() => '<i></i>').join('')}</span></span></div>
+    <div class="qz__stage"></div>
+    <div class="qz__foot">
+      <span class="qz__left">
+        <button class="qz__skip" type="button">Skip</button>
+        <button class="qz__back" type="button"><img src="${B}chevron.svg" width="16" height="16" alt="" />Back</button>
+      </span>
+      <button class="qz__next" type="button">Next</button>
+    </div>`;
+  bar.appendChild(ask);
+  const qBar = ask.querySelector('.qz__top'), qCount = ask.querySelector('.qz__count'), stage = ask.querySelector('.qz__stage'), foot = ask.querySelector('.qz__foot');
+  const qBack = ask.querySelector('.qz__back'), qSkip = ask.querySelector('.qz__skip'), qNext = ask.querySelector('.qz__next');
+  const fills = [...qBar.querySelectorAll('.qz__steps i')];
+  const TV_BRAND = Object.fromEntries(TV_CARDS.map((c) => [c.brand, c]));
+  let answers = {}, step = 0, page = null, busy = false, personal = false, slider = null;
+  const node = (html) => { const t = document.createElement('div'); t.innerHTML = html.trim(); return t.firstElementChild; };
+  const fill = (i, on) => fills[i].classList.toggle('is-done', on);
+  const fadeEl = (el, to, ms = 200) => PP.commit(el, [el.animate([{ opacity: +getComputedStyle(el).opacity }, { opacity: to }], { duration: ms, easing: OUT, fill: 'both' })], { opacity: to });
+
+  /* Sfx — the roster's clicks, synthesised (no audio files): a crisp ~14ms tick as a ruler tick crosses
+     the line, a fuller 22ms snap with a short "tock" when an answer lands (noon-home's Sfx, as measured) */
+  const Sfx = (() => {
+    let ctx = null;
+    const ensure = () => {
+      if (!ctx) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null; ctx = new AC(); }
+      if (ctx.state === 'suspended') ctx.resume();
+      return ctx;
+    };
+    function click(freq, q, ms, gain, body = 0) {
+      const c = ensure(); if (!c || c.state !== 'running') return;
+      const t = c.currentTime, len = Math.max(1, Math.floor(c.sampleRate * ms / 1000));
+      const buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.22));
+      const src = c.createBufferSource(); src.buffer = buf;
+      const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = q;
+      const g = c.createGain(); g.gain.value = gain;
+      src.connect(bp).connect(g).connect(c.destination); src.start(t);
+      if (body) {
+        const o = c.createOscillator(), og = c.createGain();
+        o.frequency.setValueAtTime(freq * 0.62, t); o.frequency.exponentialRampToValueAtTime(freq * 0.45, t + 0.03);
+        og.gain.setValueAtTime(body, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.035);
+        o.connect(og).connect(c.destination); o.start(t); o.stop(t + 0.04);
+      }
+    }
+    return { unlock: ensure, tick: () => click(2900, 4, 14, 0.07), snap: () => click(2400, 3, 22, 0.12, 0.05) };
+  })();
+  const TV_W = 156, TV_BIG = 196, TV_SCR = 190;   // TV_SCR: the picture question's TV
+  // the screen inside assets/tv/qled65.webp (measured from the cut-out: 1–2px bezel, stand below)
+  const SCREEN = { l: 0.8, t: 1.9, w: 98.4, h: 89.4 };   // the largest answer's width in the slot; the size question's TV at 75"+
+  const tvImg = ([file, k]) => `<img class="rsi__img" src="assets/tv/${file}.webp" width="${Math.round(TV_W * k)}" height="${Math.round(TV_W * k * 0.615)}" alt="" decoding="async" />`;
+
+  /* The roster (one per question page). Rail x runs 0 (first answer in the slot) → X_MIN (last).
+     Geometry, roster coordinates (351 wide, the panel's full width, as in the brand widget project): the slot / the
+     indicator in the CENTRE (x 175), answers 136 apart either side (17 ruler ticks of 8px, a darker mark under each).
+     The answer in the slot is full size on a soft peach glow; the others shrink to 70% and fade to
+     42% as they leave it (continuous with position) and peek in from the panel edges. One readout
+     under the slot names the answer and rolls over (out up, in from below) when it changes. */
+  const RS = { PITCH: 136, TICK: 8, IND: 175, SHRINK: 0.3, FADE: 0.58, RUBBER: 150, W: 11, Z: 0.96 };
+  const WAVE = { A: 0.43, SIGMA: 17.5, ATTACK: 0.02, HOLD: 50, DECAY: 100, V_MIN: 20 };
+  const TINT = { MAX: 0.92, SIGMA: 12, TRAIL: 14, LEAD: 3, V_FULL: 900 };
+  function springFn(w, z, x0, v0) {
+    const wd = w * Math.sqrt(1 - z * z), e = (t) => Math.exp(-z * w * t);
+    return {
+      d: (t) => e(t) * (x0 * Math.cos(wd * t) + ((v0 + z * w * x0) / wd) * Math.sin(wd * t)),
+      v: (t) => e(t) * (v0 * Math.cos(wd * t) - ((z * w * v0 + w * w * x0) / wd) * Math.sin(wd * t)),
+    };
+  }
+  function makeRoster(pg, Q, k0) {
+    const PITCH = Q.pitch || RS.PITCH;   // the storyboard picker (iteration 6) spaces its sets wider
+    const rs = pg.querySelector('.rs'), items = [...rs.querySelectorAll('.rsi')], strip = rs.querySelector('.rs__ticks');
+    const tickEls = [...strip.children], ind = rs.querySelector('.rs__ind'), dot = rs.querySelector('.rs__dot'), selC = rs.querySelector('.rs__sel');
+    const rd = rs.querySelector('.rs__read');
+    /* the readout: one line per answer, riding the rail at half its speed and fading with distance from
+       the slot (gone by 0.7 of a step) — the names slide and crossfade with the finger, never swap */
+    rd.innerHTML = Q.opts.map(([label, , hint]) => `<span class="rs__line"><b>${label}</b><span>${hint}</span></span>`).join('');
+    const lines = [...rd.children];
+    function paintRead() {
+      lines.forEach((l, k) => {
+        const d = k * PITCH + x, t = Math.min(1, Math.abs(d) / (PITCH * 0.7)), o = 1 - t * t * (3 - 2 * t);
+        l.style.transform = `translate3d(${(d * 0.5).toFixed(2)}px,0,0)`;
+        l.style.opacity = o.toFixed(3);
+        l.style.visibility = o < 0.002 ? 'hidden' : '';
+      });
+    }
+    const N = Q.opts.length, X_MIN = -(N - 1) * PITCH, single = !!Q.single;
+    /* single (screen size): one TV, its scale a continuous function of the rail position — linear between
+       the answers' sizes, a little past them on the rubber band — so it grows and shrinks with the finger
+       and lands exactly on the size the snap spring settles on; the glow behind it scales with it */
+    const KS = Q.opts.map((o) => o[3]);
+    /* single + screen (picture type): the TV holds still; its picture is one layer per answer, and the
+       next layer wipes in from the right with the rail (a clip-path inset following the finger), a light
+       seam riding the wipe edge; the ambient glow behind the set crossfades between the answers'
+       colours; when it lands, that screen type plays its signature pulse (QLED colour, Mini LED
+       brightness, OLED contrast) */
+    const layers = Q.screen ? [...rs.querySelectorAll('.scr__l')] : [], seam = rs.querySelector('.scr__seam');
+    const pics = layers.map((L) => L.firstElementChild);
+    const SW = TV_SCR * SCREEN.w / 100, SOFT = SW * 0.1;   // screen width; half the feathered edge (the mask's 30→36.7% of 3W)
+    const ambs = Q.screen ? [...rs.querySelectorAll('.rs__amb i')] : [];
+    function paintScreen() {
+      const u = Math.max(0, Math.min(N - 1, -x / PITCH)), i = Math.min(N - 2, Math.floor(u)), f = u - i;
+      /* a feathered wipe: the incoming picture's mask (a soft 0.2W edge) slides from beyond the right edge to
+         beyond the left as f goes 0 → 1, so it starts and ends fully clean; the pictures drift with it (the
+         incoming one in from 18% to the right, the outgoing out 12% to the left) as if passing behind glass,
+         and a faint band of light rides the edge */
+      const edge = (1 - f) * (SW + 2 * SOFT) - SOFT;   // the soft edge's centre, px from the screen's left
+      layers.forEach((L, k) => {
+        const on = k === i || k === i + 1, wipe = k === i + 1 && f > 0;
+        L.style.visibility = on && (k === i || f > 0) ? '' : 'hidden';
+        L.classList.toggle('is-wipe', wipe);
+        if (wipe) { const mp = `${(edge - SW).toFixed(2)}px 0`; L.style.webkitMaskPosition = mp; L.style.maskPosition = mp; }
+        const drift = k === i + 1 ? (1 - f) * SW * 0.18 : k === i ? -f * SW * 0.12 : 0;
+        pics[k].style.transform = drift ? `translate3d(${drift.toFixed(2)}px,0,0)` : '';
+      });
+      seam.style.transform = `translate3d(${(edge - 22).toFixed(2)}px,0,0)`;
+      seam.style.opacity = (Math.sin(Math.PI * f) * 0.7).toFixed(3);
+      ambs.forEach((g, k) => { const w = Math.max(0, 1 - Math.abs(u - k)); g.style.opacity = (w * w * (3 - 2 * w)).toFixed(3); });
+      const over = x > 0 ? x : x < X_MIN ? x - X_MIN : 0;   // on the rubber band the set leans a touch with the pull
+      items[0].style.transform = over ? `translate3d(${(over * 0.18).toFixed(2)}px,0,0)` : '';
+    }
+    function pulse() {
+      const fx = Q.opts[sel][3][2], L = layers[sel];
+      if (!fx || !L || IS_ANDROID || PP.reduce.matches) return;
+      // a gentle swell and release (~0.9s), the glow breathing with it
+      PP.commit(L, [L.animate([{ filter: 'none' }, { filter: fx, offset: 0.4 }, { filter: 'none' }], { duration: 900, easing: 'cubic-bezier(.37,0,.63,1)' })], {});
+      const g = ambs[sel];
+      if (g) PP.commit(g, [g.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)', offset: 0.4 }, { transform: 'scale(1)' }], { duration: 900, easing: 'cubic-bezier(.37,0,.63,1)' })], {});
+    }
+    const sizeAt = (u) => {
+      if (u <= 0) return KS[0] + (KS[1] - KS[0]) * Math.max(-0.35, u);
+      if (u >= N - 1) return KS[N - 1] + (KS[N - 1] - KS[N - 2]) * Math.min(0.35, u - (N - 1));
+      const i = Math.floor(u), f = u - i, P = (k) => KS[Math.max(0, Math.min(N - 1, k))];
+      const p0 = P(i - 1), p1 = P(i), p2 = P(i + 1), p3 = P(i + 2);   // Catmull-Rom: same speed into and out of each stop
+      return 0.5 * (2 * p1 + (p2 - p0) * f + (2 * p0 - 5 * p1 + 4 * p2 - p3) * f * f + (3 * p1 - p0 - 3 * p2 + p3) * f * f * f);
+    };
+    const rubber = (d) => (1 - 1 / ((d * 0.55) / RS.RUBBER + 1)) * RS.RUBBER;
+    const bound = (raw) => (raw > 0 ? rubber(raw) : raw < X_MIN ? X_MIN - rubber(X_MIN - raw) : raw);
+    const clampK = (k) => Math.max(0, Math.min(N - 1, k));
+    let x = -k0 * PITCH, v = 0, sel = -1, anim = null, drag = null, raf = 0;
+    let lastTick = Math.round(-x / RS.TICK), lastTickAt = 0, lastHapAt = 0, pastEdge = false, hidden = -1;
+    function select(i, sound) {
+      if (i === sel) return;
+      sel = i;
+      if (!single) {
+        items.forEach((el, k) => { el.classList.toggle('is-sel', k === i); el.setAttribute('aria-selected', k === i); });
+        rs.setAttribute('aria-activedescendant', items[i].id);
+      } else rs.setAttribute('aria-valuetext', Q.opts[i][0]);
+      lines.forEach((l, k) => l.classList.toggle('is-cur', k === i));
+      if (sound) { Sfx.snap(); Haptics.snap(); lastTickAt = performance.now(); }
+    }
+    function render(sound = true) {
+      paintRead();
+      if (Q.screen) paintScreen();
+      else if (single) {
+        const k = sizeAt(-x / PITCH);
+        items[0].style.transform = `scale(${k.toFixed(4)})`;
+        selC.style.transform = `scale(${(0.55 + 0.45 * k).toFixed(4)})`;
+      } else items.forEach((el, i) => {
+        const p = i * PITCH + x, t = Math.min(1, Math.abs(p) / PITCH), e = t * t * (3 - 2 * t);
+        el.style.transform = `translate3d(${x.toFixed(2)}px,0,0) scale(${(1 - RS.SHRINK * e).toFixed(4)})`;
+        el.style.opacity = (1 - RS.FADE * e).toFixed(3);
+      });
+      strip.style.transform = `translate3d(${x.toFixed(2)}px,0,0)`;
+      // the pink line stands in for the tick under it: hide that one
+      const under = Math.round(-x / RS.TICK);
+      if (under !== hidden) { if (tickEls[hidden]) tickEls[hidden].style.visibility = ''; if (tickEls[under]) tickEls[under].style.visibility = 'hidden'; hidden = under; }
+      const ti = Math.round(-x / RS.TICK), slot = clampK(Math.round(-x / PITCH));
+      if (ti !== lastTick) {
+        lastTick = ti;
+        const now = performance.now();
+        if (sound && now - lastTickAt >= 100) { lastTickAt = now; Sfx.tick(); }
+        if (sound && slot === sel && x <= 0.5 && x >= X_MIN - 0.5 && now - lastHapAt >= 40) { lastHapAt = now; Haptics.gesture('tick'); }
+      }
+      const past = x > 0.5 || x < X_MIN - 0.5;
+      if (past !== pastEdge) { pastEdge = past; if (past && sound) Haptics.gesture('edge'); }
+      select(slot, sound);
+      waveKick();
+    }
+    /* ruler wave + pink spill (noon-home, measured): while moving, ticks near the line grow on a bell
+       curve (×1.43 beside it, σ 17.5px) and take the line's pink, smeared to the trailing side */
+    let E = 0, wx = x, wt = 0, lastActive = -1e9, relFrom = null, waveRaf = 0, armed = false, vS = 0;
+    const swelled = new Set();
+    function waveApply() {
+      const reach = WAVE.SIGMA * 3, k = Math.min(1, Math.abs(vS) / TINT.V_FULL);
+      const sTrail = TINT.SIGMA + TINT.TRAIL * k, sLead = TINT.SIGMA - TINT.LEAD * k;
+      tickEls.forEach((el, i) => {
+        const d = i * RS.TICK + x;
+        if (E > 0 && Math.abs(d) < reach) {
+          el.style.transform = `scaleY(${(1 + WAVE.A * E * Math.exp(-((d / WAVE.SIGMA) ** 2))).toFixed(4)})`;
+          el.style.setProperty('--tint', (TINT.MAX * E * Math.exp(-((d / (d * vS > 0 ? sTrail : sLead)) ** 2))).toFixed(3));
+          swelled.add(i);
+        } else if (swelled.has(i)) { el.style.transform = ''; el.style.removeProperty('--tint'); swelled.delete(i); }
+      });
+      ind.style.transform = E > 0 ? `scaleY(${(1 + WAVE.A * E).toFixed(4)})` : '';
+    }
+    function waveKick() {
+      if (PP.reduce.matches || waveRaf) return;
+      if (!armed && E === 0) { wx = x; return; }
+      wt = 0; waveRaf = requestAnimationFrame(waveStep);
+    }
+    function waveStep(now) {
+      const dt = wt ? Math.min(0.05, (now - wt) / 1000) : 0;
+      const speed = dt ? Math.abs(x - wx) / dt : (x !== wx ? Infinity : 0);
+      if (dt) vS += ((x - wx) / dt - vS) * (1 - Math.exp(-dt / 0.06));
+      wx = x; wt = now;
+      if (armed && speed > WAVE.V_MIN) { lastActive = now; relFrom = null; E += (1 - E) * (1 - Math.exp(-(dt || 1 / 60) / WAVE.ATTACK)); }
+      else if (now - lastActive > WAVE.HOLD) {
+        if (!relFrom) { relFrom = { t: now, E }; armed = false; }
+        E = relFrom.E * (1 - Math.min(1, (now - relFrom.t) / WAVE.DECAY)) ** 1.6;
+      }
+      waveApply();
+      if (E > 0.0005 || now - lastActive <= WAVE.HOLD) waveRaf = requestAnimationFrame(waveStep);
+      else { E = 0; relFrom = null; waveApply(); waveRaf = 0; settleUi(); }
+    }
+    /* the pink dot drops out the moment the row moves and pops back once everything is still;
+       the circle eases to 94% while moving and springs back as an answer lands */
+    let moving = false, dotT = 0;
+    function moved() {
+      armed = true; clearTimeout(dotT);
+      if (moving) return; moving = true;
+      PP.commit(dot, [dot.animate([{ transform: getComputedStyle(dot).transform === 'none' ? 'scale(1)' : getComputedStyle(dot).transform }, { transform: 'scale(0)' }], { duration: 160, easing: PP.EASE_IO, fill: 'forwards' })], { transform: 'scale(0)' });
+      if (!single) PP.commit(selC, [selC.animate([{ transform: 'scale(1)' }, { transform: 'scale(.94)' }], { duration: 240, easing: PP.EASE_IO, fill: 'forwards' })], { transform: 'scale(.94)' });
+    }
+    function settleUi() {
+      if (!moving || drag || waveRaf || anim) return;
+      clearTimeout(dotT);
+      dotT = setTimeout(() => {
+        if (drag || waveRaf || anim || !moving) return;
+        moving = false;
+        PP.commit(dot, [PP.spring(dot, 0, 1, (k) => ({ transform: `scale(${Math.max(0, +k).toFixed(3)})` }))], { transform: '' });
+        if (!single) PP.commit(selC, [springAnim(selC, 0.94, 1, (k) => ({ transform: `scale(${(+k).toFixed(4)})` }), { w: 13, z: 0.8 })], { transform: '' });
+        if (Q.screen) pulse();
+        if (Q.onLand) Q.onLand(sel);
+      }, 90);
+    }
+    function goToX(target, v0 = v) {
+      if (Math.abs(target - x) > 0.05) moved();
+      const running = !!anim, x0 = x - target;
+      if (v0 * -x0 > 0) v0 = Math.sign(v0) * Math.min(Math.abs(v0), RS.W * Math.abs(x0) * 1.2);
+      else v0 = Math.sign(v0) * Math.min(Math.abs(v0), 600);
+      anim = { target, t0: performance.now(), f: springFn(RS.W, RS.Z, x0, v0) };
+      if (!running) raf = requestAnimationFrame(stepF);
+    }
+    function stepF(now) {
+      if (!anim) return;
+      const t = (now - anim.t0) / 1000, d = anim.f.d(t);
+      v = anim.f.v(t); x = anim.target + d;
+      if (Math.abs(d) < 0.05 && Math.abs(v) < 5) { x = anim.target; v = 0; anim = null; render(); settleUi(); return; }
+      render(); raf = requestAnimationFrame(stepF);
+    }
+    function release(vel) {
+      if (x > 0) return goToX(0, vel);
+      if (x < X_MIN) return goToX(X_MIN, vel);
+      const nearest = Math.round(-x / PITCH), proj = Math.round(-(x + vel * 0.2) / PITCH);
+      goToX(-clampK(nearest + Math.sign(proj - nearest) * Math.min(1, Math.abs(proj - nearest))) * PITCH, vel);
+    }
+    function lock(e) {
+      anim = null; drag.locked = true; drag.x0 = x; drag.sx = e.clientX;
+      try { rs.setPointerCapture(e.pointerId); } catch (_) {}
+      rs.classList.add('is-drag');
+    }
+    rs.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      Sfx.unlock();
+      drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, x0: x, locked: false, moved: 0, t: performance.now(), samples: [[performance.now(), x]] };
+      if (e.pointerType === 'mouse') lock(e);
+    });
+    rs.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+      drag.moved = Math.max(drag.moved, Math.hypot(dx, dy));
+      if (!drag.locked) {
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+        if (Math.abs(dy) > Math.abs(dx)) { drag = null; return; }   // vertical: the page scrolls
+        lock(e);
+      }
+      if (Math.abs(e.clientX - drag.sx) > 2) moved();
+      x = bound(drag.x0 + (e.clientX - drag.sx));
+      const sm = drag.samples; sm.push([performance.now(), x]); while (sm.length > 2 && sm[sm.length - 1][0] - sm[0][0] > 80) sm.shift();
+      render();
+    });
+    const endDrag = (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const d = drag; drag = null; rs.classList.remove('is-drag');
+      if (d.moved < 6 && performance.now() - d.t < 400) {   // a tap: bring that answer in
+        if (single) {   // a tap either side of the TV steps one size down / up
+          const c = rs.getBoundingClientRect().left + RS.IND, dx = e.clientX - c;
+          if (Math.abs(dx) > 50) goToX(-clampK(sel + Math.sign(dx)) * PITCH, 0); else release(0);
+          return;
+        }
+        const hit = document.elementsFromPoint(e.clientX, e.clientY).find((el) => el.closest && el.closest('.rsi'));
+        if (hit) { const hi = clampK(+hit.closest('.rsi').dataset.i); if (hi === sel && Q.onTap) Q.onTap(hi); goToX(-hi * PITCH, 0); return; }
+        release(0); return;
+      }
+      if (!d.locked) return;
+      const sm = d.samples, a = sm[0], b = sm[sm.length - 1];
+      release(e.type === 'pointercancel' ? 0 : (b[0] > a[0] ? ((b[1] - a[1]) / (b[0] - a[0])) * 1000 : 0));
+    };
+    rs.addEventListener('pointerup', endDrag); rs.addEventListener('pointercancel', endDrag);
+    rs.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault(); goToX(-clampK(sel + (e.key === 'ArrowRight' ? 1 : -1)) * PITCH, 0);
+    });
+    render(false);
+    return { get k() { return sel; }, stop() { anim = null; cancelAnimationFrame(raf); cancelAnimationFrame(waveRaf); clearTimeout(dotT); } };
+  }
+
+  // one question on the stage; dir 1 = from the right, −1 = from the left, 0 = the first one rising in
+  function show(i, dir) {
+    step = i; busy = true;
+    const Q = QUESTIONS[i], k0 = answers[Q.key + 'K'] != null ? answers[Q.key + 'K'] : Q.def;
+    count.textContent = `${i + 1} of ${QUESTIONS.length}`;
+    fills.forEach((f, k) => f.classList.toggle('is-cur', k === i));
+    if (qCount.textContent !== `${i + 1} of ${QUESTIONS.length}`) {
+      qCount.textContent = `${i + 1} of ${QUESTIONS.length}`;
+      PP.commit(qCount, [qCount.animate([{ opacity: 0, transform: `translateY(${dir < 0 ? -4 : 4}px)` }, { opacity: 1, transform: 'none' }], { duration: 260, easing: EASE_OUT, fill: 'both' })], { opacity: 1, transform: '' });
+    }
+    const next = node(`<div class="qz__page qz__page--${Q.key}">
+      <p class="qz__q">${Q.q}</p><p class="qz__sub">${Q.sub}</p>
+      <div class="rs" role="${Q.single ? 'slider' : 'listbox'}" tabindex="0" aria-label="${Q.q}">
+        ${Q.screen ? `<i class="rs__amb" aria-hidden="true">${Q.opts.map((o) => `<i style="--c:${o[3][1]}"></i>`).join('')}</i>` : '<i class="rs__sel" aria-hidden="true"></i>'}
+        ${Q.screen ? `<div class="rsi rsi--single rsi--screen" style="left:${RS.IND - TV_SCR / 2}px;width:${TV_SCR}px"><span class="scr">${tvImg([Q.single, TV_SCR / TV_W])}
+          <span class="scr__screen" style="left:${SCREEN.l}%;top:${SCREEN.t}%;width:${SCREEN.w}%;height:${SCREEN.h}%">${Q.opts.map((o) => `<i class="scr__l"><b style="background-image:url(assets/tv/screen-${o[3][0]}.webp)"></b></i>`).join('')}<i class="scr__seam"></i><i class="scr__glare"></i></span></span></div>`
+          : Q.single ? `<div class="rsi rsi--single" style="left:${RS.IND - TV_BIG / 2}px;width:${TV_BIG}px">${tvImg([Q.single, TV_BIG / TV_W])}</div>`
+          : Q.opts.map(([label, , , look], k) => `<div class="rsi" role="option" aria-label="${label}" id="rsi-${Q.key}-${k}" data-i="${k}" style="left:${RS.IND - TV_W / 2 + k * RS.PITCH}px">${tvImg(look)}</div>`).join('')}
+        <div class="rs__read" aria-hidden="true"></div>
+        <div class="rs__ruler"><div class="rs__ticks">${Array.from({ length: (Q.opts.length - 1) * (RS.PITCH / RS.TICK) + 1 }, (_, j) =>
+          `<i class="rs__tick${j % (RS.PITCH / RS.TICK) ? '' : ' rs__tick--mark'}" style="left:${RS.IND - 1 + j * RS.TICK}px"></i>`).join('')}</div></div>
+        <i class="rs__ind" aria-hidden="true"></i><img class="rs__dot" src="assets/2a34b.svg" width="4" height="4" alt="" />
+      </div>
+    </div>`);
+    const old = page; page = next; stage.appendChild(next);
+    if (slider) slider.stop();
+    slider = makeRoster(next, Q, k0);
+    /* one push: the outgoing question and the incoming one ride the SAME critically-damped spring, the
+       old moving out by PAGE_DX as the new moves in from PAGE_DX on the other side, crossfading over
+       the first part of the travel — so it reads as one sheet sliding, never a fade-out then a pop-in */
+    const dx = dir * PAGE_DX, dy = dir ? 0 : 12;
+    if (old) {
+      old.getAnimations().forEach((a) => a.cancel());
+      PP.commit(old, [springAnim(old, 0, 1, (p) => ({ transform: `translateX(${(-dx * p).toFixed(2)}px)` }), PAGE),
+        old.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'both' })], { opacity: 0 }).then(() => old.remove());
+    }
+    PP.commit(next, [springAnim(next, 0, 1, (p) => ({ transform: `translate(${(dx * (1 - p)).toFixed(2)}px,${(dy * (1 - p)).toFixed(2)}px)` }), PAGE),
+      next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320, delay: dir ? 50 : 80, easing: 'cubic-bezier(.25,.1,.25,1)', fill: 'both' })], { opacity: 1, transform: '' });
+    // footer: Skip on the first step, Back after it; Next turns into "Show my picks" on the last
+    qSkip.disabled = i > 0; qBack.disabled = i === 0;
+    fadeEl(qSkip, i > 0 ? 0 : 1); fadeEl(qBack, i === 0 ? 0 : 1);
+    const label = i === QUESTIONS.length - 1 ? 'Show my picks' : 'Next';
+    if (qNext.textContent !== label) { qNext.textContent = label; PP.commit(qNext, [qNext.animate([{ opacity: 0.4 }, { opacity: 1 }], { duration: 200, easing: OUT, fill: 'both' })], { opacity: 1 }); }
+    later(dir ? 300 : 340, () => { busy = false; });
+  }
+  // Next: the slider's stop is the answer; the step's segment fills and the next question slides in
+  qNext.addEventListener('click', () => {
+    if (busy || !page || !slider) return;
+    busy = true;
+    const Q = QUESTIONS[step], k = slider.k, [label, val] = Q.opts[k];
+    answers[Q.key] = val; answers[Q.key + 'K'] = k; answers[Q.key + 'Label'] = val === null ? 'Any picture' : label;
+    fill(step, true);
+    later(120, () => (step + 1 < QUESTIONS.length ? show(step + 1, 1) : personalize()));   // the push starts while the segment fills
+  });
+  qBack.addEventListener('click', () => {
+    if (busy || step === 0) return;
+    answers[QUESTIONS[step].key + 'K'] = slider.k;   // keep where this slider was, for when Next comes back to it
+    fill(step - 1, false); show(step - 1, -1);
+  });
+  // Skip: no questions — the brand rail as in iteration 3
+  qSkip.addEventListener('click', () => {
+    if (busy) return;
+    busy = true;
+    [qBar, stage, foot].forEach((el) => fadeEl(el, 0, 180));
+    later(140, () => {
+      hTitle.textContent = CAT[catKey].title; count.textContent = `1 of ${cards.length}`;
+      PP.commit(hTitle, [fadeTo(hTitle, 0, 1, 240, 0, OUT, [{ transform: 'translateY(4px)' }, { transform: 'none' }])], { opacity: 1, transform: '' });
+      PP.commit(count, [fadeTo(count, 0, 1, 240, 40, OUT)], { opacity: 1 });
+      box.classList.remove('is-asking');
+      cardsIn(40);
+    });
+  });
+  function pickCard({ brand, p, spec, pct }) {
+    const b = TV_BRAND[brand], t = p.title;
+    const tech = spec.tech === 'QLED' && /qned/i.test(t) ? 'QNED' : spec.tech;   // LG's QNED matches a QLED answer but keeps its name
+    const display = tech === 'LED' ? (/4k|uhd/i.test(t) ? '4K LED' : 'HD LED') : tech === 'Mini LED' ? 'Mini LED' : `4K ${tech}`;
+    const bestFor = /(1[24]4|120)\s*hz|gaming|game/i.test(t) ? 'Gaming' : spec.tech === 'OLED' ? 'Movie nights' : spec.tech === 'Mini LED' ? 'Bright rooms' : spec.size >= 75 ? 'Big screen' : 'Everyday';
+    return { brand, tint: b.tint, logo: b.logo, box: TBOX, src: `${NOON}${p.img}.jpg?format=jpg&width=400`,
+      name: `${spec.size}" ${tech === 'LED' ? 'Smart TV' : `${tech} TV`}`, now: Number(p.price).toLocaleString('en-US'),
+      note: `${pct}% match`, match: true, specs: [bestFor, `${spec.size}"`, display, p.rating ? p.rating.toFixed(1) : 'New'] };
+  }
+  function startAsk() {
+    box.classList.add('is-asking'); answers = {}; page = null; busy = false;
+    cards.forEach((c) => { c.style.opacity = 0; });
+    hTitle.textContent = 'Find your TV';
+    fills.forEach((f) => f.classList.remove('is-done', 'is-cur'));
+    [qBar, stage, foot].forEach((el) => { el.getAnimations().forEach((a) => a.cancel()); el.style.opacity = ''; el.style.transform = ''; });
+    qBack.style.opacity = 0; qBack.disabled = true; qSkip.style.opacity = 1; qSkip.disabled = false; qNext.textContent = 'Next';
+    show(0, 0);
+  }
+  /* "Personalizing for you" — a calm, focused beat (no logo, no coloured glow, no model picked):
+       · the whole picker fades away; one TV rises in, built from the answers — drawn at the size
+         chosen, its screen showing the chosen picture type (drifting slowly, a soft light sweeping
+         the glass), on a neutral floor shadow
+       · under it the title, the three answers as one quiet line, a single status line that steps
+         "Matching your budget" → "Checking 48 TVs" → "Ranking the best picks" over a thin progress
+         line, ending on "Found your best matches" with a check drawing in
+       · then it lifts away as the rail rises in with the picks (one crossfade)                  */
+  const PZ = { STEPS: [0, 680, 1360], FILL_MS: 2000, FOUND_AT: 2060, DONE_AT: 2700 };
+  const CHECK = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="8" fill="#0f8857"/><path class="pz__ck" d="M4.6 8.3l2.2 2.2 4.6-4.8" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function personalize() {
+    const d = { answers, at: PZ.DONE_AT + 260 };
+    plp.dispatchEvent(new CustomEvent('plp:personal', { detail: d }));   // the grid starts shimmering now
+    CARDS = (d.best || []).map(pickCard); personal = true;
+    const said = count.textContent;   // pager.reset() writes "1 of 6"; keep the picker's count until the picks arrive
+    buildTrack(); pager.reset(); count.textContent = said; cards.forEach((c) => { c.style.opacity = 0; });   // the matches wait, hidden, behind the picker
+    fills.forEach((f) => { f.classList.add('is-done'); f.classList.remove('is-cur'); });
+    [qBar, stage, foot].forEach((el) => fadeEl(el, 0, 220));
+    // the TV from the answers: its width from the size answer, its screen from the picture answer
+    const kSize = QUESTIONS[1].opts[answers.sizeK != null ? answers.sizeK : 1][3];
+    const W = Math.round(128 + 76 * (kSize - 0.56) / 0.44), H = Math.round(W * 0.615);
+    const scr = QUESTIONS[2].opts[answers.techK != null ? answers.techK : 0][3][0];
+    const total = d.total || 48;
+    const msgs = ['Matching your budget', `Checking ${total} TVs`, 'Ranking the best picks'];
+    const perso = node(`<div class="pz">
+      <div class="pz__stagearea"><div class="pz__tv" style="width:${W}px;height:${H}px">
+        <img src="assets/tv/qled65.webp" width="${W}" height="${H}" alt="" />
+        <span class="pz__scr" style="left:${SCREEN.l}%;top:${SCREEN.t}%;width:${SCREEN.w}%;height:${SCREEN.h}%"><b style="background-image:url(assets/tv/screen-${scr}.webp)"></b><i class="pz__sweep"></i></span>
+      </div></div>
+      <p class="pz__title">Personalizing for you</p>
+      <p class="pz__sum">${QUESTIONS.map((Q) => `<span>${answers[Q.key + 'Label']}</span>`).join('<i>·</i>')}</p>
+      <div class="pz__status"><span class="pz__msg">${msgs[0]}</span></div>
+      <div class="pz__bar"><i></i></div>
+    </div>`);
+    ask.appendChild(perso);
+    const tv = perso.querySelector('.pz__tv'), title = perso.querySelector('.pz__title'), sum = perso.querySelector('.pz__sum');
+    const status = perso.querySelector('.pz__status'), barEl = perso.querySelector('.pz__bar'), barFill = barEl.firstElementChild;
+    // in: the TV rises on a soft spring, the copy follows 80ms apart
+    PP.commit(tv, [springAnim(tv, 0, 1, (q) => ({ transform: `translateY(${(18 * (1 - q)).toFixed(2)}px) scale(${(0.94 + 0.06 * q).toFixed(4)})` }), spr(0.6, 1), 140),
+      tv.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, delay: 140, easing: EASE_OUT, fill: 'both' })], { opacity: 1, transform: '' });
+    [title, sum, status, barEl].forEach((el, k) => PP.commit(el, [el.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 240 + k * 80, easing: EASE_OUT, fill: 'both' })], { opacity: 1, transform: '' }));
+    // the progress line fills over the whole beat (ease in-out); the status steps through its lines
+    PP.commit(barFill, [barFill.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: PZ.FILL_MS, delay: 320, easing: 'cubic-bezier(.45,0,.25,1)', fill: 'both' })], { transform: 'scaleX(1)' });
+    const say = (html, cls = '') => {
+      const old = status.querySelector('.pz__msg:not(.is-out)');
+      const m = node(`<span class="pz__msg ${cls}">${html}</span>`); status.appendChild(m);
+      if (old) { old.classList.add('is-out'); PP.commit(old, [old.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-6px)' }], { duration: 220, easing: OUT, fill: 'both' })], { opacity: 0 }).then(() => old.remove()); }
+      PP.commit(m, [m.animate([{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }], { duration: 320, delay: 70, easing: EASE_OUT, fill: 'both' })], { opacity: 1, transform: '' });
+      return m;
+    };
+    PZ.STEPS.slice(1).forEach((at, k) => later(320 + at, () => say(msgs[k + 1])));
+    later(320 + PZ.FOUND_AT - 320, () => {
+      Haptics.success();
+      const m = say(`${CHECK}<span>Found your best matches</span>`, 'is-found');
+      const ck = m.querySelector('.pz__ck'), L = ck.getTotalLength ? ck.getTotalLength() : 12;
+      ck.style.strokeDasharray = L; ck.style.strokeDashoffset = L;
+      PP.commit(ck, [ck.animate([{ strokeDashoffset: L }, { strokeDashoffset: 0 }], { duration: 360, delay: 160, easing: EASE_OUT, fill: 'both' })], { strokeDashoffset: 0 });
+      PP.commit(barEl, [barEl.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 260, delay: 120, easing: OUT, fill: 'both' })], { opacity: 0 });
+    });
+    later(PZ.DONE_AT, () => {
+      // hand-off as one crossfade: the beat lifts away while the header and the rail come in beneath it
+      box.classList.add('is-handoff'); box.classList.remove('is-asking');
+      PP.commit(perso, [perso.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-10px)' }], { duration: 300, easing: OUT, fill: 'both' })], { opacity: 0 });
+      hTitle.textContent = 'Your TV picks'; count.textContent = `1 of ${cards.length}`;
+      PP.commit(hTitle, [fadeTo(hTitle, 0, 1, 300, 100, OUT, [{ transform: 'translateY(4px)' }, { transform: 'none' }])], { opacity: 1, transform: '' });
+      PP.commit(count, [fadeTo(count, 0, 1, 300, 160, OUT)], { opacity: 1 });
+      cardsIn(110);
+      later(340, () => box.classList.remove('is-handoff'));
+      later(620, () => { perso.remove(); if (page) { page.remove(); page = null; } });
+    });
+  }
+  function resetAsk() {
+    ask.getAnimations({ subtree: true }).forEach((x) => x.cancel());
+    if (slider) { slider.stop(); slider = null; }
+    stage.innerHTML = ''; page = null; busy = false;
+    ask.querySelectorAll('.pz').forEach((x) => x.remove());
+    box.classList.remove('is-asking', 'is-handoff');
+    if (personal) { personal = false; CARDS = CAT[catKey].cards; buildTrack(); }
+    hTitle.textContent = CAT[catKey].title;
+  }
+  /* ── Iteration 7: one "Select your TV" header; the sizes open from a pill (Figma 432:76848) ──
+     As iteration 6, but the header never changes, and the size row is there from the start as one
+     centred "Select your TV size" pill under the ruler; 1.2s later it expands into the full row on its own (a tap opens it sooner)
+     (the outline widens, the prompt fades, the sizes fade up from the middle out); no size is
+     picked until one is tapped, and any type — No preference too — can take a size.
+     ── Iteration 6: the storyboard picker (Figma XzSbnjrYFbhNg6Rc5lKmGJ 419:66149) ──
+     TV searches open on an inline picker above the grid instead of the brand rail and the quiz:
+       1  "Select your TV type" over the roster (No preference, OLED, QLED, Mini LED), its readout
+          under the set and the tick ruler below — swipe or tap, as in iteration 4
+       2  landing on a type rolls the title over to "Select your size" and a row of size pills
+          slides in under the ruler (the grid rides down with it); back to No preference undoes it
+       3  tapping a size previews it: the set grows to that size while its neighbours, the readout
+          and the ruler step aside, holds, then settles back
+       4  …and the readout now reads "OLED, 83 inch"
+     Every answer re-sorts the grid (plp:story). Figma's pills read 55 / 83 / 70 / 100 — put in order here. */
+  const STORY_TYPES = { opts: [['No preference', null, '', ['bravia', 1]], ['OLED', 'OLED', '', ['oled', 1]],
+    ['QLED', 'QLED', '', ['q8f', 1]], ['Mini LED', 'Mini LED', '', ['miniled', 1]]] };
+  const STORY_SIZES = [[55, 1.24], [65, 1.4], [75, 1.54], [83, 1.66], [100, 1.86]];   // inches, the preview's scale
+  /* iteration 8: the third filter is the MODEL YEAR, in one of four UIs (the "Year UI" chooser beside the phone):
+       pills    2026 · 2025 · 2024 · Older — one year (or older), like the sizes; tap again to clear
+       stepper  ‹ Any year › — one value in a window, arrows or a swipe step it
+       slider   "this new or newer": a knob on a track (Any → 2024+ → 2025+ → 2026), drag or tap a stop
+       toggle   one switch: "Latest models only" (2025 & 2026)                                        */
+  const YEAR_PICKS = [['2026', [2026, 2026]], ['2025', [2025, 2025]], ['2024', [2024, 2024]], ['Older', [0, 2023]]];
+  const YEAR_STEPS = [['Any year', null], ...YEAR_PICKS];
+  const YEAR_FLOOR = [['Any', null, 'Any year'], ['2024+', [2024, 2026], '2024 or newer'], ['2025+', [2025, 2026], '2025 or newer'], ['2026', [2026, 2026], '2026']];
+  const YEAR_UIS = ['pills', 'stepper', 'slider', 'toggle'];
+  const yearUi = () => 'stepper';   // the Year UI chooser is retired: every year row is the stepper
+  const ST = { H0: 384, H1: 438, LAND_MS: 420, PREVIEW_MS: 1700, PITCH: 176, AUTO_OPEN_MS: 1200, BUDGET_AFTER_MS: 450 };   // box height before / after the year row joins; it opens 450ms after it appears   // box height without / with the size pills; sets 176 apart (22 ticks), ~25px clear of each other
+  const story = document.createElement('div');
+  story.className = 'st';
+  bar.appendChild(story);
+  let st = null;
+  function startStory() {
+    box.classList.add('is-story');
+    const Q = { ...STORY_TYPES, pitch: ST.PITCH, onLand: storyLand };
+    const ticks = Array.from({ length: (Q.opts.length - 1) * (ST.PITCH / RS.TICK) + 1 }, (_, j) =>
+      `<i class="rs__tick${j % (ST.PITCH / RS.TICK) ? '' : ' rs__tick--mark'}" style="left:${RS.IND - 1 + j * RS.TICK}px"></i>`).join('');
+    story.innerHTML = `<p class="st__title" aria-live="polite"><span>Select your TV</span></p>
+      <div class="st__roster"><div class="rs" role="listbox" tabindex="0" aria-label="TV type">
+        <i class="rs__sel" aria-hidden="true"></i>
+        ${Q.opts.map(([label, , , look], k) => `<div class="rsi" role="option" aria-label="${label}" id="rsi-st-${k}" data-i="${k}" style="left:${RS.IND - TV_W / 2 + k * ST.PITCH}px">${tvImg(look)}</div>`).join('')}
+        <div class="rs__read" aria-hidden="true"></div>
+        <div class="rs__ruler"><div class="rs__ticks">${ticks}</div></div>
+        <i class="rs__ind" aria-hidden="true"></i><img class="rs__dot" src="assets/2a34b.svg" width="4" height="4" alt="" />
+      </div></div>
+      <div class="st__sizes is-on is-shut"><button class="st__cta" type="button" aria-expanded="false">Select your TV size</button>
+      <div class="st__track" role="radiogroup" aria-label="Screen size" aria-hidden="true"><i class="st__thumb" aria-hidden="true"></i>
+        ${STORY_SIZES.map(([n], i) => `<button class="st__pill" type="button" role="radio" aria-checked="false" data-i="${i}" aria-label="${n} inch">${n}</button>`).join('')}
+      </div></div>
+      <div class="st__sizes st__year is-on is-shut is-away" aria-hidden="true"></div>`;
+    const rs = story.querySelector('.rs');
+    st = { Q, rs, title: story.querySelector('.st__title'), sizes: story.querySelector('.st__sizes'), track: story.querySelector('.st__track'),
+      pills: [...story.querySelectorAll('.st__sizes:not(.st__year) .st__pill')], yearRow: story.querySelector('.st__year'), year: null, tech: null, size: null, open: false, busy: false, landT: 0 };
+    st.roster = makeRoster(story, Q, 0);
+    storyLabels();   // the sub lines: "Show me everything" and each type's starting price
+    st.pills.forEach((p) => p.addEventListener('click', () => pickSize(+p.dataset.i)));
+    st.open = true;   // the row is there from the start, shut to the one pill
+    st.sizes.querySelector('.st__cta').addEventListener('click', () => openSizes());
+    buildYear(yearUi());
+    // each row is read as a pill first, then opens on its own: the sizes now, the year once the shopper engages
+    st.autoT = setTimeout(() => openSizes(), ST.AUTO_OPEN_MS);   // the pill is read first, then opens into the sizes on its own (a tap opens it sooner)
+    PP.commit(story, [story.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 360, delay: 60, easing: EASE_OUT, fill: 'both' })], { opacity: 1, transform: '' });
+  }
+  // the title rolls over: the old line rises out, the new one rises in from below
+  function storyTitle(text) {
+    const old = st.title.querySelector('span:not(.is-out)');
+    if (!old || old.textContent === text) return;
+    old.classList.add('is-out');
+    PP.commit(old, [old.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(-10px)' }], { duration: 220, easing: OUT, fill: 'both' })], { opacity: 0 }).then(() => old.remove());
+    const s = node(`<span>${text}</span>`); st.title.appendChild(s);
+    PP.commit(s, [s.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 340, delay: 60, easing: EASE_OUT, fill: 'both' })], { opacity: 1, transform: '' });
+  }
+  // the readout under each type carries the size once one is picked: "OLED, 83 inch"
+  // the price a type (and the picked size) starts at, as the PLP's cards write it: "From \uE001 1,225"
+  function priceFrom(tech, size) {
+    const d = { tech, size, year: st.year };
+    plp.dispatchEvent(new CustomEvent('plp:price', { detail: d }));
+    if (d.none) return `None from ${st.yearLabel === 'Older' ? 'before 2024' : st.yearLabel}`;
+    return d.from == null ? '' : `From \uE001${d.from.toLocaleString('en-US')}${d.at ? ` at ${d.at} inch` : ''}`;
+  }
+  // the readout under each type: "OLED, 83 inch" once a size is picked, over the price it starts at;
+  // No preference reads "Show me everything"
+  function storyLabels() {
+    st.rs.querySelectorAll('.rs__line').forEach((l, k) => {
+      const [label, tech] = st.Q.opts[k];
+      l.querySelector('b').textContent = !st.size ? label : tech ? `${label}, ${st.size} inch` : `All types, ${st.size} inch`;
+      l.querySelector('span').textContent = !tech && !st.size && !st.year ? 'Show me everything' : priceFrom(tech, st.size);
+    });
+  }
+  /* the pill opens into the row: one CSS transition widens the outline 222 → 343 and grows it 36 → 44
+     about its centre while its pink outline settles to the quiet grey (styles.css); the sizes are already
+     laid out at full width inside, so the widening reveals them; the prompt fades and shrinks a touch, and the sizes fade up 30ms apart from the middle out */
+  function openSizes(row) {   // row: the size row (default) or the year row (iteration 8)
+    const s = row || (st && st.sizes);
+    if (!st || !s.classList.contains('is-shut')) return;
+    if (s === st.sizes) clearTimeout(st.autoT);
+    Haptics.snap();
+    const cta = s.querySelector('.st__cta'), pills = [...s.querySelectorAll('.st__pill')];
+    s.classList.remove('is-shut');
+    cta.setAttribute('aria-expanded', 'true'); cta.tabIndex = -1;
+    s.querySelector('.st__track').setAttribute('aria-hidden', 'false');
+    const mid = (pills.length - 1) / 2;
+    pills.forEach((p, j) => PP.commit(p, [p.animate([{ opacity: 0, transform: 'scale(.86)' }, { opacity: 1, transform: 'none' }],
+      { duration: 380, delay: 120 + Math.abs(j - mid) * 45, easing: EASE_OUT, fill: 'both' })], { opacity: 1, transform: '' }));
+  }
+  // the size pills slide in under the ruler (or away), the grid riding on the box height
+  function storySizes(on) {
+    if (on === st.open) return;
+    st.open = on;
+    st.sizes.setAttribute('aria-hidden', String(!on));
+    st.sizes.classList.toggle('is-on', on);
+    const s = st.sizes;
+    PP.commit(s, [s.animate([{ opacity: +getComputedStyle(s).opacity, transform: getComputedStyle(s).transform === 'none' ? 'none' : getComputedStyle(s).transform },
+      on ? { opacity: 1, transform: 'none' } : { opacity: 0, transform: 'translateY(-8px)' }], { duration: on ? 360 : 220, delay: on ? 60 : 0, easing: on ? EASE_OUT : OUT, fill: 'both' })],
+      on ? { opacity: 1, transform: '' } : { opacity: 0, transform: 'translateY(-8px)' });
+    // the row arrives outlined in pink to draw the eye, then the stroke settles to a quiet grey
+    if (on) s.animate([{ borderColor: '#efc3c3' }, { borderColor: '#efc3c3', offset: 0.45 }, { borderColor: '#f6f3f3' }], { duration: 1600, delay: 60, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'backwards' });
+    pushGrid(on ? ST.H0 : ST.H1, on ? ST.H1 : ST.H0, (el, a, b, fmt) => springAnim(el, a, b, fmt, spr(0.45, 0.92)));
+  }
+  const storyFilter = () => plp.dispatchEvent(new CustomEvent('plp:story', { detail: { tech: st.tech, size: st.size, year: st.year } }));
+  function storyLand(k) {
+    if (!st) return;
+    clearTimeout(st.landT);
+    const tech = st.Q.opts[k][1];
+    if (tech === st.tech) return;
+    st.tech = tech;
+    showYear();   // the shopper moved the type slider: the third filter joins
+    storyFilter();   // the header stays put and the size row is already there: only the grid follows
+  }
+  /* a size: the pill takes the selection, then the set grows to that size about its top edge while
+     the neighbours, the readout, the ruler and the slot's glow step aside; it holds, settles back,
+     and the readout returns with the size in it (Figma frames 3 → 4 → 5).
+     The scale rides one interruptible spring: tapping another size mid-preview retargets it from the
+     set's current scale AND speed (55 → 83 → 65 flows straight through, no reset to 1 in between),
+     and the hold restarts; the things stepped aside stay away until the last hold ends. */
+  /* GROW: a soft, near-critically-damped spring (0.65s, ζ 0.95 — no visible overshoot). The scale and
+     the drop (grown, the set's centre moves from y 140 down to y 181, the middle between the title and
+     the pills, y 174) are two channels on that SAME spring, so they always move as one motion; each keeps its
+     own position and speed, so a retarget mid-flight carries straight on. HOLD: how long the set stays
+     at the picked size after the last tap. */
+  const GROW = { W: (2 * Math.PI) / 0.65, Z: 0.95, HOLD: 1800, DROP: 41 };
+  function scaleTo(target) {
+    const g = st.grow, now = performance.now();
+    const chans = [['s', target], ['d', target === 1 ? 0 : GROW.DROP]];
+    chans.forEach(([key, to]) => {
+      const c = g[key] || (g[key] = { x: key === 's' ? 1 : 0, v: 0, to: key === 's' ? 1 : 0, f: null });
+      if (g.raf && c.f) { const t = (now - g.t0) / 1000; c.x = c.to + c.f.d(t); c.v = c.f.v(t); }   // where the running spring is now
+      c.to = to; c.f = springFn(GROW.W, GROW.Z, c.x - to, c.v);
+    });
+    g.t0 = now;
+    if (!g.raf) g.raf = requestAnimationFrame(function step(ts) {
+      const t = Math.max(0, (ts - g.t0) / 1000);
+      let done = true;
+      [g.s, g.d].forEach((c) => {
+        const d = c.f.d(t); c.x = c.to + d; c.v = c.f.v(t);
+        if (Math.abs(d) > (c === g.s ? 0.0005 : 0.05) || Math.abs(c.v) > (c === g.s ? 0.005 : 0.5)) done = false;
+      });
+      if (done) { g.s.x = g.s.to; g.d.x = g.d.to; g.s.v = g.d.v = 0; }
+      g.img.style.transform = g.s.x === 1 && g.d.x === 0 ? '' : `translate3d(0,${g.d.x.toFixed(2)}px,0) scale(${g.s.x.toFixed(4)})`;
+      g.raf = done ? 0 : requestAnimationFrame(step);
+    });
+  }
+  function asideFade(on) {
+    const g = st.grow;
+    if (on === g.away) return;
+    g.away = on;
+    if (on) g.aside = [...st.rs.querySelectorAll(`.rsi:not(#rsi-st-${st.roster.k}), .rs__read, .rs__ruler, .rs__ind, .rs__dot, .rs__sel`)];
+    g.aside.forEach((el) => {
+      const o = +getComputedStyle(el).opacity;
+      el.getAnimations().forEach((a) => a.cancel());
+      if (on) { el.dataset.o = o; el.animate([{ opacity: o }, { opacity: 0 }], { duration: 300, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards' }); }
+      else el.animate([{ opacity: o }, { opacity: +el.dataset.o }], { duration: 440, delay: 160, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'backwards' }).finished.catch(() => {});
+    });
+  }
+  // the pill's selection: one thumb glides under the pills; the first one lands in place (no glide in from the left)
+  function selectPill(i, pills = st.pills) {
+    pills.forEach((p, j) => { p.classList.toggle('is-sel', j === i); p.setAttribute('aria-checked', String(j === i)); });
+    const th = pills[0].parentNode.querySelector('.st__thumb'), p = pills[i];
+    if (!p) { th.classList.remove('is-on'); return; }   // nothing selected: the thumb fades away where it is
+    const first = !th.classList.contains('is-on');
+    if (first) th.style.transition = 'none';
+    th.style.width = p.offsetWidth + 'px'; th.style.transform = `translateX(${p.offsetLeft}px)`;
+    if (first) { void th.offsetWidth; th.style.transition = ''; }
+    th.classList.add('is-on');
+  }
+  /* the year row stays away until the shopper engages — moves the type slider or picks a size — so the first
+     view is just type + size; then it slides in under the sizes as the "Select model year" pill (the grid
+     riding down on the box height) and opens on its own */
+  function showYear() {
+    const r = st && st.yearRow;
+    if (!r || !r.classList.contains('is-away')) return;
+    r.classList.remove('is-away'); r.removeAttribute('aria-hidden');
+    pushGrid(ST.H0, ST.H1, (el, a, b, fmt) => springAnim(el, a, b, fmt, spr(0.45, 0.92)));
+    clearTimeout(st.budgetT);
+    st.budgetT = setTimeout(() => openSizes(r), ST.BUDGET_AFTER_MS + 200);
+  }
+  // one answer from any of the UIs: the grid and the readout's prices follow
+  function setYear(range, label) {
+    if (!st) return;
+    st.year = range; st.yearLabel = label;
+    Haptics.snap();
+    storyFilter(); storyLabels();
+  }
+  /* (re)build the year row in one UI. Switching UI (the chooser) brings the row in open and clears the year,
+     so the four can be compared side by side on the same type and size. */
+  function buildYear(ui, show) {
+    const r = st.yearRow, wasOpen = !r.classList.contains('is-shut');
+    r.dataset.ui = ui;
+    const inner = {
+      pills: `<div class="st__track" role="radiogroup" aria-label="Model year"><i class="st__thumb" aria-hidden="true"></i>
+        ${YEAR_PICKS.map(([l], i) => `<button class="st__pill" type="button" role="radio" aria-checked="false" data-i="${i}">${l}${i === 0 ? '<i class="yr-new" aria-hidden="true"></i>' : ''}</button>`).join('')}</div>`,
+      stepper: `<div class="st__track yr-step" role="group" aria-label="Model year">
+        <button class="yr-step__b" type="button" data-d="-1" aria-label="Newer"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3.5L5.5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        <div class="yr-step__win" aria-live="polite"><div class="yr-step__rail">${YEAR_STEPS.map(([l], i) => `<span${i === 0 ? ' class="is-any"' : ''}>${l}${l === '2026' ? '<em>Latest</em>' : ''}</span>`).join('')}</div></div>
+        <button class="yr-step__b" type="button" data-d="1" aria-label="Older"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`,
+      slider: `<div class="st__track yr-sl"><span class="yr-sl__end">Any</span>
+        <div class="yr-sl__track" role="slider" tabindex="0" aria-label="Model year, this new or newer" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0" aria-valuetext="Any year">
+          <i class="yr-sl__rail"></i><i class="yr-sl__fill"></i>${YEAR_FLOOR.map((_, i) => `<i class="yr-sl__stop" style="left:${(i / 3) * 100}%"></i>`).join('')}
+          <span class="yr-sl__knob">Any</span></div><span class="yr-sl__end">2026</span></div>`,
+      toggle: `<div class="st__track yr-tg"><span class="yr-tg__t"><b>Latest models only</b><small>2025 &amp; 2026</small></span>
+        <button class="yr-tg__sw" type="button" role="switch" aria-checked="false" aria-label="Latest models only"><i></i></button></div>`,
+    }[ui];
+    r.innerHTML = `<button class="st__cta" type="button" aria-expanded="false">Select model year</button>${inner}`;
+    r.querySelector('.st__cta').addEventListener('click', () => openSizes(r));
+    if (st.year) setYear(null, '');
+    ({ pills: bindPills, stepper: bindStepper, slider: bindSlider, toggle: bindToggle })[ui](r);
+    if (wasOpen) { r.querySelector('.st__cta').setAttribute('aria-expanded', 'true'); r.querySelectorAll('.st__pill').forEach((p) => { p.style.opacity = 1; }); }
+    if (show) { showYear(); if (r.classList.contains('is-shut') && !r.classList.contains('is-away')) { clearTimeout(st.budgetT); st.budgetT = setTimeout(() => openSizes(r), 250); } }
+  }
+  const yearOpen = (r) => !r.classList.contains('is-shut');
+  function bindPills(r) {
+    const pills = [...r.querySelectorAll('.st__pill')];
+    pills.forEach((p, i) => p.addEventListener('click', () => {
+      if (!yearOpen(r)) return;
+      const on = st.year !== YEAR_PICKS[i][1];
+      selectPill(on ? i : -1, pills);
+      setYear(on ? YEAR_PICKS[i][1] : null, YEAR_PICKS[i][0]);
+    }));
+  }
+  /* stepper: the rail of values slides under a fixed window on a soft spring-like curve; the arrows step
+     it (newer ← → older), a horizontal swipe on the window steps one in that direction; the arrows dim at the ends */
+  function bindStepper(r) {
+    const rail = r.querySelector('.yr-step__rail'), [prev, next] = r.querySelectorAll('.yr-step__b'), win = r.querySelector('.yr-step__win');
+    let k = 0;
+    const go = (to) => {
+      to = Math.max(0, Math.min(YEAR_STEPS.length - 1, to));
+      if (to === k) { rail.animate([{ transform: `translateX(${-k * 100}%)` }, { transform: `translateX(calc(${-k * 100}% + ${to === 0 ? 8 : -8}px))` }, { transform: `translateX(${-k * 100}%)` }], { duration: 260, easing: 'cubic-bezier(.3,0,.3,1)' }); return; }
+      k = to; rail.style.transform = `translateX(${-k * 100}%)`;
+      rail.querySelectorAll('span').forEach((s, j) => s.classList.toggle('is-cur', j === k));
+      prev.disabled = k === 0; next.disabled = k === YEAR_STEPS.length - 1;
+      setYear(YEAR_STEPS[k][1], YEAR_STEPS[k][0]);
+    };
+    rail.querySelector('span').classList.add('is-cur'); prev.disabled = true;
+    prev.addEventListener('click', () => yearOpen(r) && go(k - 1));
+    next.addEventListener('click', () => yearOpen(r) && go(k + 1));
+    let sx = null;
+    win.addEventListener('pointerdown', (e) => { sx = e.clientX; });
+    win.addEventListener('pointerup', (e) => { if (sx == null || !yearOpen(r)) return; const dx = e.clientX - sx; sx = null; if (Math.abs(dx) > 18) go(k + (dx < 0 ? 1 : -1)); });
+  }
+  /* slider ("this new or newer"): the knob carries its value; it follows the finger 1:1, then settles on the
+     nearest stop (a soft overshoot-free ease), the pink fill trailing it; a tap on the track jumps there;
+     arrow keys step. Each stop crossed ticks a haptic. */
+  function bindSlider(r) {
+    const tr = r.querySelector('.yr-sl__track'), knob = r.querySelector('.yr-sl__knob'), fill = r.querySelector('.yr-sl__fill');
+    const N = YEAR_FLOOR.length - 1;
+    let k = 0, drag = null;
+    const place = (u, anim) => {   // u: 0..1 along the track
+      tr.classList.toggle('is-anim', !!anim);
+      knob.style.left = `${(u * 100).toFixed(2)}%`; fill.style.width = `${(u * 100).toFixed(2)}%`;
+    };
+    const commit = (to) => {
+      to = Math.max(0, Math.min(N, to));
+      place(to / N, true);
+      knob.textContent = YEAR_FLOOR[to][0];
+      tr.setAttribute('aria-valuenow', to); tr.setAttribute('aria-valuetext', YEAR_FLOOR[to][2]);
+      if (to !== k) { k = to; setYear(YEAR_FLOOR[k][1], YEAR_FLOOR[k][2]); }
+    };
+    const uAt = (x) => { const b = tr.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - b.left) / b.width)); };
+    tr.addEventListener('pointerdown', (e) => {
+      if (!yearOpen(r)) return;
+      drag = { id: e.pointerId, last: Math.round(uAt(e.clientX) * N) };
+      try { tr.setPointerCapture(e.pointerId); } catch (_) {}
+      place(uAt(e.clientX), true);
+    });
+    tr.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const u = uAt(e.clientX), s = Math.round(u * N);
+      place(u, false);
+      knob.textContent = YEAR_FLOOR[s][0];
+      if (s !== drag.last) { drag.last = s; Haptics.gesture('tick'); }
+    });
+    const end = (e) => { if (!drag || e.pointerId !== drag.id) return; drag = null; commit(Math.round(uAt(e.clientX) * N)); };
+    tr.addEventListener('pointerup', end); tr.addEventListener('pointercancel', end);
+    tr.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); commit(k + (e.key === 'ArrowRight' ? 1 : -1)); } });
+    place(0, false);
+  }
+  function bindToggle(r) {
+    const sw = r.querySelector('.yr-tg__sw');
+    r.querySelector('.yr-tg').addEventListener('click', () => {
+      if (!yearOpen(r)) return;
+      const on = sw.getAttribute('aria-checked') !== 'true';
+      sw.setAttribute('aria-checked', String(on));
+      setYear(on ? [2025, 2026] : null, '2025 or 2026');
+    });
+  }
+  // the chooser beside the phone ("Year UI"): rebuild the row live, remember the pick
+  const ychooser = document.getElementById('yswitch');
+  if (ychooser) {
+    const mark = (ui) => ychooser.querySelectorAll('[data-yui]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.yui === ui)));
+    mark(yearUi());
+    ychooser.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-yui]'); if (!b) return;
+      try { localStorage.setItem('bw-v11-year-ui', b.dataset.yui); } catch (_) {}
+      mark(b.dataset.yui);
+      if (st) buildYear(b.dataset.yui, true);
+    });
+  }
+  function pickSize(i) {
+    if (!st || st.sizes.classList.contains('is-shut')) return;
+    const [n, k] = STORY_SIZES[i], same = st.size === n;
+    st.size = n;
+    showYear();   // a size picked: the third filter joins
+    selectPill(i);
+    Haptics.snap();
+    if (same) return;
+    storyFilter();
+    const cur = st.rs.querySelector(`#rsi-st-${st.roster.k}`), img = cur && cur.querySelector('.rsi__img');
+    if (!img || PP.reduce.matches) { storyLabels(); return; }
+    const g = st.grow || (st.grow = { raf: 0, away: false, holdT: 0 });
+    g.img = img;
+    st.rs.classList.add('is-preview');
+    asideFade(true);
+    scaleTo(k);
+    clearTimeout(g.holdT);
+    g.holdT = setTimeout(() => {   // the last size held: settle back, the readout returning with the size in it
+      if (!st || st.grow !== g) return;
+      storyLabels(); scaleTo(1); asideFade(false);
+      setTimeout(() => { if (st && st.grow === g && !g.away) st.rs.classList.remove('is-preview'); }, 300);
+    }, GROW.HOLD);
+  }
+  /* ── Iteration 11: the Garmin lineup ─────────────────────────────────────────────────────────────
+     A "garmin" search opens on the same slider as the TVs, with Garmin's six series as watches on it
+     (Forerunner, fēnix, Venu, Instinct, vívoactive, Lily — noon.com listing photos, their white multiplied
+     away), each with its idea and starting price under it. Tapping the series in the slot, or swiping to
+     another, opens its models as pills under the ruler (the grid rides down); picking one swaps the watch in
+     the slot to that model's photo, the readout to "Forerunner 265 / 1,839 · 46 mm", and the grid to it.
+     Swiping to another series resets the pills to its own models. */
+  const G_SERIES = [['Forerunner', 'For runners', 'Forerunner|965'], ['fēnix', 'Adventure & multisport', 'fēnix|8'], ['Venu', 'Everyday health & style', 'Venu|3'],
+    ['Instinct', 'Rugged & outdoor', 'Instinct|2X Solar'], ['vívoactive', 'Fitness all-rounder', 'vívoactive|5'], ['Lily', 'Small & elegant', 'Lily|2']];
+  const G = { H0: 318, H1: 384, PITCH: 152, GAP: 32 };   // GAP: the "What's …" card's bottom → the first product row (was 18)
+  // the framed copy of noon's hero photo: every watch centred at one size on white (assets/garmin/)
+  const gImg = (g) => `assets/garmin/${g[7]}.jpg`;
+  const gFind = (k) => (window.NOON_GARMIN || []).find((g) => `${g[0]}|${g[1]}` === k);
+  const gModels = (series) => (window.NOON_GARMIN || []).filter((g) => g[0] === series);   // in Garmin's own model order
+  const money = (n) => `${n.toLocaleString('en-US')}`;
+  /* iteration 19: two layers on the one slider. Layer 1 is the six series; under the ruler a pill says
+     "See the 9 Forerunner models". Tap it (or the watch in the slot) and the slider itself becomes that
+     series' models (same watches-on-a-rail, the readout "Forerunner 265 / 1,839 · 46 mm"), so you swipe
+     models exactly the way you swiped series; the pill turns into "All series" to come back up, landing
+     on the series you came from. The grid follows: the series' watches on layer 1, the model you're on
+     on layer 2. */
+  const GL = { H: 444 };   // iteration 43: + a small card on what the series is, above "See all"   // iteration 42: no "Not sure what to buy?" line — everything moves up 38px   // iteration 39: the title, the line-up pill under it, then the slider
+  const chevR = '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6l-3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const chevL = '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  function gLayer(models, k0, dir) {
+    // models: null = the series layer; else the series index whose models fill the rail
+    const series = models == null ? null : G_SERIES[models][0], ms = series ? gModels(series) : null;
+    const opts = ms ? ms.map((g) => [`${series} ${g[1]}`, g[1], `${money(g[3])} · ${g[2]} mm`])
+      : G_SERIES.map(([n, tag]) => [n, n, `${tag} · from ${money(Math.min(...gModels(n).map((g) => g[3])))}`]);
+    const imgs = ms ? ms.map(gImg) : G_SERIES.map(([, , hero]) => gImg(gFind(hero)));
+    const Q = { opts, pitch: G.PITCH, onLand: (k) => gLand(k), onTap: (k) => gTap(k) };
+    const ticks = Array.from({ length: (opts.length - 1) * (G.PITCH / RS.TICK) + 1 }, (_, j) =>
+      `<i class="rs__tick${j % (G.PITCH / RS.TICK) ? '' : ' rs__tick--mark'}" style="left:${RS.IND - 1 + j * RS.TICK}px"></i>`).join('');
+    if (st) { st.roster.stop(); }
+    story.innerHTML = `<p class="st__title" aria-live="polite"><span>${series ? `Select your ${series}` : 'Select your Garmin'}</span></p>
+      <div class="st__roster"><div class="rs" role="listbox" tabindex="0" aria-label="${series ? `${series} models` : 'Garmin series'}">
+        <i class="rs__sel" aria-hidden="true"></i>
+        ${imgs.map((src, k) => `<div class="rsi rsi--watch" role="option" aria-label="${opts[k][0]}" id="rsi-st-${k}" data-i="${k}" style="left:${RS.IND - TV_W / 2 + k * G.PITCH}px">
+          <img class="rsi__img rsi__img--watch" src="${src}" width="112" height="112" alt="" decoding="async" /></div>`).join('')}
+        <div class="rs__read" aria-hidden="true"></div>
+        <div class="rs__ruler"><div class="rs__ticks">${ticks}</div></div>
+        <i class="rs__ind" aria-hidden="true"></i><img class="rs__dot" src="assets/2a34b.svg" width="4" height="4" alt="" />
+      </div></div>
+      <div class="gc" role="listbox" aria-label="Models"></div>
+      <div class="gn" aria-live="polite"></div>`;
+    st = { Q, rs: story.querySelector('.rs'), title: story.querySelector('.st__title'), gc: story.querySelector('.gc'), nw: story.querySelector('.gn'),
+      layer: models, series: models, at: k0, prev: k0, landT: 0, garmin: true, pick: -1 };
+    st.roster = makeRoster(story, Q, k0);
+    if (models == null) story.querySelectorAll('.rsi__img--watch').forEach((img, k) => gZoom(img, gFind(G_SERIES[k][2])));
+    st.gc.addEventListener('click', (e) => { const c = e.target.closest('.gc__c'); if (c) gPick(+c.dataset.m); });
+    gPill();
+    if (dir && !reduce11()) story.animate([{ opacity: 0, transform: `translateX(${dir * 22}px)` }, { opacity: 1, transform: 'none' }], { duration: 380, easing: EASE_OUT });
+  }
+  /* iteration 26: the series' models are on show under the slider at once, as a row of photo chips
+     ("All 6", then each model with its price); swiping to another series refills the row. Tapping a chip
+     puts that model's photo in the slot and its name and price in the readout, and the grid follows; "All"
+     goes back to the series. */
+  /* what's newest in each series (Figma 569:18053, prototype copy): a "Latest: …" card under the chips, and
+     the listed models it names tagged "Latest" and moved up next to "All" (Venu 4, vívoactive 6 and Lily 2
+     Active aren't on noon yet, so those series have the card but no tagged chip) */
+  const G_NEW = {
+    Forerunner: ['Forerunner 970 and 570 (2025)', ['Bright AMOLED display, with calls and voice commands from the wrist.', 'The 970 adds a built-in flashlight and running economy insights.'], ['970', '570']],
+    'fēnix': ['fēnix 8 Pro (2025)', ['LTE and satellite messaging built in, so you can call or text without your phone.', 'Also comes with a MicroLED display, the brightest Garmin has made.'], ['8 Pro']],
+    Venu: ['Venu 4 and Venu X1 (2025)', ['Lifestyle smartwatch with an AMOLED display and advanced health tracking.', 'Take calls and use voice commands with the built-in speaker and mic.'], []],
+    Instinct: ['Instinct 3 (2025)', ['Rugged build with an AMOLED or solar display and a built-in flashlight.', 'Unlimited battery on the solar models, given enough sunlight.'], ['3 Solar']],
+    'vívoactive': ['vívoactive 6 (2025)', ['Everyday fitness watch with a bright AMOLED display.', 'A smart wake alarm and up to 11 days of battery.'], []],
+    Lily: ['Lily 2 Active (2024)', ['Small, stylish smartwatch, now with built-in GPS.', 'Up to 9 days of battery, and a hidden display that lights up on tap.'], []],
+  };
+  const isNew = (n, g) => G_NEW[n][2].includes(g[1]);
+  // the sparkle before each point (Figma "star"), in the purple of the "Latest" labels
+  const GN_STAR = '<svg class="gn__star" width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><defs><linearGradient id="gnS" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c04ee0"/><stop offset="1" stop-color="#6f3cf5"/></linearGradient></defs><path d="M6 0c.4 3.1 2.9 5.6 6 6-3.1.4-5.6 2.9-6 6-.4-3.1-2.9-5.6-6-6 3.1-.4 5.6-2.9 6-6z" fill="url(#gnS)"/></svg>';
+  const gOrder = (n, ms) => ms.map((g, m) => m).sort((x, y) => isNew(n, ms[y]) - isNew(n, ms[x]));
+  const G_WHAT = {   // prototype copy: what the series is, said with intent
+    Forerunner: 'Built for runners: accurate GPS, training plans and recovery advice that tell you when to push.',
+    'fēnix': 'Garmin’s toughest flagship: titanium and sapphire, offline maps, a flashlight and weeks of battery.',
+    Venu: 'Your everyday smartwatch: take calls, track sleep and stress, and go up to 2 weeks between charges.',
+    Instinct: 'Built to military standards for the outdoors, and the solar models can run on sunlight indefinitely.',
+    'vívoactive': 'Fitness for everything: 30+ sports, a bright AMOLED screen and a price that’s easy to say yes to.',
+    Lily: 'Jewellery first, smartwatch second: a small, elegant case whose screen appears when you tap it.',
+  };
+  function gPill() {
+    const n = G_SERIES[st.at][0], ms = gModels(n);
+    st.pick = -1;
+    st.gc.innerHTML = `<button class="gc__c gc__c--all is-on" type="button" role="option" aria-selected="true" data-m="-1"><b>All</b><span>${ms.length} models</span></button>`
+      + gOrder(n, ms).map((m) => [ms[m], m]).map(([g, m]) => `<button class="gc__c" type="button" role="option" aria-selected="false" data-m="${m}">
+        <i class="gc__img" style="background-image:url('${gImg(g)}')"></i><b>${g[1]}</b><span>${money(g[3])}</span>${isNew(n, g) ? '<em class="gc__tag">Latest</em>' : ''}</button>`).join('');
+    st.gc.scrollLeft = 0;
+    const [t, d] = G_NEW[n];
+    // the card reveals itself: it rises in, then its words arrive one after another, each settling out of a
+    // soft blur (the title first, the description following), so it reads like it's being written
+    let w = 0;
+    const words = (txt) => txt.split(' ').map((x) => `<i class="gn__w" style="--d:${(w++ * 0.028 + 0.12).toFixed(3)}s">${x}</i>`).join(' ');
+    st.nw.innerHTML = `<button class="kb" type="button"><span class="kb__q">Not sure what to buy?</span> <span class="kb__a">See Garmin’s line-up${chevR}</span></button>`;
+    st.nw.querySelector('.kb').addEventListener('click', () => gStory(st.at));   // the line-up, compared: the series sheet
+    // iteration 41: under the slider, one clear way in — "See all 9 Forerunner models ›" — following the series you're on
+    let sa = story.querySelector('.sa');
+    if (!sa) {
+      story.insertAdjacentHTML('beforeend', '<button class="sa" type="button"></button>');
+      sa = story.querySelector('.sa');
+      sa.addEventListener('click', () => { if (st && !st.look) gMorph(st.at); });
+    }
+    const c = ms.length;
+    sa.innerHTML = `See all ${c} ${n} model${c > 1 ? 's' : ''}${chevR}`;
+    // iteration 43: what the series is, in one line, so "See all" lands with some context (prototype copy)
+    let wh = story.querySelector('.wh');
+    if (!wh) { story.insertAdjacentHTML('beforeend', '<div class="wh" aria-live="polite"></div>'); wh = story.querySelector('.wh'); }
+    // the card is styled as the brand widget project's brand card (State 16 · Hierarchy); its content is the
+    // question, what the series is, and the way in (its full-width grey button)
+    wh.innerHTML = `<p class="wh__q">What’s ${n}?</p>
+      <p class="wh__d">${G_WHAT[n] || ''}</p>
+      <button class="wh__go" type="button">See all ${c} ${n} model${c > 1 ? 's' : ''}${chevR}</button>`;
+    wh.querySelector('.wh__go').addEventListener('click', () => { if (st && !st.look) gMorph(st.at); });
+    sa.hidden = true;
+    requestAnimationFrame(() => {
+      if (!wh.isConnected) return;
+      const to = wh.offsetTop + wh.offsetHeight + G.GAP, from = parseFloat(box.style.height) || to;
+      if (Math.abs(to - from) > 1 && box.classList.contains('is-story') && !st.look) pushGrid(from, to, (e2, a, b, fmt) => springAnim(e2, a, b, fmt, spr(0.62, 1)));
+    });
+    if (!reduce11()) wh.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 320, easing: 'cubic-bezier(.4,0,.2,1)' });
+    if (!reduce11()) sa.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 260, easing: 'ease-out' });
+    st.nw.classList.remove('is-in'); void st.nw.offsetWidth; st.nw.classList.add('is-in');
+  }
+  function gPick(m) {
+    if (!st || m === st.pick) return;
+    st.pick = m;
+    Haptics.snap();
+    const n = G_SERIES[st.at][0], ms = gModels(n), g = ms[m];
+    st.gc.querySelectorAll('.gc__c').forEach((c) => { const on = +c.dataset.m === m; c.classList.toggle('is-on', on); c.setAttribute('aria-selected', String(on)); });
+    const chip = st.gc.querySelector(`.gc__c[data-m="${m}"]`);
+    if (chip) st.gc.scrollTo({ left: chip.offsetLeft - (st.gc.clientWidth - chip.offsetWidth) / 2, behavior: reduce11() ? 'auto' : 'smooth' });
+    gShow(st.at, g);
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: g ? { series: n, model: g[1] } : { series: n } }));
+  }
+  function gShow(at, g) {   // the slot and the readout take the model (g), or go back to the series (no g)
+    const n = G_SERIES[at][0], ms = gModels(n);
+    const img = st.rs.querySelector(`#rsi-st-${at} .rsi__img`), line = st.rs.querySelectorAll('.rs__read .rs__line')[at];
+    const src = g ? gImg(g) : gImg(gFind(G_SERIES[at][2]));
+    if (img && img.getAttribute('src') !== src) {
+      if (reduce11()) img.src = src;
+      else img.animate([{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.94)' }], { duration: 120, easing: 'ease-in' }).finished
+        .then(() => { img.src = src; img.animate([{ opacity: 0, transform: 'scale(.94)' }, { opacity: 1, transform: 'scale(1)' }], { duration: 260, easing: EASE_OUT }); });
+    }
+    if (line) {
+      line.querySelector('b').textContent = g ? `${n} ${g[1]}` : n;
+      line.querySelector('span').textContent = g ? `${money(g[3])} · ${g[2]} mm` : `${G_SERIES[at][1]} · from ${money(Math.min(...ms.map((x) => x[3])))}`;
+    }
+  }
+  function gLand(k) {
+    if (!st || !st.garmin || st.look || !st.gc) return;   // a slider that's been swapped out can still land once
+    // iteration 39: landing on another series on the slider opens its line-up (L2) a beat later
+    // iteration 41: swiping only browses — the line-up opens from the "See all … models" button under the slider
+    st.at = k;
+    Haptics.snap();
+    if (st.layer == null) {
+      if (st.pick >= 0 && st.prev !== k) gShow(st.prev, null);   // the series you left shows itself again
+      st.prev = k;
+      gPill();
+      if (!reduce11()) st.gc.animate([{ opacity: 0, transform: 'translateX(14px)' }, { opacity: 1, transform: 'none' }], { duration: 300, easing: EASE_OUT });
+      plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: G_SERIES[k][0] } }));
+    } else {
+      const series = G_SERIES[st.layer][0];
+      plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series, model: gModels(series)[k][1] } }));
+    }
+  }
+  function gTap(k) { if (st && k === st.at && st.layer == null && !st.look) gMorph(k); }   // iteration 39: the watch in the slot opens the line-up
+
+  /* iteration 37: the models wait until you ask. The page opens on the slider and the "Latest" card only.
+     Tap the watch in the slot (or "See all 9 Forerunner models") and the widget turns into a lookbook: the
+     six series as pills along the top (the one you were on picked), and under them the series' models as
+     big photo cards in a two-row carousel you swipe sideways — newest first, each with its price. Tap a
+     pill to change series (the cards reflow), tap a card to see that watch in the results (tap again for
+     the whole series), ‹ to go back to the slider. */
+  const LK = { H: 492 };
+  // what one watch is better at, from the lineup data and its listing title, against the rest of its series
+  function gWhy(n, g, ms) {
+    const t = g[5] || '', pts = [], price = ms.map((x) => x[3]), mm = ms.map((x) => x[2]);
+    const days = t.match(/(\d+)\s*days?/i), hrs = t.match(/(\d+)\s*hours?/i);
+    if (isNew(n, g)) pts.push(`The newest ${n}: the latest sensors and features in the range.`);
+    if (g[3] === Math.min(...price)) pts.push(`The lowest price in the ${n} range, at ${money(g[3])}.`);
+    else if (g[3] === Math.max(...price)) pts.push(`The top of the ${n} range, with everything the line-up offers.`);
+    else pts.push(`${money(Math.max(...price) - g[3])} less than the top ${n}, with most of what it does.`);
+    if (days || hrs) pts.push(`Up to ${days ? `${days[1]} days` : `${hrs[1]} hours`} of battery${/gps/i.test(t) && hrs ? ' with GPS on' : ''}.`);
+    if (/solar/i.test(t)) pts.push('Solar charging tops the battery up outdoors.');
+    if (g[2] === Math.max(...mm) && Math.max(...mm) !== Math.min(...mm)) pts.push(`The largest case in the range (${g[2]} mm), for a bigger screen.`);
+    else if (g[2] === Math.min(...mm) && Math.max(...mm) !== Math.min(...mm)) pts.push(`The smallest case (${g[2]} mm), lighter on a slim wrist.`);
+    if (/amoled/i.test(t)) pts.push('A bright AMOLED display.');
+    return pts.slice(0, 2);
+  }
+  // the AI card: a title and two sparkle points, written in word by word (iteration 26's reveal)
+  function gAi(el, title, pts, link) {
+    let w = 0;
+    const words = (txt) => txt.split(' ').map((x) => `<i class="gn__w" style="--d:${(w++ * 0.024 + 0.1).toFixed(3)}s">${x}</i>`).join(' ');
+    el.innerHTML = `<p class="gn__t gn__t--ai">${GN_STAR}<span>${words(title)}</span></p>`
+      + pts.map((p) => `<p class="gn__p">${GN_STAR}<span>${words(p)}</span></p>`).join('')
+      + (link ? `<button class="gn__go" type="button">${link}${chevR}</button>` : '');
+    el.classList.remove('is-in'); void el.offsetWidth; el.classList.add('is-in');
+  }
+
+  /* ── iteration 39: the line-up, in place (Figma 625:57651) ────────────────────────────────────────
+     1  the slider with one line under it, "Know about the Garmin line-up ›"
+     2  tap it, tap the watch, or scroll the results, and the slider morphs where it stands: the six series
+        become a row of pill cards along the top (photo, name, "Starting 819"), and the watch you were on
+        flies from the slot to the middle — a shared element — over "getting all variants"
+     3  a beat later its variants are laid out under the pills (photo, model, starting price) with the AI
+        card below: "Latest: …" for the series, or what a watch is better at once you tap one.
+     Tap another pill and its watch flies from the pill to the middle the same way, then its variants.
+     All of it on the results page; the grid underneath follows every choice. */
+  const MG = { LOAD: 650, EASE: 'cubic-bezier(.22,1,.36,1)', FADE: 'cubic-bezier(.4,0,.2,1)' };   // ease-out-quint, and a soft fade
+  /* iteration 36: what a series is. Tapping the watch in the slot opens a bottom sheet about that series —
+     its watch large on a soft glow, what the name means and who it's for, four quick facts, its models in a
+     row and "See the 9 Forerunner watches". The six series sit side by side in the sheet: swipe (or tap a
+     name in the row at the top) to read the next one; the watch slides with a little parallax. The button
+     closes the sheet and puts that series on the slider. Drag down or tap outside to close. (Prototype copy.) */
+  const G_STORY = {
+    Forerunner: ['255,120,80', 'Garmin’s running line, from a first 5K to a marathon. Light on the wrist, with training guidance that tells you when to push and when to rest.',
+      [['Battery', 'Up to 3 weeks'], ['Display', 'AMOLED'], ['Weight', 'From 39 g'], ['Best for', 'Running, races']]],
+    'fēnix': ['255,170,70', 'The flagship: titanium, sapphire and a dive-rated case, with maps, a flashlight and weeks of battery for long days outdoors.',
+      [['Battery', 'Up to 4 weeks'], ['Display', 'AMOLED · MicroLED'], ['Case', '47–51 mm'], ['Best for', 'Hiking, diving']]],
+    Venu: ['120,150,255', 'A smartwatch first — calls, a voice assistant, a bright screen — with Garmin’s sleep, stress and Body Battery tracking underneath.',
+      [['Battery', 'Up to 2 weeks'], ['Display', 'AMOLED'], ['Calls', 'Built in'], ['Best for', 'Everyday health']]],
+    Instinct: ['150,170,200', 'Built to military standards and easy to read in full sun. On the solar models the battery can keep going indefinitely.',
+      [['Battery', 'Unlimited on solar'], ['Display', 'MIP or AMOLED'], ['Build', 'MIL-STD 810'], ['Best for', 'Outdoors']]],
+    'vívoactive': ['72,196,170', 'A light, affordable all-rounder for the gym, the pool and every day, with 30+ sport apps and a bright screen.',
+      [['Battery', 'Up to 11 days'], ['Display', 'AMOLED'], ['Sport apps', '30+'], ['Best for', 'Gym, swim, daily']]],
+    Lily: ['255,140,180', 'A small watch that looks like jewellery: the display hides in the pattern until you tap it, then lights up.',
+      [['Battery', 'Up to 5 days'], ['Case', '35 mm'], ['Display', 'Hidden until tapped'], ['Best for', 'Small wrists']]],
+  };
+  let gs = null;
+  function gStory(si) {
+    if (gs) return;
+    Haptics.snap();
+    const dim = document.createElement('div'); dim.className = 'gs2__dim';
+    const el = document.createElement('section'); el.className = 'gs2'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Garmin series');
+    el.innerHTML = `<div class="gs2__grab" aria-hidden="true"><i></i></div>
+      <nav class="gs2__tabs" role="tablist" aria-label="Series">${G_SERIES.map(([n], k) => `<button class="gs2__tab" type="button" role="tab" data-k="${k}">${n}</button>`).join('')}</nav>
+      <div class="gs2__track">${G_SERIES.map(([n, tag, hero], k) => {
+        const ms = gModels(n), [glow, desc, facts] = G_STORY[n];
+        return `<article class="gs2__card" data-k="${k}" style="--glow:${glow}">
+          <div class="gs2__hero"><i class="gs2__glow"></i><span class="gs2__w" style="background-image:url('${gImg(gFind(hero))}')"></span></div>
+          <p class="gs2__eye">${tag}</p><h3 class="gs2__n">${n}</h3>
+          <p class="gs2__d">${desc}</p>
+          <dl class="gs2__facts">${facts.map(([t, d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl>
+          <div class="gs2__ms" aria-label="${ms.length} ${n} models">${ms.slice(0, 6).map((g) => `<i style="background-image:url('${gImg(g)}')" title="${n} ${g[1]}"></i>`).join('')}${ms.length > 6 ? `<em>+${ms.length - 6}</em>` : ''}</div>
+          <p class="gs2__from">${ms.length} model${ms.length > 1 ? 's' : ''} · from ${money(Math.min(...ms.map((g) => g[3])))}</p>
+        </article>`; }).join('')}</div>
+      <footer class="gs2__foot"><button class="gs2__cta" type="button"></button></footer>`;
+    plp.appendChild(dim); plp.appendChild(el);
+    const track = el.querySelector('.gs2__track'), tabs = [...el.querySelectorAll('.gs2__tab')], cards = [...el.querySelectorAll('.gs2__card')], cta = el.querySelector('.gs2__cta');
+    gs = { el, dim, at: -1 };
+    const mark = (k) => {
+      if (k === gs.at) return;
+      gs.at = k;
+      tabs.forEach((t, j) => { t.classList.toggle('is-on', j === k); t.setAttribute('aria-selected', String(j === k)); });
+      const t = tabs[k], nav = t.parentElement;
+      nav.scrollTo({ left: t.offsetLeft - (nav.clientWidth - t.offsetWidth) / 2, behavior: 'smooth' });
+      const n = G_SERIES[k][0], c = gModels(n).length;
+      cta.textContent = `See the ${c} ${n} watch${c > 1 ? 'es' : ''}`;
+      if (gs.ready) Haptics.snap();
+    };
+    // the watch drifts against the swipe, so the cards feel layered
+    let raf = 0;
+    const paint = () => {
+      raf = 0;
+      if (!gs) return;   // the sheet closed before this frame
+      const w = cards[0].offsetWidth + 12, x = track.scrollLeft;
+      cards.forEach((c, j) => { const d = (j * w - x) / w; c.querySelector('.gs2__w').style.transform = `translate3d(${(d * -46).toFixed(1)}px,0,0) scale(${(1 - Math.min(1, Math.abs(d)) * 0.12).toFixed(3)})`; });
+      mark(Math.max(0, Math.min(cards.length - 1, Math.round(x / w))));
+    };
+    track.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(paint); }, { passive: true });
+    const goTo = (k, smooth) => track.scrollTo({ left: k * (cards[0].offsetWidth + 12), behavior: smooth && !reduce11() ? 'smooth' : 'auto' });
+    tabs.forEach((t) => t.addEventListener('click', () => goTo(+t.dataset.k, true)));
+    cta.addEventListener('click', () => { const k = gs.at; gsClose(() => { if (!st) return; if (st.look) { if (k !== st.at) m9Series(k, null); } else gMorph(k); }); });   // iteration 39: into the line-up on that series
+    dim.addEventListener('click', () => gsClose());
+    // drag the grabber / tabs down to close
+    let dy0 = null;
+    const head = el.querySelector('.gs2__grab');
+    [head, el.querySelector('.gs2__tabs')].forEach((h) => h.addEventListener('pointerdown', (e) => { dy0 = e.clientY; el.style.transition = 'none'; try { h.setPointerCapture(e.pointerId); } catch (_) {} }));
+    el.addEventListener('pointermove', (e) => { if (dy0 == null) return; const d = Math.max(0, e.clientY - dy0); el.style.transform = `translateY(${d}px)`; });
+    const end = (e) => { if (dy0 == null) return; const d = e.clientY - dy0; dy0 = null; el.style.transition = ''; el.style.transform = ''; if (d > 90) gsClose(); };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+    requestAnimationFrame(() => { goTo(si, false); paint(); gs.ready = true; dim.classList.add('is-on'); el.classList.add('is-on'); });
+    if (!reduce11()) {
+      const c = cards[si];
+      c.querySelector('.gs2__w').animate([{ opacity: 0, transform: 'translateY(30px) scale(.8)' }, { opacity: 1, transform: 'none' }], { duration: 620, delay: 140, easing: 'cubic-bezier(.22,1.2,.36,1)', fill: 'backwards' });
+      [...c.querySelectorAll('.gs2__eye, .gs2__n, .gs2__d, .gs2__facts, .gs2__ms, .gs2__from')].forEach((x, j) =>
+        x.animate([{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420, delay: 220 + j * 55, easing: 'cubic-bezier(.32,.72,0,1)', fill: 'backwards' }));
+    }
+  }
+  function gsClose(then) {
+    if (!gs) return;
+    const { el, dim } = gs; gs = null;
+    el.classList.remove('is-on'); dim.classList.remove('is-on');
+    setTimeout(() => { el.remove(); dim.remove(); }, reduce11() ? 0 : 440);
+    if (then) then();
+  }
+  function gH9() {
+    const root = story.querySelector('.m9'); if (!root) return;
+    const to = root.offsetTop + Math.max(...[...root.children].filter((k) => !k.hidden).map((k) => k.offsetTop + k.offsetHeight)) + 18, from = parseFloat(box.style.height) || to;
+    if (Math.abs(to - from) > 1) pushGrid(from, to, (e2, a, b, fmt) => springAnim(e2, a, b, fmt, spr(0.62, 1)));   // critically damped: no bounce
+  }
+  function gMorph(si) {
+    if (!st || st.look) return;
+    Haptics.snap();
+    const slot = st.rs && st.rs.querySelector(`#rsi-st-${si} .rsi__img`);
+    const from = slot ? slot.getBoundingClientRect() : null;
+    st.roster.stop();
+    const fromH = parseFloat(box.style.height) || GL.H;
+    // the title and the line-up pill stay exactly where they were on the slider, so only what's under them changes
+    story.innerHTML = `<div class="m9">
+        <p class="st__title"><span>Select your Garmin</span></p>
+        <div class="m9__kb"><button class="kb" type="button"><span class="kb__q">Not sure what to buy?</span> <span class="kb__a">See Garmin’s line-up${chevR}</span></button></div>
+        <div class="m9__pills" role="tablist" aria-label="Garmin series"><button class="m9__p m9__p--all" type="button" aria-label="Back to all Garmin watches"><i class="m9__allic" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="2" width="5" height="5" rx="1.4" fill="currentColor"/><rect x="9" y="2" width="5" height="5" rx="1.4" fill="currentColor"/><rect x="2" y="9" width="5" height="5" rx="1.4" fill="currentColor"/><rect x="9" y="9" width="5" height="5" rx="1.4" fill="currentColor"/></svg></i><b>All</b></button>${G_SERIES.map(([n, , hero], k) => { const ms = gModels(n);
+          return `<button class="m9__p" type="button" role="tab" data-k="${k}"><i style="background-image:url('${gImg(gFind(hero))}');${gFit(gFind(hero))}"></i><b>${n}</b></button>`; }).join('')}</div>
+        <div class="m9__stage" aria-live="polite"><span class="m9__hero"></span><b class="m9__name"></b><small class="m9__sub">getting all variants</small></div>
+        <div class="m9__vars" role="listbox" aria-label="Variants" hidden></div>
+        <div class="gn m9__ai" hidden></div>
+      </div>`;
+    const keep = st.engaged && st.at === si ? st.pick : -1;
+    st = { ...st, look: true, layer: null, rs: null, gc: null, nw: null, roster: { stop() {}, k: si }, at: si, pick: -1, engaged: true };
+    const root = story.querySelector('.m9:not(.m9b)');
+    root.querySelector('.kb').addEventListener('click', () => gStory(st.at));
+    root.querySelector('.m9__pills').addEventListener('click', (e) => { if (e.target.closest('.m9__p--all')) { gBack(); return; } const p = e.target.closest('.m9__p'); if (p && +p.dataset.k !== st.at) { m9Series(+p.dataset.k, p.querySelector('i').getBoundingClientRect()); m9Focus(); } });
+    root.querySelector('.m9__vars').addEventListener('click', (e) => { const c = e.target.closest('.m9__v'); if (c) m9Pick(root, +c.dataset.m); });
+    if (!reduce11()) root.querySelectorAll('.m9__p').forEach((p, j) => p.animate([{ opacity: 0 }, { opacity: 1 }],
+      { duration: 420, delay: Math.abs(j - si) * 25, easing: MG.FADE, fill: 'backwards' }));
+    m9Series(si, from);
+    st.keep = keep;
+    m9Focus();
+  }
+  // once you're in the line-up, the page glides so the series pills sit right under the filters
+  function m9Focus() {
+    const sc = document.getElementById('plpScroll'), pills = story.querySelector('.m9__pills');
+    if (!sc || !pills) return;
+    const to = pills.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop - 8;
+    if (Math.abs(to - sc.scrollTop) > 4) setTimeout(() => sc.scrollTo({ top: to, behavior: reduce11() ? 'auto' : 'smooth' }), 260);   // after the shared element has mostly landed
+  }
+  function m9Series(k, fromRect) {
+    Haptics.snap();
+    st.at = k; st.pick = -1;
+    if (cap9) m9CapFill();
+    const root = story.querySelector('.m9'), n = G_SERIES[k][0], ms = gModels(n);
+    const pills = root.querySelector('.m9__pills'), stage = root.querySelector('.m9__stage'), vars = root.querySelector('.m9__vars'), ai = root.querySelector('.m9__ai');
+    pills.querySelectorAll('.m9__p').forEach((p) => { const on = +p.dataset.k === k; p.classList.toggle('is-on', on); p.setAttribute('aria-selected', String(on)); });
+    const on = pills.querySelector('.is-on');
+    pills.scrollTo({ left: on.offsetLeft - pills.offsetLeft - (pills.clientWidth - on.offsetWidth) / 2, behavior: reduce11() ? 'auto' : 'smooth' });
+    /* one linear move: the watch you tapped (the slot's, or the pill's — the series' first model either way)
+       grows straight into the first variant tile, then the rest of the row reveals left to right and the AI
+       card fades in. No middle stage, nothing rising or dropping. */
+    clearTimeout(st.m9T);
+    stage.hidden = true;
+    vars.innerHTML = m9VarsHTML(n, ms);
+    vars.scrollLeft = 0;
+    vars.hidden = false; ai.hidden = false;
+    if (st.keep != null && st.keep >= 0) { st.pick = st.keep; vars.querySelector(`.m9__v[data-m="${st.pick}"]`)?.classList.add('is-on'); }
+    st.keep = null;
+    m9Ai();
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: n } }));
+    if (reduce11()) return;
+    const tiles = [...vars.children], first = tiles[0], ph = first.querySelector('.m9__ph');
+    if (fromRect) {
+      const r = ph.getBoundingClientRect(), sc = fromRect.width / r.width;
+      const dx = fromRect.left + fromRect.width / 2 - (r.left + r.width / 2), dy = fromRect.top + fromRect.height / 2 - (r.top + r.height / 2);
+      // smoothness: one long, gentle ease-out (no overshoot) for the shared element, and everything else
+      // overlapping it — the row starts revealing while the watch is still settling, in small sideways steps
+      ph.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sc})` }, { transform: 'none' }], { duration: 640, easing: MG.EASE });
+    } else ph.animate([{ opacity: 0, transform: 'scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 520, easing: MG.EASE });
+    first.querySelectorAll('b, small').forEach((x) => x.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, delay: 220, easing: MG.FADE, fill: 'backwards' }));
+    tiles.slice(1).forEach((c, j) => c.animate([{ opacity: 0, transform: 'translateX(-10px)' }, { opacity: 1, transform: 'none' }],
+      { duration: 560, delay: 160 + j * 55, easing: MG.EASE, fill: 'backwards' }));
+    ai.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 480, delay: 240, easing: MG.FADE, fill: 'backwards' });
+  }
+  // the AI card, kept to one line under a plain title — no sparkles (Rahul: as clean as possible)
+  // each listing photo's watch, measured (2026-11-03): background-size / position that make the watch fill ~88% of
+  // a square tile, centred — noon's photos are 400×545 with wide white margins, so 'contain' left them small
+  const G_FIT = {};   // the framed photos are already centred at one size: no per-photo fit
+  const gFit = (g) => { const f = G_FIT[(g[6] || '').split('/')[0]]; return f ? `background-size:${f[0]}% auto;background-position:${f[1]}% ${f[2]}%` : ''; };
+  const m9VarsHTML = (n, ms) => gOrder(n, ms).map((m) => { const g = ms[m]; return `<button class="m9__v" type="button" role="option" data-m="${m}" aria-label="${n} ${g[1]}, ${money(g[3])}">
+        <span class="m9__ph" style="background-image:url('${gImg(g)}');${gFit(g)}"></span><b>${n} ${g[1]}</b><small>${isNew(n, g) ? '<em class="m9__new">Latest</em> · ' : ''}Starting ${money(g[3])}</small></button>`; }).join('');   // "Latest" sits with the price, not on the photo
+  // a pick in either view: outline it, rewrite the AI card, and the grid follows
+  function m9Pick(root, m) {
+    const n = G_SERIES[st.at][0], ms = gModels(n), g = m === st.pick ? null : ms[m];
+    st.pick = g ? m : -1; Haptics.snap();
+    root.querySelectorAll('.m9__v').forEach((x) => x.classList.toggle('is-on', +x.dataset.m === st.pick));
+    m9Ai();
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: g ? { series: n, model: g[1] } : { series: n } }));
+  }
+  /* once you've been into the line-up, the slider view keeps its variants (and the AI card) under the ruler,
+     with whatever you picked still picked — scrolling up only swaps the pills back for the slider */
+  function m9Below(k, pick) {
+    const n = G_SERIES[k][0], ms = gModels(n);
+    story.insertAdjacentHTML('beforeend', `<div class="m9 m9b"><div class="m9__vars" role="listbox" aria-label="Variants">${m9VarsHTML(n, ms)}</div><div class="gn m9__ai"></div></div>`);
+    const root = story.querySelector('.m9b');
+    st.engaged = true; st.pick = pick;
+    if (pick >= 0) root.querySelector(`.m9__v[data-m="${pick}"]`)?.classList.add('is-on');
+    root.querySelector('.m9__vars').addEventListener('click', (e) => { const c = e.target.closest('.m9__v'); if (c) m9Pick(root, +c.dataset.m); });
+    m9Ai();
+  }
+  function m9Ai() {
+    const n = G_SERIES[st.at][0], ms = gModels(n), ai = story.querySelector('.m9__ai');
+    let w = 0;
+    const words = (txt) => txt.split(' ').map((x) => `<i class="gn__w" style="--d:${(w++ * 0.024 + 0.08).toFixed(3)}s">${x}</i>`).join(' ');
+    const [title, line] = st.pick >= 0 ? [`${n} ${ms[st.pick][1]}`, gWhy(n, ms[st.pick], ms)[0]] : [`Latest: ${G_NEW[n][0]}`, G_NEW[n][1][0]];
+    ai.innerHTML = `<p class="m9a__t">${words(title)}</p><p class="m9a__d">${words(line)}</p>`;
+    ai.classList.remove('is-in'); void ai.offsetWidth; ai.classList.add('is-in');
+    gH9();
+  }
+  /* the scroll ties it together:
+       scrolling down from the slider turns it into the line-up (2 → 3) in place;
+       once the pills scroll out of view, the same row rides along as a capsule under the filters;
+       scrolling back to the top turns the line-up back into the slider, on the series you're on. */
+  let cap9 = null;
+  function m9Cap() {
+    if (cap9) return cap9;
+    const el = document.createElement('div'); el.className = 'm9c'; el.setAttribute('role', 'tablist'); el.setAttribute('aria-label', 'Garmin series');
+    el.innerHTML = G_SERIES.map(([n, , hero], k) => `<button class="m9c__p" type="button" role="tab" data-k="${k}"><i style="background-image:url('${gImg(gFind(hero))}')"></i>${n}</button>`).join('');
+    plp.appendChild(el);
+    el.addEventListener('click', (e) => { const p = e.target.closest('.m9c__p'); if (!p || !st || !st.look || +p.dataset.k === st.at) return; m9Series(+p.dataset.k, p.querySelector('i').getBoundingClientRect()); m9CapFill(); });
+    cap9 = el; return el;
+  }
+  function m9CapFill() {
+    if (!cap9 || !st) return;
+    cap9.querySelectorAll('.m9c__p').forEach((p) => p.classList.toggle('is-on', +p.dataset.k === st.at));
+    const on = cap9.querySelector('.is-on'); if (on) cap9.scrollTo({ left: on.offsetLeft - (cap9.clientWidth - on.offsetWidth) / 2, behavior: 'smooth' });
+  }
+  /* iteration 42: "All", the first pill — back to the slider (the timeline view) as it was before you went
+     in: on the series you were on, no variants under it, the whole series in the results, page at the top */
+  function gBack() {
+    if (!st || !st.look) return;
+    Haptics.snap();
+    const k = st.at, fromH = parseFloat(box.style.height) || GL.H;
+    clearTimeout(st.m9T);
+    st.look = false; st.engaged = false;
+    gLayer(null, k, 0);
+    pushGrid(fromH, GL.H, (e2, a, b, fmt) => springAnim(e2, a, b, fmt, spr(0.62, 1)));
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: G_SERIES[k][0] } }));
+    const sc = document.getElementById('plpScroll'); if (sc) sc.scrollTo({ top: 0, behavior: reduce11() ? 'auto' : 'smooth' });
+    if (!reduce11()) story.querySelectorAll('.st__roster, .sa').forEach((x) => x.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 420, easing: 'cubic-bezier(.4,0,.2,1)' }));
+  }
+  function gUnmorph() {   // the line-up folds back into the slider, the picked pill's watch flying to the slot
+    if (!st || !st.look) return;
+    const k = st.at, pill = story.querySelector(`.m9__p[data-k="${k}"] i`), from = pill ? pill.getBoundingClientRect() : null;
+    clearTimeout(st.m9T);
+    const fromH = parseFloat(box.style.height) || GL.H, pick = st.pick;
+    st.look = false;
+    gLayer(null, k, 0);
+    box.style.height = fromH + 'px';
+    m9Below(k, pick);   // measures and springs the grid to the new height
+    const n = G_SERIES[k][0], g = pick >= 0 ? gModels(n)[pick] : null;
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: g ? { series: n, model: g[1] } : { series: n } }));
+    if (reduce11() || !from) return;
+    const img = st.rs && st.rs.querySelector(`#rsi-st-${k} .rsi__img`);
+    if (img) { const r = img.getBoundingClientRect(); const z = img.style.transform || ''; img.animate([{ transform: `translate(${from.left + from.width / 2 - (r.left + r.width / 2)}px, ${from.top + from.height / 2 - (r.top + r.height / 2)}px) scale(${from.width / r.width}) ${z}` }, { transform: z || 'none' }], { duration: 560, easing: 'cubic-bezier(.22,1,.36,1)' }); }
+    story.querySelectorAll('.st__title, .rs__read, .rs__ruler, .gn').forEach((x) => x.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 360, delay: 120, easing: EASE_OUT, fill: 'backwards' }));
+  }
+  (() => {
+    const sc = document.getElementById('plpScroll'); let last = 0;
+    if (!sc) return;
+    sc.addEventListener('scroll', () => { {
+      const y = sc.scrollTop, up = y < last; last = y;
+      const cap = m9Cap();
+      if (!st || !st.garmin || !box.classList.contains('is-story')) { cap.classList.remove('is-on'); return; }
+      // scrolling alone never changes the slider: only tapping, swiping or the sheet opens the line-up
+      if (!st.look) { cap.classList.remove('is-on'); return; }
+      if (y > 40) st.away = true;
+      // iteration 40: once you've picked a series it stays collapsed as pills — scrolling back up no longer
+      // opens the big slider again (the title and the line-up link stay above the pills)
+      const pills = story.querySelector('.m9__pills');
+      const out = pills && pills.getBoundingClientRect().bottom < sc.getBoundingClientRect().top + 6;
+      // (no capsule on scroll — Rahul: the pills stay in the widget, where they are)
+      void out; cap.classList.remove('is-on');
+    } }, { passive: true });
+  })();
+  function gLook(si) {
+    if (!st) return;
+    Haptics.snap();
+    const from = parseFloat(box.style.height) || GL.H;
+    st.roster.stop();
+    story.innerHTML = `<div class="lk" role="region" aria-label="Garmin models">
+        <div class="lk__top"><button class="lk__back" type="button" aria-label="Back to the slider">${chevL}</button>
+          <div class="lk__pills" role="tablist" aria-label="Series">${G_SERIES.map(([n], k) => `<button class="lk__p" type="button" role="tab" data-k="${k}">${n}</button>`).join('')}</div></div>
+        <div class="lk__car" role="listbox" aria-label="Models"></div>
+        <div class="lk__foot"><span class="lk__count"></span><span class="lk__hint">Swipe for more</span></div>
+      </div>`;
+    st = { ...st, look: true, layer: null, rs: null, gc: null, nw: null, roster: { stop() {}, k: si }, at: si, pick: -1 };
+    const el = story.querySelector('.lk'), pills = el.querySelector('.lk__pills'), car = el.querySelector('.lk__car');
+    el.querySelector('.lk__back').addEventListener('click', () => gUnlook());
+    pills.addEventListener('click', (e) => { const p = e.target.closest('.lk__p'); if (p && +p.dataset.k !== st.at) { Haptics.snap(); lkSeries(+p.dataset.k, +p.dataset.k > st.at ? 1 : -1); } });
+    car.addEventListener('click', (e) => {
+      const c = e.target.closest('.lk__c'); if (!c) return;
+      const m = +c.dataset.m, n = G_SERIES[st.at][0], g = m === st.pick ? null : gModels(n)[m];
+      st.pick = g ? m : -1; Haptics.snap();
+      car.querySelectorAll('.lk__c').forEach((x) => x.classList.toggle('is-on', +x.dataset.m === st.pick));
+      plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: g ? { series: n, model: g[1] } : { series: n } }));
+    });
+    lkSeries(si, 0);
+    pushGrid(from, LK.H, (e2, a, b, fmt) => springAnim(e2, a, b, fmt, spr(0.5, 0.9)));
+    if (!reduce11()) {
+      el.querySelector('.lk__top').animate([{ opacity: 0, transform: 'translateY(-8px)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: EASE_OUT });
+    }
+  }
+  function lkSeries(k, dir) {
+    st.at = k; st.pick = -1;
+    const n = G_SERIES[k][0], ms = gModels(n), el = story.querySelector('.lk'), car = el.querySelector('.lk__car'), pills = el.querySelector('.lk__pills');
+    pills.querySelectorAll('.lk__p').forEach((p) => { const on = +p.dataset.k === k; p.classList.toggle('is-on', on); p.setAttribute('aria-selected', String(on)); });
+    const on = pills.querySelector('.is-on');
+    pills.scrollTo({ left: on.offsetLeft - pills.offsetLeft - (pills.clientWidth - on.offsetWidth) / 2, behavior: dir && !reduce11() ? 'smooth' : 'auto' });
+    car.innerHTML = gOrder(n, ms).map((m) => { const g = ms[m]; return `<button class="lk__c" type="button" role="option" data-m="${m}" aria-label="${n} ${g[1]}, ${money(g[3])}">
+      <span class="lk__ph" style="background-image:url('${gImg(g)}')">${isNew(n, g) ? '<em>Latest</em>' : ''}</span>
+      <b>${n} ${g[1]}</b><span class="lk__pr">${money(g[3])} <i>· ${g[2]} mm</i></span></button>`; }).join('');
+    car.scrollLeft = 0;
+    el.querySelector('.lk__count').textContent = `${ms.length} ${n} model${ms.length > 1 ? 's' : ''}`;
+    el.querySelector('.lk__hint').hidden = ms.length <= 4;
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: n } }));
+    if (reduce11()) return;
+    [...car.children].forEach((c, j) => c.animate([{ opacity: 0, transform: `translateX(${(dir || 1) * 26}px) scale(.96)` }, { opacity: 1, transform: 'none' }],
+      { duration: 440, delay: Math.floor(j / 2) * 45 + (j % 2) * 25, easing: 'cubic-bezier(.22,1.1,.36,1)', fill: 'backwards' }));
+  }
+  function gUnlook() {
+    if (!st || !st.look) return;
+    Haptics.snap();
+    const k = st.at;
+    st.look = false;
+    gLayer(null, k, -1);
+    pushGrid(LK.H, GL.H, (e2, a, b, fmt) => springAnim(e2, a, b, fmt, spr(0.5, 0.9)));
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: G_SERIES[k][0] } }));
+  }
+  function gSwap(fn, dir) {
+    if (reduce11()) { fn(); return; }
+    story.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: `translateX(${-dir * 22}px)` }], { duration: 160, easing: 'ease-in', fill: 'forwards' })
+      .finished.then(() => { story.getAnimations().forEach((a) => a.cancel()); fn(); });
+  }
+  function gEnter(k) {
+    Haptics.snap();
+    gSwap(() => {
+      gLayer(k, 0, 1);
+      const series = G_SERIES[k][0];
+      plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series, model: gModels(series)[0][1] } }));
+    }, 1);
+  }
+  function gExit() {
+    const k = st.layer;
+    Haptics.snap();
+    gSwap(() => { gLayer(null, k, -1); plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: G_SERIES[k][0] } })); }, -1);
+  }
+  /* the slider's photos, zoomed onto the watch: an <img> shows the whole 400×545 photo (contain), so a watch with
+     wide margins (fēnix 8 Pro) looked tiny — scale it so the watch fills ~92% of the slot, centred; the white
+     margins vanish under the multiply blend */
+  const G_BOX = {};   // the framed photos (assets/garmin/) are already centred at one size: no per-photo zoom
+  function gZoom(img, g) {
+    const b = g && G_BOX[(g[6] || '').split('/')[0]]; if (!img) return;
+    if (!b) { img.style.objectFit = ''; img.style.transform = ''; return; }
+    const S = img.offsetHeight || 112, k = 0.92 / b[2];   // contain: the photo's height = the slot's height
+    const w = S * 400 / 545, dx = (0.5 - b[0]) * w * k, dy = (0.5 - b[1]) * S * k;
+    img.style.objectFit = 'contain'; img.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${k.toFixed(3)})`;
+  }
+  let gLeadSet = false;
+  function gLeads() {   // each series' preview (slider, pills, sheet) = the first model its line-up shows
+    if (gLeadSet || !(window.NOON_GARMIN || []).length) return;
+    gLeadSet = true;
+    G_SERIES.forEach((row) => { const n = row[0], ms = gModels(n); if (ms.length) row[2] = `${n}|${ms[gOrder(n, ms)[0]][1]}`; });
+  }
+  function startGarmin() {   // builds the widget's content; reveal() plays it in (garminIn)
+    gLeads();
+    box.classList.add('is-story');
+    story.classList.add('st--garmin');
+    gLayer(null, 0, 0);
+    // gPill's own fades on the card and "See all" would run ahead of the reveal: it plays those parts itself
+    story.querySelectorAll('.wh, .sa, .gc').forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
+  }
+  // the widget's real height (what gPill pushes the grid to), so the reveal's push lands there in one move
+  const gHeight = () => { const wh = story.querySelector('.wh'); return wh ? wh.offsetTop + wh.offsetHeight + G.GAP : GL.H; };
+  // the brand widget project's reveal, on the Garmin parts: the title comes in like its header (rise 10 at
+  // +33, fade at +50), then the watch slider and the "What's …" card like its first cards — rise 16, scale
+  // .97 → 1 and blur 4 → 0 (no blur on Android) on the 0.5s ζ0.92 spring, 80ms in and 40ms apart
+  function garminIn() {
+    story.style.opacity = 1; story.style.transform = '';
+    const title = story.querySelector('.st__title');
+    if (title) PP.commit(title, [PP.moveY(title, REVEAL.HEAD_RISE, 0, { delay: REVEAL.HEAD_AT }), revealFade(title, REVEAL.HEAD_FADE_AT)], { opacity: 1, transform: '' });
+    [story.querySelector('.st__roster'), story.querySelector('.wh')].filter(Boolean).forEach((c, i) => {
+      const delay = 80 + i * 40;
+      const rise = springAnim(c, 0, 1, (p) => ({ transform: `translateY(${(16 * (1 - p)).toFixed(2)}px) scale(${(0.97 + 0.03 * p).toFixed(4)})` }), CARD_SPR, delay);
+      const fade = c.animate(IS_ANDROID ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, filter: 'blur(4px)' }, { opacity: 1, filter: 'blur(0px)' }], { duration: 340, delay, easing: OUT, fill: 'both' });
+      PP.commit(c, [rise, fade], { opacity: 1, transform: '', filter: '' });
+    });
+  }
+  const reduce11 = () => PP.reduce.matches;
+  /* scroll — the brand widget project's collapsed state (iteration 8+): scrolling the products up past 10px
+     folds the Garmin widget into its 64px bar — a watch glyph, "Find your Garmin", the series (or model) you're
+     on, and Edit — on the morph spring, the grid riding up under it, and the bottom nav slides down out of
+     frame; the marketplace tabs + chips slide up under the search bar on the same scroll (hidable). Scrolling
+     back up brings the nav back; reaching the top, or Edit, unfolds the widget where it was (its parts rising
+     in 45ms apart, as the brand widget's do). Direction is judged on ≥ 6px of travel so a jittery finger
+     doesn't flip it. The bar is sticky 8px under the chips on a white band the cards slide under. */
+  const GQ = { COL_BAR: 64, COL_H: 73 }, GQ_EXPAND = spr(0.5, 0.92);
+  const gqd = node(`<div class="qd">
+      <span class="qd__ic" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="5" y="1.5" width="8" height="3" rx="1" stroke="#1d2539" stroke-width="1.4"/><rect x="5" y="13.5" width="8" height="3" rx="1" stroke="#1d2539" stroke-width="1.4"/><circle cx="9" cy="9" r="4.6" stroke="#1d2539" stroke-width="1.5"/><path d="M9 6.9V9l1.3 1" stroke="#1d2539" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+      <span class="qd__txt"><b class="qd__t">Find your Garmin</b><span class="qd__s"></span></span>
+      <button class="qd__edit" type="button">Edit</button>
+    </div>`);
+  bar.appendChild(gqd);
+  const gqdSub = gqd.querySelector('.qd__s'), gScrollEl = document.getElementById('plpScroll'), gNavEl = document.getElementById('plpNav');
+  let gFolded = false, gBusy = false, gNavHidden = false, gLastY = 0, gTravel = 0;
+  const gParts = () => [story.querySelector('.st__title'), story.querySelector('.st__roster'), story.querySelector('.wh')].filter(Boolean);
+  const gMoving = () => gParts().some((el) => el.getAnimations().some((a) => a.playState === 'running'));   // still revealing
+  const gNavMove = (from, to) => PP.commit(gNavEl, [springAnim(gNavEl, from, to, (v) => ({ transform: `translate3d(0,${(+v).toFixed(2)}px,0)` }), MORPH)], { transform: to ? `translate3d(0,${to}px,0)` : 'none' });
+  function gSetNav(hide) {
+    if (gNavHidden === hide) return;
+    gNavHidden = hide;
+    const y = new DOMMatrix(getComputedStyle(gNavEl).transform).m42;
+    gNavEl.getAnimations().forEach((a) => a.cancel());
+    gNavMove(y, hide ? 110 : 0);
+  }
+  function gFold() {
+    if (gBusy || gFolded || catKey !== 'garmin' || !st || !st.garmin || st.look || !box.classList.contains('is-story') || gMoving()) return;
+    gBusy = gFolded = true;
+    const [n, tag] = G_SERIES[st.at], g = st.pick >= 0 ? gModels(n)[st.pick] : null;
+    gqdSub.textContent = g ? `${n} ${g[1]} · ${money(g[3])}` : `${n} · ${tag}`;
+    const fromH = parseFloat(box.style.height) || gHeight(), fromBar = bar.offsetHeight;
+    gParts().forEach((el) => { el.getAnimations().forEach((a) => a.cancel()); PP.commit(el, [el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 160, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'both' })], { opacity: 0 }); });
+    box.classList.add('is-done');
+    PP.commit(bar, [springAnim(bar, fromBar, GQ.COL_BAR, (v) => ({ height: `${(+v).toFixed(2)}px` }), MORPH)], { height: GQ.COL_BAR + 'px' });
+    pushGrid(fromH, GQ.COL_H, (el, a, b, fmt) => springAnim(el, a, b, fmt, MORPH));
+    gqd.getAnimations().forEach((a) => a.cancel());
+    PP.commit(gqd, [gqd.animate([{ opacity: 0, translate: '0 4px' }, { opacity: 1, translate: '0 0' }], { duration: 280, delay: 140, easing: 'cubic-bezier(.33,1,.68,1)', fill: 'both' })], { opacity: 1 });
+    later(460, () => { gBusy = false; });
+  }
+  function gUnfold() {
+    if (gBusy || !gFolded) return;
+    gBusy = true; gFolded = false;
+    gqd.getAnimations().forEach((a) => a.cancel());
+    PP.commit(gqd, [gqd.animate([{ opacity: 1, scale: 1, filter: 'blur(0)' }, { opacity: 0, scale: 0.97, filter: 'blur(4px)' }], { duration: 200, easing: 'cubic-bezier(.65,0,.35,1)', fill: 'both' })], { opacity: 0 });
+    box.classList.remove('is-done');
+    bar.style.height = ''; const toBar = bar.offsetHeight; bar.style.height = GQ.COL_BAR + 'px';
+    PP.commit(bar, [springAnim(bar, GQ.COL_BAR, toBar, (v) => ({ height: `${(+v).toFixed(2)}px` }), GQ_EXPAND)], { height: '' });
+    pushGrid(GQ.COL_H, gHeight(), (el, a, b, fmt) => springAnim(el, a, b, fmt, GQ_EXPAND));
+    gParts().forEach((el, k) => {
+      el.getAnimations().forEach((a) => a.cancel()); el.style.opacity = '';
+      const delay = 110 + k * 45;
+      el.animate([{ scale: 0.96, translate: '0 10px' }, { scale: 1, translate: '0 0' }], { duration: 560, delay, easing: 'cubic-bezier(.2,0,0,1)', fill: 'backwards' });
+      el.animate(IS_ANDROID ? [{ opacity: 0 }, { opacity: 1 }] : [{ filter: 'blur(6px)', opacity: 0 }, { filter: 'blur(0)', opacity: 1 }], { duration: 380, delay, easing: 'cubic-bezier(.33,1,.68,1)', fill: 'backwards' });
+    });
+    later(560, () => { gBusy = false; });
+  }
+  function gFoldReset() {
+    gFolded = gBusy = gNavHidden = false; gLastY = 0; gTravel = 0;
+    box.classList.remove('is-done');
+    gqd.getAnimations().forEach((a) => a.cancel()); gqd.style.opacity = '';
+  }
+  gqd.querySelector('.qd__edit').addEventListener('click', () => {
+    gUnfold();
+    gScrollEl.scrollTo({ top: 0, behavior: reduce11() ? 'auto' : 'smooth' });
+  });
+  gScrollEl.addEventListener('scroll', () => {
+    const y = gScrollEl.scrollTop, d = y - gLastY; gLastY = y;
+    if (catKey !== 'garmin' || !plp.classList.contains('is-open') || plp.classList.contains('is-loading')) return;
+    gTravel = Math.sign(d) === Math.sign(gTravel) ? gTravel + d : d;
+    if (gTravel > 6 && y > 10) { gSetNav(true); gFold(); }
+    else if (gTravel < -6) gSetNav(false);
+    if (y <= 2 && gFolded) gUnfold();
+  }, { passive: true });
+
+  function resetStory() {
+    if (st) { clearTimeout(st.landT); clearTimeout(st.autoT); clearTimeout(st.budgetT); st.roster.stop(); if (st.grow) { clearTimeout(st.grow.holdT); cancelAnimationFrame(st.grow.raf); } }
+    st = null;
+    story.getAnimations({ subtree: true }).forEach((a) => a.cancel());
+    story.innerHTML = ''; story.style.opacity = ''; story.style.transform = '';
+    if (st) clearTimeout(st.m9T);
+    if (cap9) cap9.classList.remove('is-on');
+    gsClose();
+    box.classList.remove('is-story'); story.classList.remove('st--garmin');
+  }
+
   const fixed = [box, bar, head, hTitle, count, sCoin, sTitle, sSub, clear];
   function reset() {
     timers.forEach(clearTimeout); timers = []; running = false; mode = 'panel';
+    gFoldReset(); resetAsk(); resetStory();
     const all = [...fixed, ...cards, sMark];
     all.forEach((el) => el.getAnimations().forEach((a) => a.cancel()));
     all.forEach((el) => { el.style.opacity = ''; el.style.transform = ''; el.style.filter = ''; el.style.transformOrigin = ''; });
@@ -1381,18 +3169,22 @@ const PP = (() => {
 
   function reveal() {
     running = true;
+    if (catKey === 'garmin') startGarmin();   // built first, so the push below lands on its real height
     // grid edge: the box grows 0 → H and the grid below rides on it
-    pushGrid(0, H, (el, a, b, fmt) => PP.spring(el, a, b, fmt));
+    pushGrid(0, catKey === 'tv' ? ST.H0 : catKey === 'garmin' ? gHeight() : H, (el, a, b, fmt) => PP.spring(el, a, b, fmt));
     // the panel: scale + rise on one spring progress, plus the fade
     const card = PP.spring(bar, 0, 1, (p) => ({ transform: `translateY(${((1 - p) * REVEAL.CARD_RISE).toFixed(3)}px) scale(${(REVEAL.CARD_SCALE + (1 - REVEAL.CARD_SCALE) * p).toFixed(4)})` }));
     PP.commit(bar, [card, revealFade(bar, REVEAL.CARD_FADE_AT)], { opacity: 1, transform: '' });
     // the header, 33ms behind (its fade 50ms)
     PP.commit(head, [PP.moveY(head, REVEAL.HEAD_RISE, 0, { delay: REVEAL.HEAD_AT }), revealFade(head, REVEAL.HEAD_FADE_AT)], { opacity: 1, transform: '' });
     later(200, () => Haptics.soft());   // the panel settling into place under the grid
-    // cards rise in, staggered; only the first few are on screen, the rest just land
+    if (catKey === 'tv') startStory(); else if (catKey === 'garmin') garminIn(); else cardsIn(80);   // TVs and Garmin open on the lineup slider
+  }
+  // cards rise in, staggered; only the first few are on screen, the rest just land
+  function cardsIn(base) {
     cards.forEach((c, i) => {
       if (i > 2) { c.style.opacity = 1; return; }   // off-screen: just in place, no blur to raster
-      const delay = 80 + i * 40;
+      const delay = base + i * 40;
       const rise = springAnim(c, 0, 1, (p) => ({ transform: `translateY(${(16 * (1 - p)).toFixed(2)}px) scale(${(0.97 + 0.03 * p).toFixed(4)})` }), CARD_SPR, delay);
       const fade = c.animate(IS_ANDROID ? [{ opacity: 0 }, { opacity: 1 }] : [{ opacity: 0, filter: 'blur(4px)' }, { opacity: 1, filter: 'blur(0px)' }], { duration: 340, delay, easing: OUT, fill: 'both' });
       PP.commit(c, [rise, fade], { opacity: 1, transform: '', filter: '' });
@@ -1420,7 +3212,7 @@ const PP = (() => {
   const fadeTo = (el, from, to, ms, delay = 0, easing = OUT, extra) =>
     el.animate([{ opacity: from, ...(extra && extra[0]) }, { opacity: to, ...(extra && extra[1]) }], { duration: ms, delay, easing, fill: 'both' });
   const rel = (el) => { const a = el.getBoundingClientRect(), b = bar.getBoundingClientRect(); return { x: a.left - b.left, y: a.top - b.top, w: a.width, h: a.height }; };
-  const onScreen = (i) => { const r = rel(slots[i]); return r.x < 343 && r.x + r.w > 0; };
+  const onScreen = (i) => { const r = rel(slots[i]); return r.x < 351 && r.x + r.w > 0; };
   // coin pop: SwiftUI-style bouncy spring (response 0.42s, ζ 0.52 → ~15% overshoot), once the panel is mostly closed
   const POP = spr(0.42, 0.52), POP_AT = 150;
 
@@ -1641,7 +3433,7 @@ const Haptics = (() => {
    the same iteration (a clean reload back to Home). */
 (() => {
   const nav = document.getElementById('vswitch'); if (!nav) return;
-  const PATHS = { 1: '/', 2: '/v2/', 3: '/v3/', 4: '/v4/', 5: '/v5/', 6: '/v6/', 7: '/v7/', 8: '/v8/', 9: '/v9/', 10: '/v10/', 11: '/v11/', 12: '/v12/', 13: '/v13/', 14: '/v14/', 15: '/v15/', 16: '/v16/', 17: '/v17/', 18: '/v18/', 19: '/v19/', 20: '/v20/', 21: '/v21/', 22: '/v22/', 23: '/v23/', 24: '/v24/', 25: '/v25/', 26: '/v26/', 27: '/v27/', 28: '/v28/', 29: '/v29/', 30: '/v30/', 31: '/v31/', 32: '/v32/', 33: '/v33/', 34: '/v34/', 35: '/v35/', 36: '/v36/', 37: '/v37/', 38: '/v38/', 39: '/v39/', 40: '/v40/', 41: '/v41/', 42: '/v42/', 43: '/v43/' };
+  const PATHS = { 1: '/' };
   const here = document.documentElement.dataset.variant || '1';
   const want = new URLSearchParams(location.search).get('v');
   if (want && PATHS[want] && want !== here) { location.replace(PATHS[want]); return; }

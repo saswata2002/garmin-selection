@@ -1,0 +1,1404 @@
+/* ══════════════════════════════════════════════════════════════════════
+   noon — Inter OP / Scene 01
+   1:1 build of Figma node 1191:123795 (file ongm21hiT8OfTc7dUUWthT)
+   Frame 375 × 812. Every number is transcribed from the design.
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ── Fonts ───────────────────────────────────────────────────────────── */
+@font-face { font-family: Noontree; src: url('../fonts/Noontree-Regular.otf')  format('opentype'); font-weight: 400; font-display: block; }
+@font-face { font-family: Noontree; src: url('../fonts/Noontree-Medium.otf')   format('opentype'); font-weight: 500; font-display: block; }
+@font-face { font-family: Noontree; src: url('../fonts/Noontree-SemiBold.otf') format('opentype'); font-weight: 600; font-display: block; }
+@font-face { font-family: Noontree; src: url('../fonts/Noontree-Bold.otf')     format('opentype'); font-weight: 700; font-display: block; }
+
+@font-face { font-family: Figtree; src: url('../fonts/Figtree-Regular.ttf')  format('truetype'); font-weight: 400; font-display: block; }
+@font-face { font-family: Figtree; src: url('../fonts/Figtree-Medium.ttf')   format('truetype'); font-weight: 500; font-display: block; }
+@font-face { font-family: Figtree; src: url('../fonts/Figtree-SemiBold.ttf') format('truetype'); font-weight: 600; font-display: block; }
+@font-face { font-family: Figtree; src: url('../fonts/Figtree-Bold.ttf')     format('truetype'); font-weight: 700; font-display: block; }
+
+/* ── Design tokens (Figma variable collection on this node) ─────────── */
+:root {
+  --font-primary:   Noontree, Figtree, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-secondary: Figtree, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  --text-primary:        #1d2539;   /* colour/text-n-icon/primary   */
+  --text-secondary:      #475067;   /* colour/text-n-icon/secondary */
+  --text-tertiary:       #666d85;   /* colour/text-n-icon/tertiary  */
+  --text-muted:          #989fb3;   /* colour/text-n-icon/muted     */
+  --text-action:         #0f61ff;   /* colour/text-n-icon/action    */
+  --light-text-primary:  #262a33;   /* Light/Text/Primary           */
+  --sem-text-primary:      #0e0e0e;
+  --sem-text-primary-hover:#212121;
+
+  --surface-primary:  #ffffff;
+  --border-primary:   #eaecf0;
+  --grey-200:         #f2f3f7;
+  --divider:          #ebecef;      /* Light/Support/Divider */
+  --blue-600:         #0076ff;
+  --green-800:        #008200;
+  --emerald-900:      #0a4f4a;
+  --error-bold:       #d92626;
+  --noon-black:       #404553;
+  --noon-yellow:      #feee00;
+
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-16: 16px;
+
+  --frame-w: 375px;
+  --frame-h: 812px;
+
+  /* The takeover ground — behind the Cornetto plate, under the switch, and
+     around the Minutes card. A token rather than three literals so an
+     iteration can restate it in one line (see variants/vN.js `vars`). */
+  --ground: #d12b28;
+  /* The ground may shift when the switch fires. Defaults make that a no-op:
+     the second colour is the first and the move takes no time, so nothing
+     changes for an iteration that does not ask for it. */
+  --ground-2: var(--ground);
+  --ground-shift-dur: 0ms;
+  /* Deliberately the non-overshooting curve. The flow's main spring passes
+     1.33% beyond its target, which on a colour means overshooting the hue
+     and easing back — a visible flicker. This one only ever approaches. */
+  --ease-ground-shift: var(--ease-hijack-radius);
+
+  /* The Scene fill — blue wash resolving to white behind the fold. */
+  --wash: linear-gradient(180deg,
+            #d9e9fb   0px,
+            #dfedfc  140px,
+            #ecf4fd  215px,
+            #f8fbfe  255px,
+            #ffffff  278px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0; padding: 0;
+  background: #d8dae0;
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+body {
+  min-height: 100vh; min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-text-size-adjust: 100%;
+}
+p { margin: 0; }
+img { display: block; max-width: none; }
+
+/* Nothing in the prototype is draggable or selectable. On a desktop pointer an
+   <img> begins a native HTML5 drag on the very first move: dragstart fires,
+   the browser takes the gesture, and pointercancel arrives before the rail has
+   travelled a single pixel — which is exactly how the carousel could pass
+   every synthetic test and still not answer a mouse. Selecting text does the
+   same to a drag that starts on the copy rather than the artwork. */
+img { -webkit-user-drag: none; user-drag: none; }
+.screen, .screen * { -webkit-user-select: none; user-select: none; }
+button { -webkit-appearance: none; appearance: none; border: 0; background: none; padding: 0; font: inherit; }
+
+/* ══ The device frame ═════════════════════════════════════════════════ */
+.screen {
+  position: relative;
+  width: var(--frame-w);
+  height: var(--frame-h);
+  overflow: hidden;
+  isolation: isolate;
+}
+.screen__wash {
+  position: absolute; inset: 0;
+  background: var(--wash);
+}
+
+/* Scroll body starts at y = 273 (Frame 2147226002) */
+.scroll {
+  position: absolute;
+  left: 0; right: 0; top: 273px; bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.scroll::-webkit-scrollbar { display: none; }
+
+.body {
+  display: flex; flex-direction: column;
+  gap: 28px;                 /* 352−324 and 700−672 */
+  width: var(--frame-w);
+  padding-bottom: 120px;     /* clears the floating tab bar */
+}
+
+/* Shared: horizontal rails.
+   Native scrolling stays in charge (touch gets the platform's own momentum
+   and rubber-band); app.js layers drag + inertia + elastic ends on top for
+   pointer devices, which otherwise can't scroll these at all. */
+.hero__track, .brands__track, .cats__scroll, .rtabs, .skus { scrollbar-width: none; }
+.hero, .brands, .cats__scroll, .rtabs, .skus {
+  overflow-x: auto; overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.is-grabbable { cursor: grab; }
+.is-grabbable.is-dragging { cursor: grabbing; }
+/* A drag must not lift images out of the page or select label text. */
+.hero img, .brands img, .cats__scroll img, .rtabs img, .skus img {
+  -webkit-user-drag: none; user-select: none; -webkit-user-select: none;
+}
+.is-dragging, .is-dragging * { user-select: none; -webkit-user-select: none; }
+.hero::-webkit-scrollbar, .brands::-webkit-scrollbar, .cats__scroll::-webkit-scrollbar,
+.rtabs::-webkit-scrollbar, .skus::-webkit-scrollbar { display: none; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Chrome — status bar / brand rail / address / search
+   ══════════════════════════════════════════════════════════════════════ */
+.chrome {
+  position: absolute; left: 0; right: 0; top: 0;
+  height: 273px;
+  z-index: 3;
+  pointer-events: none;
+}
+.chrome > * { pointer-events: auto; }
+.chrome__wash {
+  position: absolute; inset: 0;
+  /* Same gradient, same origin, so scrolled content vanishes cleanly. */
+  background: var(--wash);
+  background-size: var(--frame-w) var(--frame-h);
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* ── 1191:125529 — Brand tile rail (x 13.38, y 59, 76 tall) ──────────── */
+.brands {
+  position: absolute; left: 0; right: 0; top: 59px; height: 76px;
+}
+.brands__track {
+  display: flex; align-items: center; gap: 6px;
+  /* Figma ends the rail flush at the Pay tile; a 6px trailing gutter
+     matching the inter-tile gap was added so the last tile isn't cut. */
+  padding-left: 13.381591796875px;
+  padding-right: 6px;
+  width: 587.381591796875px;
+}
+.btile { position: relative; width: 76px; height: 76px; flex-shrink: 0; overflow: hidden; }
+.btile--core::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--noon-yellow); border-radius: 20px;
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,.04);
+}
+.btile--soft::before  { content: ''; position: absolute; inset: 0; background: #fff; opacity: .95; border-radius: 20px; }
+.btile--white::before { content: ''; position: absolute; inset: 0; background: #fff; border-radius: 20px; }
+
+.btile__mask { position: absolute; left: 19px; top: 17px; width: 39.5px; height: 29.5px; }
+.btile__word { position: absolute; left: 13.0036px; top: 31.0004px; width: 50.1296px; height: 13.0112px; }
+.btile__sm1  { position: absolute; left: 10.0016px; top: 20.9988px; width: 53.0252px; height: 16.8264px; }
+.btile__sm2  { position: absolute; left: 10.0016px; top: 38.1976px; width: 37.582px;  height: 16.8036px; }
+.btile__food { position: absolute; left: 10.6856px; top: 23.2788px; width: 51.3152px; height: 28.9712px; }
+.btile__mins { position: absolute; left: 11px; top: 13px; width: 50px; height: 50px; object-fit: cover; }
+.btile__layer{ position: absolute; left: calc(50% - 1.5px); top: calc(50% - 0.5px); width: 33px; height: 45px; transform: translate(-50%, -50%); }
+.btile__namshi { position: absolute; left: 17.7004px; top: 15.998px; width: 40.812px; height: 26.8356px; object-fit: cover; }
+.btile__label {
+  position: absolute; left: 0; right: 0; top: 71.05%;
+  font-family: Figtree, sans-serif; font-weight: 700;
+  font-size: 13px; line-height: 10px; color: var(--noon-black); text-align: center;
+}
+
+/* Component 8 — noon Pay mark */
+.paylogo { position: absolute; inset: 19.53% 30.14% 42.10% 29.91%; }
+.paylogo__shadow { position: absolute; inset: 0 0 0 2.43%; background: rgba(110,115,131,.4); border-radius: 18.968px; }
+.paylogo__fill {
+  position: absolute; inset: 0 4.29% 9.86% 0; border-radius: 18.968px;
+  background: linear-gradient(-90deg, #4659d9 1%, #5523dd 100%);
+}
+.paylogo__send { position: absolute; width: auto; height: auto; }
+.paylogo__send--a { left: 8.8475px;  top: 5.665px;   width: 8.3647px; height: 5.424px; }
+.paylogo__send--b { left: 12.6002px; top: 15.4554px; width: 8.3647px; height: 5.424px; transform: rotate(180deg); }
+
+/* ── 1191:123796 — Address (x 12, y 149, 351 × 44) ──────────────────── */
+.addr {
+  position: absolute; left: 12px; top: 149px; width: 351px; height: 44px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.addr__col { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.addr__row { display: flex; align-items: center; gap: 4px; }
+.addr__name-wrap { display: flex; align-items: center; gap: 4px; }
+.addr__home { position: relative; width: 18px; height: 18px; overflow: hidden; flex-shrink: 0; }
+.addr__home img { position: absolute; left: 1.38px; top: 2.64px; width: 15.245px; height: 13.912px; }
+.addr__name {
+  font-family: var(--font-primary); font-weight: 700;
+  font-size: 16px; line-height: 20px; letter-spacing: -0.15px;
+  color: var(--text-primary); white-space: nowrap;
+  text-shadow: 0 8.043px 16.086px rgba(0,0,0,.07);
+}
+.addr__chevron { width: 16px; height: 14.535px; flex-shrink: 0; }
+.addr__line { width: 282px; }
+.addr__line p {
+  font-family: var(--font-primary); font-weight: 400;
+  font-size: 14px; line-height: 20px; letter-spacing: -0.1px;
+  color: var(--text-secondary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.addr__fav {
+  position: relative; width: 40px; height: 40px; flex-shrink: 0;
+  background: var(--surface-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 46px; overflow: hidden;
+}
+.addr__fav img {
+  position: absolute; left: 50%; top: calc(50% + 1px);
+  width: 18px; height: 16px; transform: translate(-50%, -50%);
+}
+
+/* ── 1191:123816 — Search (x 12, y 207, 343 × 48) ───────────────────── */
+.search {
+  position: absolute; left: 12px; top: 207px; width: 343px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 14.075px 12px;
+  background: #fff;
+  border: 1.005px solid #e2e2e2;
+  border-radius: 12.064px;
+}
+.search__field { position: relative; flex: 1 0 0; min-width: 1px; height: 20px; }
+.search__inner { position: absolute; left: 1px; top: .255859375px; display: flex; align-items: center; gap: 4px; }
+.search__icon { width: 18px; height: 18px; flex-shrink: 0; }
+.search__ph {
+  font-family: Figtree, sans-serif; font-weight: 500;
+  font-size: 15px; line-height: 19.102px; letter-spacing: -0.3016px;
+  color: #1f1d1d; white-space: nowrap;
+}
+.search__divider { flex-shrink: 0; width: 1px; height: 24px; background: #e2e2e2; }
+.search__camera { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   1191:123825 — Home Banner: hero widget carousel
+   ══════════════════════════════════════════════════════════════════════ */
+.hero { width: var(--frame-w); height: 324px; }
+.hero__track {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 12px; width: max-content; height: 324px;
+}
+.hw { position: relative; width: 204px; height: 324px; flex-shrink: 0; display: flex; align-items: center; }
+
+/* Full-span variant (image fills the whole 204 × 324 plate) */
+.hw-full__plate {
+  position: relative; width: 204px; height: 324px;
+  background: #fff; border-radius: var(--radius-16); overflow: hidden;
+}
+.hw-full__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hw-full__img--w1 { object-position: center top; }
+.hw-full__img--w4 { position: absolute; left: 0; top: -0.04%; width: 100%; height: 111.87%; object-fit: cover; }
+
+.tag {
+  position: absolute; right: 8px; top: 8px;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 2px 4px; border-radius: var(--radius-4);
+  background: rgba(255,255,255,.8);
+}
+.tag p {
+  font-family: var(--font-primary); font-weight: 400;
+  font-size: 10px; line-height: 11px; color: var(--text-tertiary); white-space: nowrap;
+}
+.tag--m { right: 11px; top: 11px; }
+.tag--sku { right: auto; top: auto; left: 6px; bottom: 6px; }
+
+.video-actions {
+  position: absolute; left: 6px; bottom: 6px;
+  display: flex; align-items: center; padding: 6px;
+  border-radius: 10px;
+  background: rgba(0,0,0,.64);
+  -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px);
+}
+.video-actions img { width: 20px; height: 20px; }
+
+/* Brand-banner variant (banner slot + product grid) */
+.hw--brand > .hw-brand__banner { order: 1; }
+.hw--brand {
+  flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-16);
+}
+.hw--brand-dark { background: #0c0c04; border-color: #0c0c04; }
+.hw-brand__banner { position: relative; flex: 1 0 0; min-height: 1px; width: 100%; }
+.hw-brand__banner--clip { overflow: hidden; border-radius: var(--radius-8); }
+
+/* 1191:123842 — "S" 188 × 52, image 188 × 94 centred */
+.hw-brand__s--ajmal {
+  position: absolute; left: 0; top: 0; width: 188px; height: 52px;
+  overflow: hidden; border-radius: 12px; background: #fff;
+}
+.hw-brand__s--ajmal img {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 188px; height: 94px; object-fit: cover;
+}
+
+/* 1191:123851 — "S" 216 × 96 hanging 4px above the slot */
+.hw-brand__s--wide { position: absolute; left: 0; top: -4px; width: 216px; height: 96px; overflow: hidden; background: #fff; }
+.s-layer--a { position: absolute; left: 0; top: 0; width: 216px; height: 96px; overflow: hidden; background: #fff; }
+.s-layer__plate { position: absolute; left: -12.19px; bottom: -11.41px; width: 229.475px; height: 152.945px; }
+.s-layer__plate img { width: 100%; height: 100%; object-fit: cover; }
+.s-layer__rot {
+  position: absolute; inset: -20.44% 89.48% -18.87% 5.26%;
+  display: flex; align-items: center; justify-content: center;
+}
+.s-layer__rot img {
+  position: absolute; left: 50%; top: 50%;
+  width: 133.72px; height: 11.36px;
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+.s-layer--b { position: absolute; left: 0; top: -0.86px; width: 216px; height: 97.463px; overflow: hidden; }
+.s-layer__plate2 { position: absolute; left: -9.88px; top: -212.71px; width: 247.107px; height: 535.712px; }
+.s-layer__plate2 img { width: 100%; height: 100%; object-fit: cover; }
+
+/* 1191:123896 — "M": 252 × 252 image, left-aligned, vertically centred */
+.hw-brand__m { position: absolute; inset: 0; background: #fff; }
+.hw-brand__m img {
+  position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 252px; height: 252px; object-fit: cover;
+}
+
+/* product grid */
+.hw-brand__grid {
+  order: 2; flex-shrink: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;
+  width: 188px; height: 248px;
+}
+.hw-brand__grid--one-row { height: 154px; grid-template-rows: repeat(1, minmax(0,1fr)); }
+.hwcard { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; border-radius: 8.926px; }
+.hwcard__img {
+  position: relative; width: 90px; height: 120px; flex-shrink: 0;
+  background: var(--grey-200); border-radius: var(--radius-8); overflow: hidden;
+}
+.hwcard__img img { position: absolute; left: 0; top: 0; width: 90px; height: 120px; object-fit: cover; }
+.hwcard__img img.fit-contain { object-fit: contain; }
+
+.notch {
+  position: absolute; left: 0; top: 0;
+  display: flex; align-items: center;
+  height: 14.876px; padding: 2px 4px;
+  border-bottom-right-radius: 6px;
+  font-family: var(--font-primary); font-weight: 700;
+  font-size: 10px; line-height: 14px; letter-spacing: -0.1px;
+  color: #fff; text-align: center; white-space: nowrap;
+}
+.notch--red   { background: var(--error-bold); }
+.notch--brown { background: #a5622b; }
+.notch--teal  { background: #0580ab; }
+
+.hwcard__meta { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; width: 100%; }
+.hwcard__name {
+  font-family: var(--font-primary); font-weight: 400;
+  font-size: 11px; line-height: 14px; letter-spacing: -0.1px;
+  color: var(--text-tertiary);
+  width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hwcard__price { display: flex; align-items: flex-end; gap: 3px; }
+.hwcard__now {
+  font-family: var(--font-primary); font-weight: 700;
+  font-size: 11px; line-height: 14px; letter-spacing: -0.1px; color: var(--text-primary);
+  white-space: nowrap;
+}
+.hwcard__was {
+  font-family: var(--font-primary); font-weight: 400;
+  font-size: 11px; line-height: 14px; letter-spacing: -0.1px;
+  color: var(--text-muted); text-decoration: line-through; white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   1191:123898 — Shop by category
+   ══════════════════════════════════════════════════════════════════════ */
+.cats {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; width: var(--frame-w); background: #fff;
+}
+.cats__head { display: flex; align-items: center; justify-content: center; padding: 0 14px; width: 100%; }
+.cats__head p {
+  flex: 1 0 0; min-width: 1px;
+  font-family: Figtree, sans-serif; font-weight: 700;
+  font-size: 17px; line-height: 22px; letter-spacing: -0.34px;
+  color: var(--light-text-primary);
+}
+.cats__grid { display: flex; flex-direction: column; gap: 20px; padding: 12px 0 8px; width: var(--frame-w); }
+.cats__scroll { width: var(--frame-w); }
+.cats__rows { display: flex; flex-direction: column; gap: 16px; padding: 0 16px; width: max-content; }
+.cats__row { position: relative; display: flex; align-items: center; gap: 16px; }
+
+/* Figma Category frames clip: the product photos carry opaque white plates
+   that hang past x 0 / x 92 and must not bleed onto the neighbouring tile. */
+.cat { position: relative; width: 92px; height: 128px; flex-shrink: 0; overflow: hidden; }
+.cat__bg { position: absolute; left: 50%; top: 0; width: 92px; height: 92px; transform: translateX(-50%); }
+.cat__bg--e { top: -0.1181640625px; }
+.cat__l { position: absolute; object-fit: cover; }
+.cat__rot { position: absolute; display: flex; align-items: center; justify-content: center; }
+.cat__rot img { object-fit: cover; }
+.cat__label {
+  position: absolute; left: 50%; top: 96px; width: 92px; transform: translateX(-50%);
+  font-family: var(--font-primary); font-weight: 600;
+  font-size: 13px; line-height: 14px;
+  color: var(--light-text-primary); text-align: center;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.cat__label--1line { }
+
+/* soft shadow presets lifted off the Figma layers */
+.sh-drop { box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+.sh-side { box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+
+/* Row 1 · Beauty & Skin Care (1191:123915) */
+.cat-a1 { left: 3.208984375px;  top: 18.15478515625px; width: 66.302px; height: 66.302px;
+  box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+.cat-a2 { left: 37.46484375px;  top: 28.3115234375px;  width: 53.041px; height: 53.041px;
+  box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+
+/* Row 1 · Grocery & Kitchen (1191:123923) */
+.cat-b1 { left: -10px; top: 25px; width: 71.49px; height: 71.49px; }
+.cat-b1 img { width: 56.991px; height: 56.991px; transform: rotate(-17.5deg);
+  box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+.cat-b2 { left: 34px; top: 13px; width: 26px; height: 76px; }
+.cat-b4 { left: 36px; top: 25px; width: 67px; height: 68px;
+  box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+
+/* Row 1 · Home Appliances (1191:123930) */
+.cat-c1 { left: -16px; top: 2px; width: 99px; height: 99px; }
+.cat-c2 { left: 34px;  top: 8px; width: 74px; height: 84px; }
+.sale { position: absolute; left: 22.763671875px; top: 0; width: 45.901px; height: 14.445px; }
+.sale__wing { position: absolute; top: 0; }
+.sale__wing--l { left: 0; width: 4.895px; height: 6.049px; }
+.sale__wing--r { left: 41.192px; width: 4.708px; height: 5.947px; transform: scaleY(-1) rotate(180deg); }
+.sale__plate {
+  position: absolute; left: calc(50% + 0.29px); top: 0; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: 2.5px 4px 2px;
+  border-bottom-left-radius: 5px; border-bottom-right-radius: 5px;
+  background: linear-gradient(127.68deg, #e11111 2.3761%, #ff5959 90.811%);
+}
+.sale__plate p {
+  width: 28.731px; height: 9.945px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: Figtree, sans-serif; font-weight: 700;
+  font-size: 11.05px; line-height: 13.26px; color: #fff; text-align: center;
+}
+
+/* Row 1 · Beauty (dup, 1191:123941) */
+.cat-d1 { left: 2.208984375px; top: 12.15478515625px; width: 66.302px; height: 66.302px;
+  box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+.cat-d2 { left: 36.46484375px; top: 24.3115234375px; width: 53.041px; height: 53.041px;
+  box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+
+/* Row 1 · Grocery (dup, 1191:123949) */
+.cat-e1 { left: -6.650390625px; top: 13.7px; width: 73.768px; height: 73.768px; }
+.cat-e1 img { width: 65.079px; height: 65.079px; transform: rotate(-8.28deg);
+  box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+.cat-e2 { left: 7.734375px; top: 0; width: 90.612px; height: 90.612px;
+  box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+
+/* Row 2 · Toys & Games (1191:123956 / 1191:123976) */
+.cat-f1 { left: -4.419921875px; top: 12.1552734375px; width: 70.722px; height: 70.722px;
+  box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+.cat-f2 { left: 49.515625px; top: 27.625px; width: 32.709px; height: 53.041px;
+  box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+.cat-j2 { left: 47.517578125px; top: 27.625px; width: 32.709px; height: 53.041px;
+  box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+
+/* Row 2 · Electronics & Tools (1191:123961) */
+.cat-g1 { left: .45703125px; top: 4.474609375px; width: 74px; height: 82px; overflow: hidden; }
+.cat-g1 img { position: absolute; left: -5.94%; top: 2.77%; width: 105.26%; height: 95.24%; }
+.cat-g2 { left: 32.8359375px; top: 25px; width: 54.146px; height: 54.146px;
+  box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+
+/* Row 2 · Hair Care (1191:123966) */
+.cat-h1 { left: -5.7px; top: 6.634765625px; width: 83.372px; height: 77.451px; }
+.cat-h1 img { width: 63.244px; height: 71.107px; transform: scaleY(-1) rotate(102.83deg);
+  box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+.cat-h2 { left: 28.52px; top: 4.6083984375px; width: 69.091px; height: 84.243px; }
+.cat-h2 img { width: 67.973px; height: 83.333px; transform: rotate(.77deg);
+  box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+
+/* Row 2 · Shoes & Clothes (1191:123971) */
+.cat-i1 { left: -4.734375px; top: -1.10546875px; width: 80.667px; height: 75.142px;
+  object-position: bottom;
+  box-shadow: -2.21px 17.68px 5.525px 0 rgba(0,0,0,0), -2.21px 11.05px 4.42px 0 rgba(0,0,0,.02), -1.105px 6.63px 4.42px 0 rgba(0,0,0,.06), 0 3.315px 3.315px 0 rgba(0,0,0,.1), 0 1.105px 1.105px 0 rgba(0,0,0,.12); }
+.cat-i2 { left: 19.78515625px; top: 5.52px; width: 80.667px; height: 80.667px; }
+.cat-i2 img { width: 80.667px; height: 80.667px; transform: rotate(-90deg);
+  box-shadow: -34.256px 0 9.945px 0 rgba(0,0,0,0), -22.101px 0 8.84px 0 rgba(0,0,0,.03), -12.155px 0 7.735px 0 rgba(0,0,0,.1), -5.525px 0 5.525px 0 rgba(0,0,0,.16), -1.105px 0 3.315px 0 rgba(0,0,0,.19); }
+
+/* ══════════════════════════════════════════════════════════════════════
+   1191:123981 — Recommended for you
+   ══════════════════════════════════════════════════════════════════════ */
+.reco { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; width: var(--frame-w); }
+.reco__head { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+.reco__head-pad { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; padding: 0 14px; width: 376px; }
+.reco__head p {
+  font-family: Figtree, sans-serif; font-weight: 700;
+  font-size: 17px; line-height: 22px; letter-spacing: -0.34px;
+  color: var(--light-text-primary); text-align: center; white-space: nowrap;
+  font-feature-settings: 'ss04' 1;
+}
+.reco__body { display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+/* 1191:123987 — tab strip */
+.rtabs { display: flex; align-items: center; padding: 6.4px 0 0 12px; width: 100%; }
+.rtab {
+  position: relative; flex-shrink: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-width: 66.128662109375px;
+  padding: 4px 12px 12px;
+  border-bottom: 1.067px solid var(--divider);
+}
+.rtab p {
+  font-family: var(--font-primary); font-weight: 500;
+  font-size: 13px; line-height: 16px; color: #344054; text-align: center;
+  max-height: 29.86455535888672px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.rtab__icon { position: relative; width: 28px; height: 28px; flex-shrink: 0; }
+.rtab__icon img { width: 28px; height: 28px; }
+.rtab--on {
+  width: 72px;
+  border-bottom: 0;
+  background: linear-gradient(180deg, #ffffff 25.534%, #e0efff 117.53%);
+}
+.rtab--on p { font-weight: 700; color: #1155cb; }
+.rtab__bar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 3.2px;
+  background: #1155cb;
+  border-top-left-radius: 4.266px; border-top-right-radius: 4.266px;
+}
+
+/* 1191:124007 — SKU rail */
+.skus { display: flex; align-items: flex-start; gap: 12px; padding: 16px 12px 0; width: var(--frame-w); }
+.sku {
+  flex-shrink: 0; width: 134px;
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-start;
+  background: #fff; border-radius: var(--radius-8);
+}
+.sku__stage {
+  position: relative; flex-shrink: 0;
+  width: 134px; height: 174px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-10); overflow: hidden;
+  background: linear-gradient(90deg, rgba(7,47,143,.04) 0%, rgba(7,47,143,.04) 100%), #fff;
+}
+.sku__img { flex-shrink: 0; object-fit: cover; }
+.sku__img--122 { width: 122px; height: 122px; }
+.sku__img--142 { width: 142px; height: 142px; }
+.sku__heart {
+  position: absolute; right: 4px; top: 4px;
+  display: flex; align-items: center; justify-content: center;
+  padding: 4px; border-radius: 9999px; background: rgba(255,255,255,.2);
+}
+.sku__heart img { width: 16px; height: 16px; }
+.sku__plus {
+  position: absolute; left: 94px; top: 136px;
+  display: flex; align-items: center; padding: 4px;
+  background: #fff; border: 1.2px solid var(--blue-600); border-radius: var(--radius-8);
+}
+.sku__plus--96 { left: 96px; }
+.sku__plus--r6 { border-radius: 6px; }
+.sku__plus img { width: 24px; height: 24px; }
+.sku__notch {
+  position: absolute; left: 0; top: 0;
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+  height: 20px; padding: 2px 6px;
+  border-bottom-right-radius: var(--radius-10);
+  background: #084541;
+}
+.sku__notch p {
+  font-family: var(--font-primary); font-weight: 600;
+  font-size: 12px; line-height: 14px; letter-spacing: -0.12px;
+  color: #fff; text-align: center; white-space: nowrap;
+  font-feature-settings: 'case' 1;
+}
+
+.sku__info { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; padding: 4px; width: 100%; }
+.sku__top { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; width: 100%; }
+.sku__title {
+  font-family: var(--font-primary); font-weight: 500;
+  font-size: 14px; line-height: 18px; letter-spacing: -0.14px;
+  color: var(--sem-text-primary-hover);
+  height: 36px; width: 100%; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  font-feature-settings: 'case' 1;
+}
+.sku__rating-row { display: flex; align-items: flex-start; gap: 4px; width: 100%; }
+.rating {
+  display: flex; align-items: center; gap: 2px;
+  padding: 2px 4px; border-radius: var(--radius-4); background: #f2f8f8;
+}
+.rating__star { position: relative; width: 12px; height: 11.5px; flex-shrink: 0; }
+.rating__star img { position: absolute; left: .7308px; top: .8108px; width: 10.5384px; height: 10.1338px; }
+.rating p {
+  font-family: var(--font-primary); font-weight: 600;
+  font-size: 12px; line-height: 14px; letter-spacing: -0.12px;
+  color: var(--emerald-900); white-space: nowrap;
+  font-feature-settings: 'case' 1;
+}
+
+.sku__mid { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+.sku__prices { display: flex; align-items: center; gap: 3px; width: 128px; }
+.sku__now {
+  font-family: var(--font-primary); font-weight: 700;
+  font-size: 15px; line-height: 20px; letter-spacing: .07px;
+  color: var(--sem-text-primary); white-space: nowrap;
+  font-feature-settings: 'case' 1;
+}
+.sku__was {
+  font-family: var(--font-primary); font-weight: 400;
+  font-size: 12px; line-height: 14px; letter-spacing: -0.12px;
+  color: #848391; text-decoration: line-through; white-space: nowrap;
+  font-feature-settings: 'case' 1;
+}
+.sku__off {
+  font-family: var(--font-primary); font-weight: 600;
+  font-size: 12px; line-height: 14px; letter-spacing: -0.12px;
+  color: var(--green-800); white-space: nowrap;
+  font-feature-settings: 'case' 1;
+}
+.sku__ship { display: flex; align-items: flex-start; gap: 4px; width: 100%; }
+.sku__truck { position: relative; width: 14px; height: 14px; flex-shrink: 0; }
+.sku__truck img { width: 14px; height: 14px; }
+.sku__ship p {
+  font-family: var(--font-primary); font-weight: 500;
+  font-size: 12px; line-height: 14px; letter-spacing: -0.12px;
+  color: var(--text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.sku__badges { position: relative; width: 97px; height: 16px; flex-shrink: 0; }
+.sku__badges img { width: 100%; height: 100%; }
+
+.aed { font-family: Noontree, sans-serif; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   1191:125436 — Tab Bar - iPhone (y 713, 375 × 99)
+   ══════════════════════════════════════════════════════════════════════ */
+.tabbar {
+  position: absolute; left: 0; right: 0; top: 713px; height: 99px;
+  z-index: 4;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 16px 25px 25px;
+}
+.tabbar__buttons {
+  position: relative;
+  flex: 1 0 0; min-width: 1px;
+  display: flex; align-items: flex-start; justify-content: center; gap: 4px;
+  padding: 0 2px;
+  height: 58px;
+}
+.tabbar__bg { position: absolute; inset: -4px; }
+.tabbar__fill {
+  position: absolute; inset: 0; border-radius: 296px;
+  box-shadow: 0 8px 40px 0 rgba(0,0,0,.12);
+  overflow: hidden;
+  /* Figma's "Fill + Shadow" frame isolates its children's blend modes, so the
+     three fills resolve against each other and nothing else. Without this the
+     color-burn layer reaches the scrolling page behind the bar: the capsule
+     turns grey as content passes under it and the white Selection stops
+     matching it. Isolated, the stack settles on a stable near-#f7f7f7. */
+  isolation: isolate;
+}
+.tabbar__fill span { position: absolute; inset: 0; border-radius: 296px; }
+.tabbar__fill-a { background: rgba(255,255,255,.9); }
+.tabbar__fill-b { background: #dddddd; mix-blend-mode: color-burn; }
+.tabbar__fill-c { background: #f7f7f7; mix-blend-mode: darken; }
+.tabbar__glass { position: absolute; inset: 0; border-radius: 296px; background: rgba(0,0,0,0); }
+
+.tab {
+  position: relative;
+  flex: 1 0 0; min-width: 1px; align-self: stretch;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  padding: 6px 8px 7px;
+}
+.tab p {
+  position: relative;
+  font-family: var(--font-primary); font-weight: 500;
+  font-size: 12px; line-height: 16px; letter-spacing: -0.25px;
+  color: var(--text-primary); text-align: center; white-space: nowrap;
+}
+.tab--on p { font-weight: 600; color: var(--text-action); }
+/* 1203:699100 — Selection. Two stacked solid fills, white over #ededed;
+   radius 100px clamps to 29, which is concentric with the capsule's 33
+   (both centred at 33,33), so it nests with an even 4px margin. */
+.tab__sel {
+  position: absolute; left: -2px; right: -2px; top: 0; bottom: 0;
+  border-radius: 100px;
+  background-image: linear-gradient(90deg, #ffffff 0%, #ffffff 100%),
+                    linear-gradient(90deg, #ededed 0%, #ededed 100%);
+}
+.tab__icon { position: relative; width: 28px; height: 28px; flex-shrink: 0; }
+.tab__icon img { position: absolute; }
+.tab--on         .tab__icon img { left: 2.9148px; top:  .448px;  width: 22.1648px; height: 24.6344px; }
+.tab--categories .tab__icon img { left: 5.25px;   top: 4.0824px; width: 17.5px;    height: 19.8352px; }
+.tab--account    .tab__icon img { left: 3.5px;    top: 4.0824px; width: 21px;      height: 21.0028px; }
+.tab--cart       .tab__icon img { left: 1.75px;   top: 2.9148px; width: 23.1728px; height: 23.3352px; }
+
+.tab--logo { padding: 4px 8px; }
+.tab__badge { position: relative; width: 45px; height: 45px; overflow: hidden; flex-shrink: 0; }
+.tab__badge-ring {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 43px; height: 43px;
+}
+.tab__badge-logo {
+  position: absolute; left: 2.54%; top: calc(50% - 0.42px);
+  transform: translateY(-50%);
+  width: 42.7095px; height: 24.593px;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Platform hijack — the Home screen recedes into a card
+   ══════════════════════════════════════════════════════════════════════
+
+   Transcribed from the ProtoPie handoff (Rec01, scenario ea15bc28). Its
+   "Start" group fires nine actions off one 0.39s delay; the brief replaces
+   that delay with a 2s dwell on Home. Everything else is as recorded:
+
+     Scale   Mins PDP     0.01s   100 → 80      (destination, off-screen)
+     Scale   Home Page    0.54s   100 → 94      spring
+     Radius  Home Page    0.20s     0 → 20      ease-in-out
+     Move    Home Page    0.54s     y +174      spring
+     Move    Content      0.54s     y −46       spring
+     Move    Nav Bar      0.54s     y −160      spring
+     Move    Swipe Down   0.54s     y −40       spring   (no such layer here)
+     Vibrate              @0.80s                → +0.41s after motion starts
+
+   Both easings are `linear()` curves resampled straight from the recording's
+   own property track, so the motion is the recorded motion rather than a
+   spring guessed to look similar. The shared curve overshoots its target by
+   1.33% at 57% of the way through and settles — that overshoot is the whole
+   reason it reads as physical rather than as a slide.                      */
+
+:root {
+  --hijack-dur: 540ms;
+  --hijack-radius-dur: 200ms;
+  --fade-out-dur: 300ms;
+  --fade-in-dur: 200ms;
+  /* 1206:705817 sits at x 69 in Scene 03 against 13.3816 in Scene 01. */
+  --rail-shift: 55.618408203125px;
+  /* Shape T travels 80px: ProtoPie centre x −51 → 29, and Figma puts the
+     resting frame at −4.0803 (centre 28.42). */
+  --nudge-travel: 80px;
+
+  /* Sampled from the Nav Bar track (0 → −160), the longest travel in the
+     recording and so the least quantised. */
+  --ease-hijack: linear(0.0000 0.00%, 0.1170 4.44%, 0.2199 7.41%, 0.3322 10.37%, 0.4506 13.52%, 0.5607 16.67%, 0.6586 19.81%, 0.7423 22.96%, 0.8084 25.93%, 0.8356 27.41%, 0.8866 30.56%, 0.9261 33.70%, 0.9543 36.67%, 0.9762 39.81%, 0.9917 42.96%, 1.0014 45.93%, 1.0080 49.07%, 1.0116 52.22%, 1.0131 55.19%, 1.0133 56.85%, 1.0132 58.33%, 1.0124 61.48%, 1.0112 64.44%, 1.0098 67.41%, 1.0081 70.74%, 1.0067 73.70%, 1.0059 75.37%, 1.0047 78.33%, 1.0036 81.30%, 1.0026 84.44%, 1.0019 87.59%, 1.0013 90.56%, 1.0008 93.70%, 1.0004 96.85%, 1.0000 100.00%);
+
+  /* The corner radius runs on its own shorter, non-overshooting S-curve. */
+  --ease-hijack-radius: linear(0.0000 0.00%, 0.0010 7.00%, 0.0145 16.00%, 0.0265 20.00%, 0.0675 28.00%, 0.1030 32.50%, 0.1450 36.50%, 0.2820 45.00%, 0.3890 49.50%, 0.6110 57.50%, 0.7180 62.00%, 0.8490 70.00%, 0.8925 74.00%, 0.9290 78.50%, 0.9715 86.50%, 0.9855 91.00%, 0.9985 99.00%, 1.0000 100.00%);
+}
+
+/* What the card peels back to expose. */
+.hijack { position: absolute; inset: 0; }
+.film {
+  position: absolute; inset: 0;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 76px;
+}
+.film--intro { background: var(--ground); }
+.film--loop  { background: var(--ground); opacity: 0; }
+/* 0.30s out against 0.20s in — the loop is already up before the intro has
+   finished leaving, so the seam never shows through to the card behind. */
+.film--intro { transition: opacity var(--fade-out-dur) var(--ease-fade-out),
+                           background-color var(--ground-shift-dur) var(--ease-ground-shift); }
+.film--loop  { transition: opacity var(--fade-in-dur)  var(--ease-fade-in),
+                           background-color var(--ground-shift-dur) var(--ease-ground-shift); }
+.is-looping .film--intro { opacity: 0; }
+.is-looping .film--loop  { opacity: 1; }
+
+/* The plate now occupies this space, so the slot labels would only sit on
+   top of the artwork. Kept in the DOM as the marker for where each video
+   goes; reveal them by dropping this rule. */
+.film__inner { text-align: center; display: none; }
+.film__label {
+  font-family: var(--font-primary); font-weight: 700;
+  font-size: 15px; line-height: 20px; letter-spacing: -0.15px;
+  color: rgba(255,255,255,.9);
+}
+.film__note {
+  margin-top: 2px;
+  font-family: var(--font-primary); font-weight: 400;
+  font-size: 12px; line-height: 16px; letter-spacing: -0.1px;
+  color: rgba(255,255,255,.4);
+}
+
+/* 'Home Page'. translate sits outside scale in the transform list, so the
+   174px is screen pixels — matching ProtoPie's centre-y 406 → 580. The
+   children's own offsets are inside the 0.94, exactly as they are in the
+   .pie, which is what lands the nav bar back at y ≈ 718. */
+.stage {
+  position: absolute; inset: 0;
+  transform-origin: 50% 50%;
+  overflow: hidden;
+  border-radius: 0;
+  transform: translateY(var(--pull, 0px)) scale(1);
+  transition: transform var(--hijack-dur) var(--ease-hijack),
+              border-radius var(--hijack-radius-dur) var(--ease-hijack-radius);
+}
+.hp-content {
+  position: absolute; inset: 0;
+  transform: translateY(0);
+  transition: transform var(--hijack-dur) var(--ease-hijack);
+}
+.tabbar { transition: transform var(--hijack-dur) var(--ease-hijack); }
+
+.is-hijacked .stage      { transform: translateY(calc(174px + var(--pull, 0px))) scale(0.94); border-radius: 20px; }
+.is-hijacked .hp-content { transform: translateY(-46px); }
+/* The nav bar rides inside the card, so a pull would carry it down too.
+   Cancelling it takes --pull ÷ 0.94, because this offset is applied inside
+   the card's scale while the pull is applied outside it. Net effect: the bar
+   holds station at y 718.18 no matter how far the card is dragged. */
+.is-hijacked .tabbar     { transform: translateY(calc(-160px - var(--pull, 0px) / 0.94)); }
+
+/* Only pay for compositing while it is actually moving. */
+.is-animating .stage,
+.is-animating .hp-content,
+.is-animating .tabbar { will-change: transform; }
+
+/* Receded, the card is one big swipe target: its rails and scroll body
+   must not swallow the gesture, and the browser must not treat the drag
+   as a page scroll. */
+.is-hijacked .stage { touch-action: none; cursor: grab; }
+.is-hijacked .stage:active { cursor: grabbing; }
+.is-hijacked .hp-content,
+.is-hijacked .tabbar { pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stage, .hp-content, .tabbar { transition: none; }
+}
+
+/* A blank iteration: the screen is emptied and the flow never starts, so it
+   needs a ground of its own or the host's grey shows through the frame. */
+:root[data-blank] .screen { background: #fff; }
+
+/* Applied by variant-boot for the first two frames only. */
+.variant-booting, .variant-booting * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* ── Crossfade curves, resampled from the recording's own opacity tracks ── */
+:root {
+  --ease-fade-out: linear(0.0000 0.00%, 0.0024 5.33%, 0.0103 10.67%, 0.0274 16.67%, 0.0520 22.00%, 0.0708 25.00%, 0.1157 30.33%, 0.1849 36.00%, 0.2856 41.67%, 0.4156 47.00%, 0.5752 52.67%, 0.7144 58.33%, 0.8051 63.33%, 0.8809 69.33%, 0.9292 75.00%, 0.9442 77.33%, 0.9726 83.33%, 0.9883 88.67%, 0.9973 94.33%, 1.0000 100.00%);
+  --ease-fade-in:  linear(0.0000 0.00%, 0.1022 4.50%, 0.3195 13.00%, 0.4079 17.00%, 0.5773 26.00%, 0.6407 30.00%, 0.6973 34.00%, 0.7920 42.00%, 0.8353 46.50%, 0.9000 55.00%, 0.9235 59.00%, 0.9589 67.00%, 0.9729 71.50%, 0.9834 76.00%, 0.9947 84.00%, 0.9979 88.50%, 0.9999 96.00%, 1.0000 100.00%);
+}
+
+/* ══ 1206:705825 — Cornetto nudge ═══════════════════════════════════════
+   Figma frame: 65 × 116 at (−4.0803, 39.5703). Nothing clips — the cone
+   deliberately breaks out past the tab on the right and bottom.          */
+.nudge {
+  position: absolute;
+  left: -4.080322265625px; top: 39.5703125px;
+  width: 65px; height: 116px;
+  z-index: 2;
+  cursor: pointer;
+  transform: translateX(calc(-1 * var(--nudge-travel)));
+  transition: transform var(--hijack-dur) var(--ease-hijack);
+}
+.has-nudge .nudge { transform: translateX(0); }
+
+.nudge__card { position: absolute; left: -1px; top: 0; width: 65px; height: 116px; }
+.nudge__logo {
+  position: absolute; left: 50%; top: 27.8864px;
+  width: 40px; height: 23.5016px;
+  transform: translateX(-50%) rotate(180deg) scaleX(-1);
+}
+/* 1206:705828 — the rotated bounding box Figma reports; the bitmap inside
+   is 79.82² turned 14°, which is what makes that box 96.76². */
+.nudge__cone {
+  position: absolute; left: -16.874px; top: 33.9px;
+  width: 96.759px; height: 96.759px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nudge__cone img {
+  width: 79.82px; height: 79.82px;
+  transform: rotate(14deg);
+  object-fit: cover;
+}
+
+/* 1206:705817 — the brand rail slides right to clear the nudge. Applied to
+   the scroller, never to .brands__track, which the rail physics owns. */
+.brands {
+  transform: translateX(0);
+  transition: transform var(--hijack-dur) var(--ease-hijack);
+}
+/* Entering, the rail trails the nudge by 20ms (ProtoPie 3.45s vs 3.47s).
+   Leaving, the rule no longer applies, so both go at once — which is
+   exactly what the Tap group specifies. */
+.has-nudge .brands { transform: translateX(var(--rail-shift)); transition-delay: 20ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nudge, .brands, .film { transition: none; }
+}
+
+/* ══ 1213:708470 — "Swipe Down" hint ════════════════════════════════════
+   Figma places a double chevron, rotated to point down and centred on the
+   screen. Its box there is 15.35 × 18.25 in screen pixels — the at-rest
+   group is a real 340px-wide frame, not a scaled one, so its children need
+   no unscaling. The Lottie carries the same construction: two chevrons at
+   50% and 80% opacity, the second trailing by 2 frames.
+
+   Positioned by the GAP to the card, not by absolute y. Figma leaves
+   9.9807px between the hint's bottom (176.249) and the card's top
+   (186.229); this build's card top is ProtoPie's 198.36, 12px lower than
+   the mock, so holding the gap is what preserves the spacing the design
+   actually draws. Travel stays ProtoPie's 40px.
+   Living in .hijack, the hint is simply covered by the card until it goes. */
+.swipe-hint {
+  position: absolute;
+  left: 50%; top: 220.231px;
+  width: 0; height: 0;
+  transform: translateY(0);
+  opacity: var(--pull-fade, 1);
+  touch-action: none;
+  transition: transform var(--hijack-dur) var(--ease-hijack),
+              opacity   var(--hijack-dur) var(--ease-hijack);
+}
+.hint-up .swipe-hint { transform: translateY(-40px); }   /* → anchor 180.231 */
+
+/* A finger-sized grab area around a 15px glyph. Only live while the
+   takeover is up, so it can never sit in front of the Home screen. */
+.swipe-hint::after {
+  content: '';
+  position: absolute; left: 50%; top: 0;
+  width: 88px; height: 76px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.is-hijacked .swipe-hint::after { pointer-events: auto; cursor: grab; }
+/* The switch never clears .is-hijacked, so without this the arrow's 88 x 76
+   grab pad stays live once the PDP has arrived — an invisible dead patch at
+   x 143-231, y 142-218, right over the product image, swallowing any swipe
+   that started there. */
+.is-switching .swipe-hint,
+.is-switching .swipe-hint::after { pointer-events: none; }
+.is-pulling  .swipe-hint::after { cursor: grabbing; }
+
+/* Under the finger nothing is timed — the card tracks the pointer, so both
+   transitions have to be out of the way until the release. */
+.is-pulling .stage,
+.is-pulling .tabbar,
+.is-pulling .swipe-hint { transition: none; }
+
+/* The artwork sits above the middle of its own 500² canvas, so the canvas
+   is nudged down by that much to leave the chevrons on the anchor.
+   56.771 = 500 × (15.35 ÷ 135.19), fitting the artwork to the Figma width. */
+.swipe-hint__stage {
+  position: absolute;
+  left: 50%; top: 4.224px;
+  width: 56.771px; height: 56.771px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.swipe-hint__stage svg { display: block; }
+
+@media (prefers-reduced-motion: reduce) {
+  .swipe-hint { transition: none; }
+}
+
+/* ══ 1017:16815 "Visual" — the takeover plate ═══════════════════════════
+   Positioned in the frame's own 375 × 812 space, so the SVG's viewBox does
+   the alignment and nothing needs offsetting. Sits above the film slots and
+   below .stage, which is what makes the Home card mask it exactly as the
+   "Ref Visual" frame shows. */
+.takeover {
+  position: absolute; inset: 0;
+  pointer-events: none;
+  /* --tk-y is the reveal offset, --tk-pull the live parallax under a finger.
+     Opacity multiplies the reveal state by --pull-fade, the single property
+     the hint reads too — one value, so the two can never drift apart.
+
+     --tk-offset seats the plate higher or lower for an iteration. It is added
+     outside --tk-y on purpose: the reveal is expressed as travel between three
+     --tk-y values (armed 16 → collapsed 0 → exit −16), so shifting the seat
+     here moves all three together and the 16px rise is left exactly as it
+     was. Overriding the collapsed value alone would have cut that rise to
+     4px. Default 0, so an iteration that says nothing is untouched. */
+  transform: translateY(calc(var(--tk-y, -16px) + var(--tk-pull, 0px) + var(--tk-offset, 0px)));
+  opacity: calc(var(--tk-o, 0) * var(--pull-fade, 1));
+  /* Leaving: drifts up and out on the recording's own fade-out curve. */
+  transition: transform var(--hijack-dur) var(--ease-hijack),
+              opacity   var(--fade-out-dur) var(--ease-fade-out);
+}
+.takeover img { width: 375px; height: 812px; }   /* viewBox 0 0 375 812 */
+
+/* Arriving: rises the last 16px into place and fades in a little ahead of the
+   move, so the plate is fully present while the spring is still settling. */
+.is-hijacked .takeover {
+  --tk-y: 0px;
+  --tk-o: 1;
+  /* Same duration and curve the hint uses, so a released pull recovers both
+     together instead of the plate arriving ~160ms early. */
+  transition: transform var(--hijack-dur) var(--ease-hijack),
+              opacity   var(--hijack-dur) var(--ease-hijack);
+}
+
+/* Primed one frame before the reveal: parked 16px BELOW, invisible, so the
+   entrance rises from under the card instead of dropping from where the exit
+   left it. Without this the two directions would share one start point. */
+.takeover-armed .takeover { --tk-y: 16px; --tk-o: 0; transition: none; }
+
+.is-pulling .takeover { transition: none; }
+
+/* ══ 1022:514719 "PDP Mins" ═════════════════════════════════════════════
+   ProtoPie parks it at centre y −327, scale 80, radius 26 — a card sitting
+   just above the top edge, its bottom at y −2.2. Written as a translate off
+   the element's own 406 centre: 406 − 733 = −327.
+
+   --pull is added *outside* the scale, exactly as it is on .stage, so the
+   card and this screen move by the same number of screen pixels. Equal
+   displacement is what makes the two read as one rigid thing being dragged
+   rather than two layers animating in sympathy. */
+/* Parked so the centre card's bottom edge (698.6 inside .pdp) sits just off
+   the top at −2.2, which is where the pull picks it up. */
+.pdp {
+  position: absolute; inset: 0;
+  transform: translateY(calc(-700.8px + var(--pull, 0px)));
+  pointer-events: none;
+  transition: transform var(--hijack-dur) var(--ease-hijack);
+}
+.pdp__stage { position: absolute; inset: 0; }
+.is-pulling .pdp { transition: none; }
+
+/* Each card is a full 375 × 812 screen; x and scale come from the rail, so
+   the transform is written from JS. −32.2 puts the centre on y 373.8. */
+.pdp-card {
+  position: absolute; inset: 0;
+  transform-origin: 50% 50%;
+  transform: translate(0, -32.2px) scale(0.8);
+  will-change: transform;
+}
+.pdp-card__inner {
+  position: absolute; inset: 0;
+  border-radius: 26px;
+  overflow: hidden;
+  background: #fff;
+}
+.pdp-card img { display: block; width: 375px; height: 812px; }
+
+/* 1031:17764/68/72 — thumbnails on centre y 753.31, 78.5 apart, 70px when
+   active and 50 otherwise (carried as scale so nothing reflows).
+   1031:17761 — a 1px white ring, fixed on the active slot. */
+.pdp-thumbs { position: absolute; inset: 0; }
+.pdp-thumb {
+  position: absolute; left: 50%; top: 753.308px;
+  width: 70px; height: 70px; margin: -35px 0 0 -35px;
+  border-radius: 50%; overflow: hidden;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+.pdp-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pdp-ring {
+  position: absolute; left: 50%; top: 753.308px;
+  width: 80px; height: 80px; margin: -40px 0 0 -40px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+/* The rail is only grabbable once the screen has actually arrived. */
+.pdp-thumbs, .pdp__stage { pointer-events: none; }
+.is-switching.pdp-in .pdp { pointer-events: auto; }
+.is-switching.pdp-in .pdp__stage,
+.is-switching.pdp-in .pdp-thumbs { pointer-events: auto; cursor: grab; }
+/* Spelled out over the whole subtree rather than left to the intersection
+   rule: the element a finger actually lands on is an <img> several levels
+   down, and WebKit will claim the gesture for a pan the moment it thinks any
+   of it is allowed. Nothing inside the PDP ever pans. */
+.is-switching.pdp-in .pdp,
+.is-switching.pdp-in .pdp * { touch-action: none; }
+.pdp-dragging .pdp__stage, .pdp-dragging .pdp-thumbs { cursor: grabbing; }
+
+/* Thumbs and ring rise into place individually once the card has arrived —
+   see the reveal tweens in app.js. They start hidden so they cannot crest
+   the top edge during the pull. */
+.pdp-thumb, .pdp-ring { opacity: 0; }
+
+/* ══════════════════════════════════════════════════════════════════════
+   Switch to Minutes
+   ══════════════════════════════════════════════════════════════════════
+   Fires mid-gesture, the moment the Home card's top edge crosses 65% of the
+   screen (y 527.8). From the ProtoPie recording (scenario db0a4781):
+
+     exit   home y  580 → 1200   +620   0.54s, overshoot 1208.2 (+1.32%)
+     exit   other y   0 →  820   +820   0.54s, overshoot  830.9 (+1.33%)
+     blank  ~1.28s
+     enter  pdp  y −327 →  406   +733   0.54s, overshoot  415.8 (+1.34%)
+     enter  pdp  scale 80 → 100, starting 390ms after the slide
+     enter  pdp  radius 26 → 0
+
+   Every leg is the same spring the rest of the flow uses — the exits, the
+   entry and the pull all overshoot by the same 1.33%, which is what holds
+   the whole thing together as one gesture rather than three animations.   */
+
+/* The ground everything clears to. */
+.blank {
+  position: absolute; inset: 0;
+  background: var(--ground);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--fade-out-dur) var(--ease-fade-out),
+              background-color var(--ground-shift-dur) var(--ease-ground-shift);
+}
+.is-switching .blank { opacity: 1; }
+
+/* The shift is hung off .lottie-on, which app.js sets on the same frame it
+   calls goToAndPlay — so the colour and the animation start together by
+   construction rather than by two clocks that have to be kept in step. All
+   three ground surfaces move, not just .blank: the blank is still fading up
+   over the films at that moment, and leaving those behind would show the old
+   colour through it. */
+.is-switching.lottie-on .film--intro,
+.is-switching.lottie-on .film--loop,
+.is-switching.lottie-on .blank { background-color: var(--ground-2); }
+
+/* 750 × 400 artwork, laid in at half size so it is 1:1 at 2x. */
+.switch-lottie {
+  position: absolute; left: 50%; top: 50%;
+  width: 375px; height: 200px;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 260ms var(--ease-fade-in);
+}
+.is-switching.lottie-on .switch-lottie { opacity: 1; }
+/* Hands over to the arriving screen rather than being cut. */
+.is-switching.pdp-in .switch-lottie { opacity: 0; transition: opacity 320ms var(--ease-fade-out); }
+
+/* ── The exits ─────────────────────────────────────────────────────────
+   Home carries the nav bar with it, being its parent. 794 = centre 406 →
+   1200. The PDP goes the other way, well past its parked spot so the travel
+   reads even when the pull had already brought it a long way in. */
+.is-switching .stage { transform: translateY(794px) scale(0.94); }
+.is-switching .pdp   { transform: translateY(-1000px); }
+/* The films stay put — they are the red the Home screen already sits on, and
+   fading them would put a colour change in the middle of the transition. Only
+   the artwork and the hint clear, leaving the same #D12B28 ground throughout. */
+.is-switching .takeover,
+.is-switching .swipe-hint { opacity: 0; }
+
+/* One frame at the parked position so the entry slides the full 733px from
+   above, instead of easing back from wherever the exit left it. */
+.pdp-park .pdp { transform: translateY(-700.8px); transition: none; }
+
+/* ── The entry ─────────────────────────────────────────────────────────
+   Declared after the exit rules so it wins at equal specificity.
+
+   Slide only. Figma's "Mins State" (1030:14245) puts the settled card at
+   300 × 649.6 at (37.5, 81.2) — 375 × 812 at scale 0.80, centred on the
+   screen — so it arrives at the size it was already carrying and holds its
+   26px radius. translateY(0) lands its centre on 406, which is exactly that
+   frame. ProtoPie's scale 80 → 100 belongs to a later step, not this one. */
+/* Settled: .pdp sits flush on the screen. The −32.2 that puts the cards on
+   centre y 373.8 lives on .pdp-card, so applying it here too would double it. */
+.is-switching.pdp-in .pdp { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .blank, .switch-lottie, .pdp, .pdp__inner { transition: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   PDP action bar — State 01 ⇄ State 02   (Motion–Sas 1035:19132)
+   ══════════════════════════════════════════════════════════════════════
+   The card art is a flat 375 × 812 export, so the Add to Cart button is
+   baked into the pixels. It is covered by a white patch — the action bar
+   behind it is pure #fff, verified by sampling — and a live pill is laid
+   over the same rect so the swap is invisible until it animates.
+
+   Every number is measured off pdp-minis.png at 1/3 (its 375-frame):
+
+     button   x 203 → 363.333   y 729 → 779    r 11.538   #f91a47
+     label    centred on 283.06 / 754, Noontree SemiBold, 83.33 wide
+     shadow   0 0 3.846px rgba(2,6,12,.1)   (Figma 3.077 at the 0.8 instance)
+
+   State 02 is a raster in Figma, so its pill was measured off the 4× export
+   and anchored to the shared 50px height: 446 × 161 export px × (50/161) =
+   138.5 wide — which lands on the Add Button component's own declared
+   min-width, 110.769 × 1.25. Two independent derivations, same number.
+   The right edge is shared, so the pill narrows leftwards by 21.87px.   */
+.cta {
+  position: absolute;
+  left: 190px; right: 0; top: 722px; height: 64px;
+  background: #fff;
+}
+.cta__btn {
+  position: absolute;
+  right: 11.667px; top: 7px;              /* 729 − 722 */
+  width: 160.333px; height: 50px;
+  border-radius: 11.538px;
+  background: #f91a47;                    /* Figma bg/accent-solid */
+  box-shadow: 0 0 3.846px rgba(2, 6, 12, .1);
+  transform-origin: 100% 50%;             /* the right edge is the anchor */
+  transition: width 420ms var(--ease-hijack), transform 200ms var(--ease-fade-out);
+}
+.cta__btn.is-qty { width: 138.462px; }
+
+/* A press dips the whole pill in State 01 and only the tapped glyph in
+   State 02, so the stepper never feels like one big button. */
+.cta__btn:not(.is-qty):has(.cta__add:active) { transform: scale(.975); }
+
+/* ── State 01 ─────────────────────────────────────────────────────────
+   Font size 16.35 = the component's 13.08 at the same 1.25 the rest of the
+   card is drawn at; tracking and line-height scale with it. */
+.cta__add {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  appearance: none; border: 0; padding: 0; background: none;
+  font-family: var(--font-primary);
+  font-weight: 600; font-size: 16.35px; line-height: 19.231px;
+  letter-spacing: -0.325px; color: #fff; white-space: nowrap;
+  font-feature-settings: "case" 1;
+  cursor: pointer;
+  transition: opacity 190ms linear 120ms, transform 300ms var(--ease-hijack) 120ms;
+}
+.cta__btn.is-qty .cta__add {
+  opacity: 0; transform: scale(.94); pointer-events: none;
+  /* Leaving is read off the target state, so the fast exit lives here. */
+  transition: opacity 130ms linear, transform 170ms var(--ease-fade-out);
+}
+
+/* ── State 02 ─────────────────────────────────────────────────────────
+   Padding 15.385 (the component's 12.308 gap token, again × 1.25) plus a
+   20px glyph box puts the − and + centres 25.385 from each end; measured
+   off the reference they sit at 25.0 and 25.3. */
+.cta__qty {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 130ms linear;
+}
+.cta__btn.is-qty .cta__qty {
+  opacity: 1; pointer-events: auto;
+  transition: opacity 200ms linear 90ms;
+}
+.cta__step {
+  position: absolute; top: 50%;
+  width: 20px; height: 20px; margin-top: -10px;
+  display: grid; place-items: center;
+  appearance: none; border: 0; padding: 0; background: none;
+  cursor: pointer;
+}
+.cta__step--minus { left: 15.385px; }
+.cta__step--plus  { right: 15.385px; }
+.cta__count {
+  font-family: var(--font-primary);
+  font-weight: 600; font-size: 16.35px; line-height: 19.231px;
+  letter-spacing: -0.325px; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The glyphs spread outward from the centre as they arrive and collapse
+   back inward on the way out — the pill's own width change, in miniature. */
+.cta__step--minus { transform: translateX(7px); }
+.cta__step--plus  { transform: translateX(-7px); }
+.cta__count       { transform: scale(.82); }
+.cta__step, .cta__count { transition: transform 170ms var(--ease-fade-out); }
+.cta__btn.is-qty .cta__step,
+.cta__btn.is-qty .cta__count {
+  transform: none;
+  transition: transform 380ms var(--ease-hijack) 90ms;
+}
+.cta__btn.is-qty .cta__step:active { transform: scale(.84); transition: transform 90ms linear; }
+
+/* The digit rolls in from the direction it was pushed. */
+.cta__count.is-bump { animation: cta-bump 260ms var(--ease-hijack); }
+@keyframes cta-bump {
+  0%   { transform: translateY(var(--bump, 5px)) scale(.9); opacity: .3; }
+  100% { transform: none; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta__btn, .cta__add, .cta__qty, .cta__step, .cta__count { transition: none; }
+  .cta__count.is-bump { animation: none; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   1037:22401 — Status Bar
+   ══════════════════════════════════════════════════════════════════════
+   375 × 42.565, pinned to the device rather than to any screen, so it is
+   the one thing the hijack, the pull, the switch and the expansion all
+   leave alone. Percentage insets from the Figma instance resolved against
+   that box: wifi 84.27%/11.64%/39.39%/35.61% → 316.013, w 15.338, top
+   16.766, h 10.642; cellular 78.4%/17.07%/40.15%/35.61% → 294, w 16.988,
+   top 17.089, h 10.318.                                                 */
+.statusbar {
+  position: absolute; left: 0; top: 0;
+  width: 375px; height: 42.565px;
+  z-index: 50;
+  pointer-events: none;
+  color: #000;
+}
+.statusbar__time {
+  position: absolute; left: 21px; top: 14px;
+  width: 54px; text-align: center;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  font-weight: 600; font-size: 15px; line-height: normal;
+  letter-spacing: -0.3px; color: currentColor;
+}
+.statusbar__cellular { position: absolute; left: 294px;     top: 17.089px; width: 16.988px; height: 10.318px; }
+.statusbar__wifi     { position: absolute; left: 316.013px; top: 16.766px; width: 15.338px; height: 10.642px; }
+.statusbar__cellular, .statusbar__wifi { display: block; }
+
+/* Battery is drawn, not exported — only the cap terminal is a vector. */
+.statusbar__batt-border {
+  position: absolute; right: 16.67px; top: 17.33px;
+  width: 22px; height: 11.333px;
+  border: 1px solid currentColor; border-radius: 2.667px;
+  opacity: .35;
+  box-sizing: border-box;
+}
+.statusbar__batt-fill {
+  position: absolute; right: 18.67px; top: 19.33px;
+  width: 18px; height: 7.333px;
+  border-radius: 1.333px;
+  background: currentColor;
+}
+.statusbar__batt-cap {
+  position: absolute; right: 14.34px; top: 21px;
+  width: 1.328px; height: 4px;
+  display: block;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   Add to Cart → full screen
+   ══════════════════════════════════════════════════════════════════════
+   ProtoPie db0a4781 fires this as two responses on the same delay (2160 off
+   the switch trigger), which is what makes it read as one move rather than
+   two: scale 80 → 100 over 400ms and radius 26 → 0 over 200ms, so the
+   corners are square well before the card has finished growing.
+
+   Both curves are resampled from the recording's own tracks — they are not
+   the same shape. The scale eases in, almost still for its first eighth
+   before it commits; the radius leaves immediately and coasts.            */
+:root {
+  --ease-expand: linear(0.0000 0.00%, 0.0048 4.00%, 0.0115 6.25%, 0.0208 8.25%, 0.0339 10.25%, 0.0575 12.75%, 0.0842 14.75%, 0.1156 16.50%, 0.1707 18.75%, 0.2374 20.75%, 0.4147 25.00%, 0.4905 27.00%, 0.5615 29.25%, 0.6137 31.25%, 0.6629 33.50%, 0.7287 37.25%, 0.7642 39.75%, 0.8111 43.75%, 0.8510 48.00%, 0.8945 54.00%, 0.9283 60.25%, 0.9542 66.75%, 0.9724 73.00%, 0.9883 81.25%, 0.9971 89.50%, 1.0000 100.00%);
+  --ease-expand-radius: linear(0.0000 0.00%, 0.1161 4.00%, 0.2351 8.50%, 0.3424 13.00%, 0.4183 16.50%, 0.4975 20.50%, 0.5773 25.00%, 0.6481 29.50%, 0.7039 33.50%, 0.7535 37.50%, 0.8022 42.00%, 0.8397 46.00%, 0.8722 50.00%, 0.9000 54.00%, 0.9287 59.00%, 0.9452 62.50%, 0.9606 66.50%, 0.9729 70.50%, 0.9824 74.50%, 0.9908 79.50%, 0.9979 87.50%, 1.0000 100.00%);
+  --expand-dur: 400ms;
+  --expand-radius-dur: 200ms;
+}
+
+/* The rail writes .pdp-card transforms every frame, so a transition on them
+   would lag the finger. It is armed only once the expansion starts, at which
+   point the rail has stopped writing for good. */
+.pdp-expanding .pdp-card {
+  transition: transform var(--expand-dur) var(--ease-expand),
+              opacity   var(--expand-dur) var(--ease-expand);
+}
+.pdp-expanding .pdp-card__inner {
+  transition: border-radius var(--expand-radius-dur) var(--ease-expand-radius);
+}
+.pdp-expanding .pdp-card--main .pdp-card__inner { border-radius: 0; }
+
+/* The neighbours and the thumbnail rail leave on the same clock as the
+   growth, so the screen empties at exactly the rate the card fills it. */
+.pdp-expanding .pdp-thumb,
+.pdp-expanding .pdp-ring {
+  transition: transform var(--expand-dur) var(--ease-expand),
+              opacity   var(--expand-dur) var(--ease-expand);
+}
+
+/* Nothing left to drag once it is full screen. */
+.pdp-expanding .pdp__stage,
+.pdp-expanding .pdp-thumbs { pointer-events: none !important; cursor: default; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pdp-expanding .pdp-card,
+  .pdp-expanding .pdp-card__inner,
+  .pdp-expanding .pdp-thumb,
+  .pdp-expanding .pdp-ring { transition: none; }
+}
