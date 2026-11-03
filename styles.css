@@ -1768,7 +1768,8 @@ img.contain { object-fit: contain; }
 .st--garmin .m9__v.is-on .m9__ph { transform: scale(1.02); }
 .st--garmin .m9__v:active .m9__ph { transform: scale(.96); transition-duration: .12s; }
 /* the line-up's rows page in from beyond the screen's edge: clip sideways so the page never scrolls with them */
-.brw { overflow-x: clip; }
+.brw.is-paging { overflow-x: clip; }   /* only while it slides: always on, it also clipped the collapsed bar's white band
+   vertically, and the cards showed through above the "Find your Garmin" bar */
 .st__film { pointer-events: none; }   /* the frozen strip a view change pages (app.js pageTo) */
 
 /* ══ Figma PLP 707:30165 ═════════════════════════════════════════════════════════════════════════════════
@@ -1800,7 +1801,7 @@ img.contain { object-fit: contain; }
 .st--garmin .m9 .m9__vars { padding-top: 6px; padding-bottom: 6px; margin-top: 14px; margin-bottom: -6px; }
 
 /* ══ Figma PLP 709:31281 — the line-up (state 02) ═════════════════════════════════════════════════════════
-   12px under the widget's top: the title (28/36 500 −0.25, centred), 12px, the series pills row (8px above and
+   the title (state 01's, unchanged — see below), the series pills row 60px under the widget's top (8px above and
    below, 16px in, 8px apart), the tiles row (16px above, 9 below, 16px in, 12px apart), 12px, the Latest card;
    28px on to the products (G.GAP2).
    pills: 46 tall — a 1px edge (#f2f3f7; All #ececf0), 4px around a 36px round photo on #f5f5f7, 6px, the name
@@ -1812,8 +1813,7 @@ img.contain { object-fit: contain; }
    card: radius 12, a 1px #f2f3f7 edge, 12px inside, washed #f2f8fd → white at 116°; a tag (20 tall, radius 6,
    #dceefa, 10/14 600 +0.3 #007cc2 caps, a 3px #add8f4 dot 4px each side), 2px, the title 16/22 600 −0.15 ink;
    10px; the copy 13/18 −0.1 #666d85. */
-.st--garmin .m9 .st__title { top: 10px; height: 36px; }
-.st--garmin .m9 .st__title span { line-height: 36px; letter-spacing: -0.25px; }
+/* (the title keeps state 01's place and type in the line-up too — it stays constant through the switch, user request) */
 
 .st--garmin .m9__pills { margin: 58px -12px 0; padding: 8px 16px; gap: 8px; scroll-padding: 0 16px; }
 .st--garmin .m9__p, .st--garmin .m9__p--all { height: auto; padding: 4px 12px 4px 4px; gap: 6px; border: 1px solid #f2f3f7; border-radius: 9999px;
@@ -1885,3 +1885,14 @@ img.contain { object-fit: contain; }
 .qhint__l { font-size: 12px; line-height: 16px; font-weight: 500; color: #8a91a8; }
 .qhint__q { font-size: 13px; line-height: 16px; font-weight: 700; color: #1d2539; }
 @media (max-width: 520px) { .qhint { display: none; } }
+
+/* the blue selection lighter (user requests: 40%, then 20% more): the picked tile's arch (#ebf8ff → #f5fcff) and
+   its glow (60% → 29%), and the series pill you're on (#f0f7ff on #8fc2ff → #f8fbff on #c9e2ff) */
+.st--garmin .m9__v.is-feat { background: linear-gradient(to bottom, #f5fcff, #fff); }
+.st--garmin .m9__v.is-feat::before { opacity: .48; }
+.st--garmin .m9__p.is-on { background: #f8fbff; border-color: #c9e2ff; }
+.st--garmin .m9__p.is-on i { background-color: #f8fbff; }
+
+/* the picked tile's arch is clipped with clip-path, not overflow + border-radius: WebKit drops a rounded overflow
+   clip for children on their own layer (the photo's lift is animated), and the glow then showed as a blurred box */
+.st--garmin .m9__v { clip-path: inset(0 round 9999px 9999px 16px 16px); }

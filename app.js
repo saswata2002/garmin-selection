@@ -2640,7 +2640,7 @@ const PP = (() => {
       wh.innerHTML = `<div class="wh__h"><span class="wh__logo"><img src="assets/garmin/garmin-logo.svg" width="52" height="14" alt="Garmin" /></span><i class="wh__div" aria-hidden="true"></i>
         <p class="wh__q"><span class="wh__t">${q}</span></p></div><p class="wh__d"><span class="wh__t">${d}</span></p>
         <button class="wh__go" type="button"><span class="wh__t">${go}</span></button>`;
-      wh.querySelector('.wh__go').addEventListener('click', () => { if (st && !st.look) gMorph(st.at); });
+      onTap(wh, '.wh__go', () => { if (st && !st.look) gMorph(st.at); });
       return wh.offsetHeight;
     }
     const slots = [wh.querySelector('.wh__q'), wh.querySelector('.wh__d'), wh.querySelector('.wh__go')], html = [q, d, go];
@@ -2923,6 +2923,33 @@ const PP = (() => {
     }, { passive: true });
     return api;
   }
+  /* the widget's controls act on the finger lifting (pointerup), not on the click: iPhone WebKit withholds a tap's
+     click when content becomes visible around it (the product grid fading in after a pick, a reveal in progress) —
+     it reads the touch as a hover, so the tap needs a second go. pointerup always arrives. A drag (> 10px, the row
+     scrolled, or the browser taking the touch as a pan: pointercancel) is never a tap; a click that follows a tap
+     handled here is skipped, and clicks without a touch (keyboard, assistive tech) still work. */
+  function onTap(root, sel, fn) {
+    let d = null;
+    root.addEventListener('pointerdown', (e) => {
+      if (e.button > 0) { d = null; return; }
+      const t = e.target.closest(sel);
+      d = t && root.contains(t) ? { t, id: e.pointerId, x: e.clientX, y: e.clientY, s: root.scrollLeft } : null;
+    }, { passive: true });
+    root.addEventListener('pointercancel', () => { d = null; }, { passive: true });
+    root.addEventListener('pointerup', (e) => {
+      if (!d || e.pointerId !== d.id) return;
+      const { t, x, y, s } = d; d = null;
+      if (Math.hypot(e.clientX - x, e.clientY - y) > 10 || Math.abs(root.scrollLeft - s) > 2 || !t.isConnected) return;
+      t._tapAt = performance.now();
+      fn(t, e);
+    }, { passive: true });
+    root.addEventListener('click', (e) => {
+      const t = e.target.closest(sel);
+      if (!t || !root.contains(t)) return;
+      if (t._tapAt && performance.now() - t._tapAt < 800) return;   // already handled on the lift
+      fn(t, e);
+    });
+  }
   /* scrolling a row (or the page) from code glides it frame by frame — never behavior:'smooth'. iPhone Safari runs a
      native smooth scroll like a fling, and the next touch on that scroller only stops it: the tap is lost, so you'd
      have to tap twice. A frame-by-frame glide isn't a fling; a touch on it simply stops it where it is and the tap
@@ -3013,6 +3040,7 @@ const PP = (() => {
   const settle = (el) => el.getAnimations().forEach((a) => { try { a.finish(); } catch (_) { a.cancel(); } });   // a part still arriving lands first
   function pageTo(dir, outParts, build, inParts, gap) {   // dir +1: on (content moves left), −1: back
     pageEnd();
+    box.classList.add('is-paging');   // clip sideways only while the strip slides
     const W = box.offsetWidth || 375;
     outParts = outParts.filter(Boolean); outParts.forEach(settle);
     const out = film(outParts, W);
@@ -3028,6 +3056,7 @@ const PP = (() => {
       paging = null;
       moves.forEach((m) => m.cancel()); out.layer.remove(); inn.layer.remove();
       ins.forEach((el) => { el.style.opacity = ''; });
+      box.classList.remove('is-paging');
     };
     paging = done;
     Promise.all(moves.map((m) => m.finished)).then(done, () => {});
@@ -3102,12 +3131,12 @@ const PP = (() => {
         <div class="m9__vars" role="listbox" aria-label="Variants" hidden></div>
         <div class="gn m9__ai" hidden></div>
       </div>`;
-    const keep = st.engaged && st.at === si ? st.pick : -1;
+    const keep = -1;   // the line-up opens with nothing picked (user request) — the products below show every Garmin
     st = { ...st, look: true, layer: null, rs: null, gc: null, nw: null, roster: { stop() {}, k: si }, at: si, pick: -1, engaged: true };
     const root = story.querySelector('.m9:not(.m9b)');
     root.querySelector('.kb').addEventListener('click', () => gStory(st.at));
-    root.querySelector('.m9__pills').addEventListener('click', (e) => { if (e.target.closest('.m9__p--all')) { gBack(); return; } const p = e.target.closest('.m9__p'); if (p && +p.dataset.k !== st.at) m9Series(+p.dataset.k, null, Math.sign(+p.dataset.k - st.at)); });
-    root.querySelector('.m9__vars').addEventListener('click', (e) => { const c = e.target.closest('.m9__v'); if (c) m9Pick(root, +c.dataset.m); });
+    onTap(root.querySelector('.m9__pills'), '.m9__p', (p) => { if (p.matches('.m9__p--all')) { gBack(); return; } if (+p.dataset.k !== st.at) m9Series(+p.dataset.k, null, Math.sign(+p.dataset.k - st.at)); });
+    onTap(root.querySelector('.m9__vars'), '.m9__v', (c) => m9Pick(root, +c.dataset.m));
     [root.querySelector('.m9__pills'), root.querySelector('.m9__vars')].forEach((row) => { edgeBand(row); dragRow(row); });
     m9Series(si, null, 0, true);
     st.keep = keep;
@@ -3142,7 +3171,7 @@ const PP = (() => {
     if (st.keep != null && st.keep >= 0) { st.pick = st.keep; vars.querySelector(`.m9__v[data-m="${st.pick}"]`)?.classList.add('is-on'); }
     st.keep = null;
     m9Ai(dir || 1);
-    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: n } }));
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: {} }));   // nothing picked: every Garmin below
     if (reduce11() || quiet || dir) return;
     const tiles = [...vars.children], first = tiles[0], ph = first.querySelector('.m9__ph');
     if (fromRect) {
@@ -3164,7 +3193,7 @@ const PP = (() => {
      follow the tap at once. */
   function m9Swap(root, k, dir) {
     const vars = root.querySelector('.m9__vars'), ai = root.querySelector('.m9__ai'), n = G_SERIES[k][0], ms = gModels(n);
-    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: { series: n } }));
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: {} }));   // a new series starts unpicked: every Garmin below
     pageTo(dir, [vars, ai], () => {
       vars.innerHTML = m9VarsHTML(n, ms);
       vars.scrollLeft = 0;
@@ -3194,7 +3223,7 @@ const PP = (() => {
       glide(row, left);
     }
     m9Ai(was < 0 || st.pick < 0 ? 1 : Math.sign(order.indexOf(st.pick) - order.indexOf(was)) || 1);
-    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: g ? { series: n, model: g[1] } : { series: n } }));
+    plp.dispatchEvent(new CustomEvent('plp:garmin', { detail: g ? { series: n, model: g[1] } : {} }));   // the pick drives the products; un-picking shows every Garmin again
   }
   /* once you've been into the line-up, the slider view keeps its variants (and the AI card) under the ruler,
      with whatever you picked still picked — scrolling up only swaps the pills back for the slider */
@@ -3204,7 +3233,7 @@ const PP = (() => {
     const root = story.querySelector('.m9b');
     st.engaged = true; st.pick = pick;
     if (pick >= 0) root.querySelector(`.m9__v[data-m="${pick}"]`)?.classList.add('is-on');
-    root.querySelector('.m9__vars').addEventListener('click', (e) => { const c = e.target.closest('.m9__v'); if (c) m9Pick(root, +c.dataset.m); });
+    onTap(root.querySelector('.m9__vars'), '.m9__v', (c) => m9Pick(root, +c.dataset.m));
     m9Ai();
   }
   /* the card under the line-up (Latest: … / the model you picked): it changes the way the "What's …" card does —
@@ -3212,12 +3241,12 @@ const PP = (() => {
      products (swapLines); its height glides on the grid's spring */
   function m9Ai(dir = 1) {
     const n = G_SERIES[st.at][0], ms = gModels(n), ai = story.querySelector('.m9__ai'), g = st.pick >= 0 ? ms[st.pick] : null;
-    const [title, line] = g ? [`${n} ${g[1]}`, gWhy(n, g, ms)[0]] : [G_NEW[n][0], G_NEW[n][1][0]];
+    const [title, line] = [G_NEW[n][0], G_NEW[n][1][0]];   // a pick changes only the products below, not this card (user request)
     // the tag over the title (Figma 709:32021): LATEST · the year, or just LATEST on a picked new model
-    const year = (G_NEW[n][0].match(/\((\d{4})\)/) || [])[1], tag = g ? (isNew(n, g) ? ['Latest'] : []) : ['Latest', year].filter(Boolean);
-    // the featured tile (Figma 709:31400): the one you picked, else the first — the series' newest
+    const year = (G_NEW[n][0].match(/\((\d{4})\)/) || [])[1], tag = ['Latest', year].filter(Boolean);
+    // the featured tile (Figma 709:31400): only the one you picked — the line-up opens with none (user request)
     const tiles = [...story.querySelectorAll('.m9:not(.m9b) .m9__v')];
-    tiles.forEach((t, j) => t.classList.toggle('is-feat', g ? +t.dataset.m === st.pick : j === 0));
+    tiles.forEach((t) => t.classList.toggle('is-feat', !!g && +t.dataset.m === st.pick));   // only a picked tile is highlighted
     let h;
     if (!ai.querySelector('.m9a__t .wh__t')) {
       ai.innerHTML = `<div class="m9a__h"><span class="m9a__tag"></span><p class="m9a__t"><span class="wh__t">${title}</span></p></div><p class="m9a__d"><span class="wh__t">${line}</span></p>`;
@@ -3495,7 +3524,7 @@ const PP = (() => {
     box.classList.remove('is-done');
     gqd.getAnimations().forEach((a) => a.cancel()); gqd.style.opacity = '';
   }
-  gqd.querySelector('.qd__edit').addEventListener('click', () => {
+  onTap(gqd, '.qd__edit', () => {
     gUnfold();
     glide(gScrollEl, 0, { axis: 'y', ms: 480 });
   });
